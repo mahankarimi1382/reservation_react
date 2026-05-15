@@ -1,4 +1,4 @@
-import { success } from "../components/ToastAlerts";
+// import { success } from "../components/ToastAlerts";
 import { axiosConfig } from "./axiosConfig";
 import axios from "axios";
 import Cookies from "js-cookie";
@@ -247,9 +247,10 @@ export const edit_specialties = (data, setIsLoading, setIsAddSpecialModal) => {
     .put("Specialist/update-specialist", data)
     .then((res) => {
       setIsLoading(false);
-      console.log(res);
       success("تخصص با موفقیت ویرایش شد");
-      setIsAddSpecialModal(false);
+            console.log(res);
+
+      // setIsAddSpecialModal(false);
     })
     .catch((err) => {
       console.log(err);
