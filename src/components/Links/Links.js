@@ -372,7 +372,7 @@ export const AdminPanelimageSetting_action = (props) => {
           isAction && "text-[#005DAD]"
         }`}
       >
-        <Image
+        <img
           width={24}
           src={isAction ? props.icon : props.blackIcon}
           alt="icon"
@@ -451,7 +451,7 @@ export const DoctorProfileUploadOptionButtons = ({
         pathName === path && "text-[#005DAD] bg-white rounded-xl shadow-md"
       }  gap-1 flex justify-center items-center p-1 px-4 `}
     >
-      <Image
+      <img
         src={pathName === path ? blueicon : blackicon}
         alt="icon"
         width={40}
@@ -500,7 +500,7 @@ export const DoctorPanel_reservationManagment = (props) => {
           isAction && "text-[#005DAD]"
         }`}
       >
-        <Image
+        <img
           width={24}
           src={isAction ? props.icon : props.blackIcon}
           alt="icon"
@@ -593,7 +593,7 @@ export const DoctorPanel_financialreports = (props) => {
           isAction && "text-[#005DAD]"
         }`}
       >
-        <Image
+        <img
           width={24}
           src={isAction ? props.icon : props.blackIcon}
           alt="icon"
@@ -673,7 +673,7 @@ export const AdminPanelMeeicalcenters_action = (props) => {
           isAction && "text-[#005DAD]"
         }`}
       >
-        <Image
+        <img
           width={24}
           src={isAction ? props.icon : props.blackIcon}
           alt="icon"

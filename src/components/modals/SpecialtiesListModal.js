@@ -59,7 +59,7 @@ function SpecialtiesListModal({ setIsSpecialtiesModal }) {
         />
 
         <div className="flex mt-5 bg-white items-center border rounded-lg px-2 lg:px-10 border-[#005DAD]">
-          <CiSearch className="text-[#C0C0C0] text-xl lg:text-3xl" />
+          <CiSearch className="text-[#C0C0C0] text-[30px] " />
           <input
             onChange={handleInputChange}
             placeholder={`جستجو تخصص از بین ${categorys.length} تخصص`}

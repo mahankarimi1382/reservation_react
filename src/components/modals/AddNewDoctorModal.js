@@ -108,7 +108,7 @@ function AddNewDoctorModal({ setIsAddDoctorModal, doctorItems }) {
     <div className=" z-20  w-screen h-screen top-0 justify-center items-center flex right-0 fixed bg-[rgba(0,0,0,0.6)]">
       <div className=" relative w-1/2 h-[90%] gap-2 rounded-xl p-3 bg-white flex flex-col items-center">
         <div className=" relative w-full justify-center items-center flex">
-          <Image src={logo} alt="logo" width={67} />
+          <img src={logo} alt="logo" width={67} />
           <RxCross2
             onClick={() => setIsAddDoctorModal(false)}
             className=" cursor-pointer absolute left-1 top-1 "

@@ -1,6 +1,5 @@
 import { CiSearch } from "react-icons/ci";
 import DoctorProfIcon from "../../../assets/Pics/doctor-profile-icon.png";
-import React from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import khadamatDarmani from "../../../assets/Pics/khadamatDarmani.png";
 import bimehIran from "../../../assets/Pics/bimehIran.png";

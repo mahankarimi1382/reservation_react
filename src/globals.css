@@ -1,0 +1,242 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "mainfont";
+  src: url("./assets/fonts/IRANYekanMobileFN\ Medium.ttf");
+}
+
+* {
+  font-family: "mainfont";
+  background-color: none;
+}
+
+.MuiPaginationItem-root {
+    font-family: "mainfont" !important;
+  background-color: none;
+}
+.file-input::file-selector-button {
+  display: none;
+}
+.MuiChartsAxis-line {
+  visibility: hidden;
+}
+input {
+  padding-right: 20px;
+}
+line {
+  visibility: hidden;
+}
+
+.shadoww {
+  -webkit-box-shadow: 0px 0px 4px 1px rgba(0, 93, 173, 0.32);
+  -moz-box-shadow: 0px 0px 4px 1px rgba(0, 93, 173, 0.32);
+  box-shadow: 0px 0px 4px 1px rgba(0, 93, 173, 0.32);
+}
+.canvas-style canvas {
+  all: initial;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 500px;
+  top: 50px;
+  right: 50px;
+  bottom: 50px;
+  left: 50px;
+}
+
+.rmdp-prime-admin .rmdp-calendar {
+  width: 450px;
+  min-height: 400px;
+  border-radius: 30px;
+  background-color: #ecf3fe;
+}
+
+.rmdp-prime-admin .rmdp-day:not(.rmdp-day-hidden) span:hover {
+  background-color: #c4e2ff !important;
+  color: white;
+}
+.rmdp-prime-admin .rmdp-week-day {
+  font-size: 12px;
+  width: 10px;
+  color: black;
+}
+
+.rmdp-prime-admin .rmdp-day-picker div {
+  width: 100%;
+}
+.rmdp-prime-admin .rmdp-week {
+  display: flex;
+}
+.rmdp-prime-admin .rmdp-day {
+  margin-right: 18px;
+  margin-top: 10px;
+}
+.rmdp-prime-admin .rmdp-day .sd {
+  width: 30px;
+  height: 30px;
+}
+.rmdp-prime-admin .rmdp-selected span:not(.highlight) {
+  padding: 5px;
+}
+
+.rmdp-prime-admin .rmdp-header,
+.rmdp-prime-admin .rmdp-panel-header {
+  /* background-color: #c4e2ff; */
+  border-bottom: 2px solid #cac4d0;
+  margin-bottom: 5px;
+  padding-bottom: 10px;
+  padding-top: 40px;
+  font-size: 20px;
+  font-size: 40px;
+}
+
+.rmdp-top-class {
+  background-color: none;
+  box-shadow: 0px;
+  border-radius: 30px;
+}
+.rmdp-wrapper {
+  background-color: #ecf3fe !important;
+  border-radius: 50px !important;
+  box-shadow: none !important;
+}
+.rmdp-prime .rmdp-day:not(.rmdp-day-hidden) span:hover {
+  background-color: #c4e2ff !important;
+  color: white;
+}
+.rmdp-prime .rmdp-week-day {
+  font-size: 12px;
+  width: 10px;
+  color: black;
+}
+
+.rmdp-prime .rmdp-day-picker div {
+  width: 100%;
+}
+.rmdp-prime .rmdp-week {
+  display: flex;
+}
+.rmdp-prime .rmdp-day {
+  margin-right: 18px;
+  margin-top: 10px;
+}
+.rmdp-prime .rmdp-day .sd {
+  width: 30px;
+  height: 30px;
+}
+.rmdp-day .rmdp-selected span:not(.highlight) {
+  padding: 5px;
+}
+
+.rmdp-prime .rmdp-calendar {
+  width: 450px;
+  min-height: 516px;
+  border-radius: 30px;
+  background-color: #ecf3fe;
+}
+
+.rmdp-shadow {
+  box-shadow: none;
+}
+.rmdp-prime .rmdp-header,
+.rmdp-prime .rmdp-panel-header {
+  /* background-color: #c4e2ff; */
+  border-bottom: 2px solid #cac4d0;
+  margin-bottom: 5px;
+  padding-bottom: 10px;
+  padding-top: 40px;
+  font-size: 20px;
+  font-size: 40px;
+}
+
+.App {
+  text-align: center;
+}
+.PsychiatryBg {
+  background-image: url("./assets/Pics/Psychiatry-background.png");
+  background-size: cover;
+}
+.dintistBg {
+  background-image: url("./assets/Pics/dentist-background.png");
+  background-size: cover;
+}
+.customScroll::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+  border-radius: 10px;
+  background-color: rgba(217, 217, 217, 0.71);
+}
+.customScroll::-webkit-scrollbar-thumb {
+  background-color: #005dad;
+  height: 5px;
+  border-radius: 10px;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-drag {
+  height: 100%;
+  background-color: #005dad;
+  border-radius: 10px;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+swiper-container {
+  margin-top: 5px;
+  width: 80%;
+  height: 400px;
+}
+
+swiper-slide {
+  padding-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  color: white;
+  align-items: center;
+  background-color: rgb(80, 95, 229);
+  border-radius: 30px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+.cardBg {
+  background-image: url("./assets/Pics/cardBg.png");
+  background-size: 650px 500px;
+  background-position: center;
+}
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
