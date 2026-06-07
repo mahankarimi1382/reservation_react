@@ -1,154 +1,191 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import ModalLogo from "../../assets/Pics/ModalLogo.png";
+import React, { useEffect, useState, useMemo } from "react";
 import { RxCross2 } from "react-icons/rx";
-import { SyncLoader } from "react-spinners";
-import {
-  add_role_to_user,
-  delete_category,
-  get_roles,
-  get_specialties,
-  get_specialties_category,
-  get_user_role_by_username,
-} from "../../api/ApiCalling";
-import { MdDeleteForever } from "react-icons/md";
-import DeletingModal from "./DeletingModal";
-import { TiArrowSortedDown } from "react-icons/ti";
-import SpecialistPagination from "../../container/adminPanel/Specialties/SpecialistPagination";
-import { myStore } from "../../store/Store";
+import { GoPlus } from "react-icons/go";
 import { CiEdit } from "react-icons/ci";
 import { HiOutlineTrash } from "react-icons/hi2";
-import { GoPlus } from "react-icons/go";
+import { FiSearch } from "react-icons/fi";
+
 import AddSpecialtiesCategory from "./AddSpecialtiesCategory";
+import DeletingModal from "./DeletingModal";
 import LoadingComponent from "../LoadingComponent";
 
-function SpecialtiesCategoryModal({ closeModal }) {
-  const [specialist, setSpecialist] = useState([]);
-  const [isDeletingModal, setIsDeletingModal] = useState(false);
-  const [isAddCategoryModal, setIsAddCategoryModal] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  console.log(specialist);
+import {
+  get_specialties_category,
+  delete_category,
+} from "../../api/ApiCalling";
 
+function SpecialtiesCategoryModal({ closeModal }) {
+  const [categories, setCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const [isAddCategoryModal, setIsAddCategoryModal] = useState(false);
+  const [isDeletingModal, setIsDeletingModal] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  // دریافت داده‌ها
   const fetchData = async () => {
+    setIsLoading(true);
     const data = await get_specialties_category();
     if (data) {
-      setSpecialist(data);
-      setIsLoading(false);
+      setCategories(data);
     }
+    setIsLoading(false);
   };
+
   useEffect(() => {
     fetchData();
   }, [isAddCategoryModal]);
 
+  // فیلتر دسته‌بندی‌ها
+  const filteredCategories = useMemo(() => {
+    if (!searchTerm.trim()) return categories;
+
+    return categories.filter((item) =>
+      item.categoryName?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [categories, searchTerm]);
+
+  const openAddModal = () => {
+    setSelectedCategory(null);
+    setIsAddCategoryModal(true);
+  };
+
+  const openEditModal = (item) => {
+    setSelectedCategory(item);
+    setIsAddCategoryModal(true);
+  };
+
+  const openDeleteModal = (item) => {
+    setSelectedCategory(item);
+    setIsDeletingModal(true);
+  };
+
   return (
-    <div className=" w-screen z-10 h-screen top-0 justify-center items-center flex right-0 fixed bg-[rgba(0,0,0,0.6)]">
-      {isLoading && <LoadingComponent />}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+      {/* مودال‌های فرزند */}
       {isAddCategoryModal && (
         <AddSpecialtiesCategory
           selectedCategory={selectedCategory}
           closeModal={() => setIsAddCategoryModal(false)}
         />
       )}
-      {isDeletingModal && (
+
+      {isDeletingModal && selectedCategory && (
         <DeletingModal
           DeletingFn={delete_category}
-          setList={setSpecialist}
-          id={selectedCategory.id}
-          name={selectedCategory.categoryName}
+          setList={setCategories}
+          id={selectedCategory?.id}
+          name={selectedCategory?.categoryName}
           closeModal={() => setIsDeletingModal(false)}
-          list={specialist}
+          list={categories}
         />
       )}
-      <div className=" relative w-1/2 h-[80%] bg-white items-center flex gap-2 flex-col py-2 px-2 pb-5 rounded-2xl">
-        <RxCross2
-          onClick={closeModal}
-          className=" cursor-pointer absolute top-2 left-2"
-        />
-        <div className=" w-[95%] mt-5 flex justify-end">
+
+      <div className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+        {/* Header */}
+        <div className="flex items-center justify-between p-5 border-b">
+          <h2 className="text-2xl font-bold text-gray-800">
+            دسته‌بندی تخصص‌ها
+          </h2>
+          <RxCross2
+            onClick={closeModal}
+            className="w-8 h-8 cursor-pointer text-gray-500 hover:text-gray-700 transition-colors"
+          />
+        </div>
+
+        {/* Search & Add Button */}
+        <div className="p-5 flex flex-col sm:flex-row gap-4 border-b">
+          <div className="relative flex-1">
+            <FiSearch className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="جستجوی دسته‌بندی..."
+              className="w-full bg-white border border-gray-300 focus:border-[#005DAD] rounded-xl py-3 pr-12 pl-4 outline-none"
+            />
+          </div>
+
           <button
-            onClick={() => {
-              setSelectedCategory(null);
-              setIsAddCategoryModal(true);
-            }}
-            className=" flex justify-center text-sm items-center gap-2 rounded-lg p-2 bg-[#005DAD] text-white"
+            onClick={openAddModal}
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-[#005DAD] hover:bg-[#00438a] text-white rounded-xl font-medium transition-all whitespace-nowrap"
           >
-            <GoPlus className=" text-2xl" />
-            افزودن دسته بندی
+            <GoPlus className="text-2xl" />
+            افزودن دسته‌بندی
           </button>
         </div>
-        <div className=" gap-3 flex flex-col w-[95%] h-[80%]  rounded-lg border shadow-md p-4 bg-white">
-          <div className=" py-2 w-full flex rounded-lg bg-[#F4F4F4]">
-            <h4 className=" w-1/4 flex justify-center  items-center text-[#3F444D] text-lg">
-              آیکون
-              <TiArrowSortedDown />
-            </h4>
-            <h4 className=" w-1/4 flex justify-center items-center text-[#3F444D] text-lg">
-              دسته بندی
-              <TiArrowSortedDown />
-            </h4>
-            <h4 className=" w-1/2 flex justify-center items-center text-[#3F444D] text-lg">
-              اقدامات
-              <TiArrowSortedDown />
-            </h4>
-          </div>
-          <div className=" h-[80%] overflow-auto">
-            {/* {isDeletingModal && (
-              <DeletingModal
-                DeletingFn={delete_specialties}
-                setList={setSpecialist}
-                id={selectedItem.id}
-                name={selectedItem.name}
-                closeModal={() => setIsDeletingModal(false)}
-                list={specialist}
-              />
-            )} */}
-            {specialist.map((item) => {
-              return (
+
+        {/* Content */}
+        <div className="flex-1 overflow-auto p-5">
+          {isLoading ? (
+            <div className="flex justify-center items-center h-64">
+              <LoadingComponent />
+            </div>
+          ) : filteredCategories.length === 0 ? (
+            <div className="text-center py-20 text-gray-500">
+              {searchTerm
+                ? "دسته‌بندی‌ای یافت نشد"
+                : "هنوز دسته‌بندی ثبت نشده است"}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredCategories.map((item) => (
                 <div
-                  className=" border flex py-3 rounded-lg bg-white shadow-md"
                   key={item.id}
+                  className="flex items-center bg-white border border-gray-200 rounded-2xl p-4 hover:shadow-md transition-all"
                 >
-                  <div className=" w-1/4 flex justify-center items-center">
-                    <img
-                      src={
-                        item.categoryLogoFile != "string" &&
-                        item.categoryLogoFile
-                      }
-                      width={47}
-                      height={47}
-                      alt="logo"
-                    />
+                  {/* آیکون */}
+                  <div className="w-16 flex justify-center">
+                    {item.categoryLogoFile &&
+                    item.categoryLogoFile !== "string" ? (
+                      <img
+                        src={item.categoryLogoFile}
+                        alt={item.categoryName}
+                        className="w-12 h-12 object-contain rounded-lg border border-gray-100"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
+                        No Image
+                      </div>
+                    )}
                   </div>
-                  <h4 className=" w-1/4 flex justify-center items-center text-[#3F444D]">
-                    {item.categoryName}
-                  </h4>
-                  <div className=" gap-2 w-1/2 flex justify-center items-center text-[#3F444D]">
+
+                  {/* نام دسته‌بندی */}
+                  <div className="flex-1 px-6">
+                    <h4 className="text-lg font-medium text-gray-800">
+                      {item.categoryName}
+                    </h4>
+                  </div>
+
+                  {/* اقدامات */}
+                  <div className="flex items-center gap-3">
                     <button
-                      onClick={() => {
-                        setSelectedCategory(item);
-                        setIsDeletingModal(true);
-                      }}
-                      className=" gap-2 border rounded-lg px-5 p-1 flex justify-center items-center bg-[#EED4D7] border-[#C30505] text-[#C30505]"
+                      onClick={() => openEditModal(item)}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-[#F2FEF8] border border-[#1F7168] text-[#1F7168] rounded-xl hover:bg-[#e6f8f0] transition-colors"
                     >
-                      <HiOutlineTrash />
-                      حذف
-                    </button>
-                    <button
-                      onClick={() => {
-                        setIsAddCategoryModal(true);
-                        setSelectedCategory(item);
-                      }}
-                      className=" gap-2 border rounded-lg px-5 p-1 flex justify-center items-center bg-[#F2FEF8] border-[#1F7168] text-[#1F7168]"
-                    >
-                      <CiEdit className=" font-bold text-2xl" />
+                      <CiEdit className="text-xl" />
                       ویرایش
+                    </button>
+
+                    <button
+                      onClick={() => openDeleteModal(item)}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-[#FEF2F2] border border-[#C30505] text-[#C30505] rounded-xl hover:bg-[#ffebeb] transition-colors"
+                    >
+                      <HiOutlineTrash className="text-xl" />
+                      حذف
                     </button>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="p-4 border-t bg-gray-50 text-sm text-gray-500 text-center">
+          تعداد دسته‌بندی: {filteredCategories.length}
         </div>
       </div>
     </div>

@@ -1,51 +1,57 @@
 import React, { useState } from "react";
-import ModalLogo from "../../assets/Pics/ModalLogo.png";
 import { RxCross2 } from "react-icons/rx";
 import { SyncLoader } from "react-spinners";
 
-function DeletingModal(props) {
+function DeletingModal({
+  DeletingFn,
+  setList,
+  id,
+  name,
+  closeModal,
+  list
+}) {
   const [isLoading, setIsLoading] = useState(false);
-  console.log(props);
+
+  const handleDelete = () => {
+    if (!id) return;
+    
+    DeletingFn(id, setList, closeModal, setIsLoading, list);
+  };
+
   return (
-    <div className=" w-screen z-10 h-screen top-0 justify-center items-center flex right-0 fixed bg-[rgba(0,0,0,0.6)]">
-      <div className=" relative w-1/3 h-1/3 bg-white flex flex-col justify-center py-2 px-2 pb-5  items-center rounded-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+      <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-8 relative">
         <RxCross2
-          onClick={props.closeModal}
-          className=" absolute left-2 top-2 cursor-pointer  text-xl text-[#717171] "
+          onClick={closeModal}
+          className="absolute top-4 left-4 w-7 h-7 text-gray-500 hover:text-gray-700 cursor-pointer transition-colors"
         />
-        <img
-          className=" absolute top-2"
-          src={ModalLogo}
-          alt="logo"
-          width={67}
-        />
-        <div className=" w-full flex flex-col justify-center items-center gap-7 absolute bottom-5">
-          <h5 className=" flex justify-center items-center gap-2 flex-wrap">
-            {" "}
-            آیا از حذف کردن
-            <span className=" text-[#005DAD]">{props.name}</span>
-            از لیست مطمئن هستید ؟
-          </h5>
-          <div className=" flex w-full justify-center items-center gap-3">
+
+        <div className="flex flex-col items-center text-center pt-6">
+          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-6">
+            <span className="text-4xl">🗑️</span>
+          </div>
+
+          <h3 className="text-xl font-bold text-gray-800 mb-3">حذف دسته‌بندی</h3>
+          
+          <p className="text-gray-600 mb-8">
+            آیا از حذف <span className="font-semibold text-[#005DAD]">{name}</span> مطمئن هستید؟<br />
+            این عمل قابل بازگشت نیست.
+          </p>
+
+          <div className="flex gap-4 w-full">
             <button
-              onClick={() => {
-                props.DeletingFn(
-                  props.id,
-                  props.setList,
-                  props.closeModal,
-                  setIsLoading,
-                  props.list
-                );
-              }}
-              className=" w-1/4 p-2 rounded-lg text-white bg-[#005DAD]"
+              onClick={closeModal}
+              className="flex-1 py-3.5 border border-gray-300 rounded-xl font-medium hover:bg-gray-50 transition-colors"
             >
-              {isLoading ? <SyncLoader color="white" size={10} /> : "بله"}
+              انصراف
             </button>
+
             <button
-              onClick={props.closeModal}
-              className=" w-1/4 p-2 rounded-lg text-[#005DAD] border-2 border-[#005DAD]"
+              onClick={handleDelete}
+              disabled={isLoading}
+              className="flex-1 py-3.5 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white rounded-xl font-medium transition-colors flex items-center justify-center"
             >
-              خیر
+              {isLoading ? <SyncLoader color="white" size={9} /> : "بله، حذف شود"}
             </button>
           </div>
         </div>

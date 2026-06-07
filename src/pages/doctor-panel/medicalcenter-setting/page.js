@@ -3,8 +3,11 @@ import DoctorProfIcon from "../../../assets/Pics/doctor-profile-icon.png";
 import React from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import DoctorPanelMenu from "../../../container/doctor-panel/DoctorPanelMenu";
+import { fullNameStorage } from "../../../store/Store";
 
 function page() {
+              const { fullName } = fullNameStorage();
+
   return (
     <div dir="rtl" className="flex pb-20  bg-[#F6FBFF]">
       <DoctorPanelMenu />
@@ -16,7 +19,7 @@ function page() {
           </label>
           <button className=" flex justify-center items-center p-2 border text-[#005DAD] gap-2 border-[#005DAD] rounded-xl">
             <img src={DoctorProfIcon} width={24} alt="icon" />
-            دکتر طاهر ثابتیان
+            دکتر {fullName}
             <IoIosArrowDown className=" text-xl" />
           </button>
         </div>

@@ -1,101 +1,154 @@
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
 import Navbar from "../../components/Navbar";
-import React from "react";
-import doctorAvatar from "../../assets/Pics/doctorLoginAvatar.png";
-import { IoIosArrowBack } from "react-icons/io";
-import peopleIcon from "../../assets/Pics/people-blue.png";
-import trendDownIcon from "../../assets/Pics/volume-high-icon.png";
-import volumeIcon from "../../assets/Pics/trend-down-icon.png";
-import monitorIcon from "../../assets/Pics/monitor-mobbile.png";
 import Footer from "../../components/Footer";
+import doctorAvatar from "../../assets/Pics/doctorLoginAvatar.png";
+
+// ایمپورت آیکون‌ها
+import peopleIcon from "../../assets/Pics/people-blue.png";
+import trendDownIcon from "../../assets/Pics/trend-down-icon.png";
+import volumeIcon from "../../assets/Pics/volume-high-icon.png";
+import monitorIcon from "../../assets/Pics/monitor-mobbile.png";
+
 import {
   DoctorLoginButt,
   DoctorsSignUpButt,
 } from "../../components/Buttons/Button";
+
+import { userDoctorStorage } from "../../store/Store";
+
 const cards = [
   {
     id: 1,
     title: "کاهش نرخ کنسلی",
     icon: trendDownIcon,
     caption:
-      "پرداخت حق ویزیت به صورت آنلاین باعث شده تا تنها بیمارانی اقدام به دریافت نوبت کنند که واقعا قصد مراجعه به مطب را دارند. این موضوع شما را در بهبود مدیریت مطب و کاهش عدم مراجعه یاری می دهد.",
+      "پرداخت حق ویزیت به صورت آنلاین باعث شده تا تنها بیمارانی اقدام به دریافت نوبت کنند که واقعاً قصد مراجعه دارند.",
   },
   {
     id: 2,
     title: "تبلیغات",
     icon: volumeIcon,
     caption:
-      "میلیون ها بیماری که ماهانه به وبسایت دکتر رزرو مراجعه می کنند می توانند شما را در جایگاه های تبلیغاتی متنوع آن مشاهده کرده و با شما ارتباط بگیرند.",
+      "میلیون‌ها بیمار ماهانه به وبسایت دکتر رزرو مراجعه می‌کنند و می‌توانند شما را در جایگاه‌های تبلیغاتی مشاهده کنند.",
   },
   {
     id: 3,
     title: "مشاوره حضوری",
     icon: peopleIcon,
     caption:
-      "روزها و ساعاتی که تمایل به ویزیت بیمار دارید بر روی صفحه اختصاصی شما در دکتر رزرو قرار میگیرد. بیماران بعد از رزرو نوبت و پرداخت مبلغ ویزیت در مطب حاضر خواهند شد.",
+      "روزها و ساعاتی که تمایل به ویزیت بیمار دارید، بر روی صفحه اختصاصی شما قرار می‌گیرد.",
   },
   {
     id: 4,
     title: "مشاوره آنلاین",
     icon: monitorIcon,
     caption:
-      "بدون حضور در مطب و در هر زمان و مکانی با بیماران بصورت غیرحضوری در ارتباط باشید.اتاق مشاوره دکتر رزرو امکان مشاوره تلفنی، ویدئویی و متنی را در بستری امن و بدون مشخص شدن شماره شما فراهم می کند",
+      "بدون حضور در مطب و در هر زمان و مکانی با بیماران به صورت غیرحضوری در ارتباط باشید.",
   },
 ];
-function page() {
+
+function DoctorSignupPage() {
+  const navigate = useNavigate();
+  const { doctors } = userDoctorStorage();
+
+  useEffect(() => {
+    /**
+     * اگر doctors آبجکت یا آرایه باشد و خالی نباشد،
+     * کاربر به داشبورد پزشک هدایت می‌شود.
+     */
+    const hasDoctorData =
+      doctors &&
+      (
+        Array.isArray(doctors)
+          ? doctors.length > 0
+          : Object.keys(doctors).length > 0
+      );
+
+    if (hasDoctorData) {
+      navigate("/doctor-panel/dashboard");
+    }
+  }, [doctors, navigate]);
+
   return (
-    <div
-      dir="rtl"
-      className=" w-full flex flex-col justify-center items-center"
-    >
+    <div dir="rtl" className="min-h-screen flex flex-col">
       <Navbar />
-      <div className=" w-[90%] gap-3 lg:gap-10 flex flex-col items-center">
-        <div className=" w-full rounded-xl lg:gap-10  px-3 pt-1 lg:pt-0 lg:p-0 bg-[#DBEDFF] items-end flex lg:px-5">
-          <img
-            className=" lg:w-[305px] w-[75px] lg:h-full h-[111px]"
-            src={doctorAvatar}
-            alt="doctor-avatar"
-            width={305}
-          />
-          <div className=" pb-1  flex flex-col justify-center items-start gap-1 lg:gap-10 w-[80%]">
-            <h2 className=" lg:text-2xl">عضویت پزشک در دکتر رزرو</h2>
-            <p className=" text-[11px] lg:text-lg">
-              دکتر رزرو پلتفرم رزرو آنلاین پزشک به صورت حضوری و مشاوره آنلاین.
-              با ثبت درخواست برای عضویت در دکتر رزرو، صفحه نوبت دهی اختصاصی شما
-              ساخته می شود و بیماران میتوانند در زمان جست و جوی نام شما نوبت خود
-              را نیز خریداری کنند.
-            </p>
-            <div className=" w-full flex items-center gap-3 lg:gap-10">
-              {/* <Link
-                href="doctor-login/signup-form"
-                className=" text-lg flex justify-center items-center gap-3 px-16 p-2 text-white bg-[#005DAD] rounded-lg"
-              >
-                عضویت پزشکان
-                <IoIosArrowBack />
-              </Link> */}
-              <DoctorsSignUpButt />
-              <DoctorLoginButt />
+
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-12 lg:py-20">
+        {/* Hero Section */}
+        <div className="bg-[#DBEDFF] rounded-3xl overflow-hidden mb-16">
+          <div className="flex flex-col lg:flex-row items-center lg:items-end gap-8 lg:gap-0">
+            {/* تصویر پزشک */}
+            <div className="lg:w-5/12 flex justify-center lg:justify-end pt-8 lg:pt-0">
+              <img
+                src={doctorAvatar}
+                alt="پزشک"
+                className="w-52 lg:w-[340px] h-auto object-contain"
+              />
+            </div>
+
+            {/* متن و دکمه‌ها */}
+            <div className="lg:w-7/12 px-6 lg:px-12 pb-8 lg:pb-12">
+              <h1 className="text-2xl lg:text-4xl font-bold text-gray-800 mb-4">
+                عضویت پزشک در دکتر رزرو
+              </h1>
+
+              <p className="text-gray-600 text-base lg:text-lg leading-relaxed mb-8">
+                دکتر رزرو پلتفرم رزرو آنلاین پزشک به صورت حضوری و مشاوره آنلاین
+                است. با ثبت درخواست عضویت، صفحه نوبت‌دهی اختصاصی شما ساخته
+                می‌شود و بیماران می‌توانند به راحتی نوبت خود را رزرو کنند.
+              </p>
+
+              <div className="flex flex-wrap gap-4">
+                <DoctorsSignUpButt />
+                <DoctorLoginButt />
+              </div>
             </div>
           </div>
         </div>
-        <h2 className=" lg:text-2xl ">خدمات دکتر رزرو برای پزشکان</h2>
-        <div className=" flex lg:flex-row gap-5 lg:gap-0 flex-col justify-between w-full items-center ">
-          {cards.map((item) => {
-            return (
-              <div
-                key={item.id}
-                className=" border-[#BAD6FB] border-2 shadow-md lg:w-[302px] lg:aspect-square rounded-xl flex flex-col items-center justify-start gap-2 lg:gap-5 p-2 lg:p-4"
-              >
-                <img className=" w-[32px] lg:w-[56px]" src={item.icon} width={56} alt="icon" />
-                <h4 className=" lg:text-xl text-[#005DAD]">{item.title}</h4>
-                <p className=" lg:text-base text-sm text-[#7D7D7D]">{item.caption}</p>
-              </div>
-            );
-          })}
+
+        {/* عنوان بخش خدمات */}
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-gray-800">
+            خدمات دکتر رزرو برای پزشکان
+          </h2>
+
+          <p className="text-gray-500 mt-3 text-lg">
+            چرا باید به جمع بزرگ پزشکان دکتر رزرو بپیوندید؟
+          </p>
         </div>
-        <Footer />
-      </div>
+
+        {/* کارت‌های خدمات */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {cards.map((item) => (
+            <div
+              key={item.id}
+              className="bg-white border border-[#BAD6FB] rounded-2xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col"
+            >
+              <div className="mb-6">
+                <img
+                  src={item.icon}
+                  alt={item.title}
+                  className="w-14 h-14 object-contain"
+                />
+              </div>
+
+              <h3 className="text-xl font-semibold text-[#005DAD] mb-4">
+                {item.title}
+              </h3>
+
+              <p className="text-gray-600 leading-relaxed text-[15px] flex-1">
+                {item.caption}
+              </p>
+            </div>
+          ))}
+        </div>
+      </main>
+
+      <Footer />
     </div>
   );
 }
 
-export default page;
+export default DoctorSignupPage;

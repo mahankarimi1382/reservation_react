@@ -1,143 +1,143 @@
-"use client";
-import {
-  delete_doctor,
-  get_doctors,
-  search_doctors,
-  search_doctors_list,
-} from "../../../api/ApiCalling";
 import React, { useEffect, useState } from "react";
-import { MdDeleteForever } from "react-icons/md";
+import { CiSearch } from "react-icons/ci";
+import { TiArrowSortedDown } from "react-icons/ti";
+
+import { search_doctors_list } from "../../../api/ApiCalling";
+import LoadingComponent from "../../../components/LoadingComponent";
+import DoctorsPagination from "./DoctorsPagination";
 import { AddDoctorButt } from "../../../components/Buttons/Button";
 import excel_icon from "../../../assets/Pics/excelIcon.png";
+import { SpecialtiesSelectInput } from "../../../components/Inputs/Input";
+import AddNewDoctorModal from "../../../components/modals/AddNewDoctorModal";
 
-import { TiArrowSortedDown } from "react-icons/ti";
-import {
-  SelectFilter,
-  SpecialtiesSelectInput,
-} from "../../../components/Inputs/Input";
-import DoctorsPagination from "./DoctorsPagination";
-import SearchSpecialites from "../../../container/Doctors/SearchSpecialites";
-import { CiSearch } from "react-icons/ci";
-import LoadingComponent from "../../../components/LoadingComponent";
 function DoctorsSection() {
+  const [doctors, setDoctors] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [name, setName] = useState("");
+  const [searchName, setSearchName] = useState("");
+  const [specialistId, setSpecialistId] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [isAddDoctorModal, setIsAddDoctorModal] = useState(false);
   const [doctorItems, setDoctorItems] = useState({});
-  const [doctors, setDoctors] = useState([]);
-  const [specialistId, setSpecialistId] = useState("");
-  console.log(specialistId);
-  const getDoctors = async (name) => {
-    const data = await search_doctors_list(name, currentPage, specialistId);
-    if (data) {
-      console.log(data);
-      setDoctors(data.list);
-      setIsLoading(false);
-
-      let number = data.totalRecords / 10;
-      let totalpages = Math.ceil(number);
-      setTotalPages(totalpages);
-    }
-  };
 
   const handleSearchDoctors = async (name) => {
-    if (name.length >= 2) {
-      setIsLoading(true);
-      getDoctors(name);
-      setName(name);
-      setCurrentPage(1);
-    } else if (name.length == 0) {
-      setIsLoading(true);
-      getDoctors(name);
-      setName(name);
-      setName(name);
-      setCurrentPage(1);
-    }
+    setSearchName(name);
+    setCurrentPage(1);
   };
 
-  console.log(doctorItems);
-  useEffect(() => {
-    getDoctors(name);
+  const getDoctors = async (
+    customSearchName = searchName,
+    customPage = currentPage,
+    customSpecialistId = specialistId
+  ) => {
     setIsLoading(true);
-  }, [currentPage, isAddDoctorModal, specialistId]);
-  // useEffect(() => {
-  //   const url = "Doctor/read-all-doctors";
 
-  //   const fetchData = async () => {
-  //     const data = await search_doctors();
-  //     if (data) {
-  //       setDoctors(data);
-  //     }
-  //   };
-  //   fetchData();
-  // }, [isAddDoctorModal]);
+    const data = await search_doctors_list(
+      customSearchName,
+      customPage,
+      customSpecialistId
+    );
+
+    if (data) {
+      setDoctors(data.list || []);
+      const total = Math.ceil((data.totalRecords || 0) / 10);
+      setTotalPages(total);
+    } else {
+      setDoctors([]);
+      setTotalPages(0);
+    }
+
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    getDoctors();
+  }, [currentPage, specialistId, searchName]);
+
   return (
-    <div className=" gap-10 mt-20 w-full flex flex-col items-center ">
-      <div className=" flex flex-col w-[80%] gap-4 ">
-        <div className=" flex w-full gap-5 items-start ">
-          <label className=" px-2  border-2 w-1/3 bg-white rounded-lg flex items-center">
-            <CiSearch className=" text-2xl" />
-            <input
-              onChange={(e) => {
-                let name = e.target.value;
-                handleSearchDoctors(name);
-              }}
-              className=" outline-none w-full p-2 rounded-lg"
-              placeholder="جستجو در دکتر ها "
-            />
-          </label>
-          <div className="w-[20%]">
-            <SpecialtiesSelectInput
-              all
-              specialistId={specialistId}
-              setSpecialistId={setSpecialistId}
-              hiddenTitle
-            />
-          </div>
+    <div className="mt-20 w-full flex flex-col items-center px-4">
+      {isAddDoctorModal && (
+        <AddNewDoctorModal
+          doctorItems={doctorItems}
+          setIsAddDoctorModal={setIsAddDoctorModal}
+          onSuccess={() => {
+            setIsAddDoctorModal(false);
+            getDoctors();
+          }}
+        />
+      )}
+
+      {/* search + filter */}
+      <div className="w-full max-w-7xl flex flex-col lg:flex-row gap-4 mb-8">
+        <div className="relative flex-1">
+          <CiSearch className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-2xl" />
+
+          <input
+            onChange={(e) => handleSearchDoctors(e.target.value)}
+            placeholder="جستجو در نام پزشک..."
+            className="w-full bg-white border border-gray-300 focus:border-[#005DAD] focus:ring-1 focus:ring-[#005DAD] rounded-xl py-3 pr-12 pl-4 text-sm outline-none transition-all"
+          />
+        </div>
+
+        <div className="w-full lg:w-72">
+          <SpecialtiesSelectInput
+            all
+            specialistId={specialistId}
+            setSpecialistId={setSpecialistId}
+            hiddenTitle
+          />
         </div>
       </div>
-      <div className=" gap-2 flex justify-end w-[80%] items-center">
-        <button className=" border rounded-lg px-3 p-1 gap-2 text-[#185B37] border-[#185B37] flex">
-          <img src={excel_icon} alt=" icon" width={24} />
+
+      {/* buttons */}
+      <div className="w-full max-w-7xl flex justify-end gap-4 mb-6">
+        <button className="flex items-center gap-2 border border-[#185B37] text-[#185B37] hover:bg-[#f0f9f4] px-5 py-2.5 rounded-xl text-sm font-medium transition-colors">
+          <img src={excel_icon} alt="اکسل" width={22} />
           خروجی اکسل
         </button>
-        {/* <button className=" border rounded-lg px-3 p-1 gap-2 text-[#3F444D] border-[#3F444D] flex">
-        <Image src={printer} alt=" icon" width={24} />
-        چاپ اطلاعات{" "}
-      </button> */}
+
         <AddDoctorButt
           setDoctorItems={setDoctorItems}
-          doctorItems={doctorItems}
-          isAddDoctorModal={isAddDoctorModal}
           setIsAddDoctorModal={setIsAddDoctorModal}
         />
       </div>
-      <div className=" relative gap-3 flex flex-col w-[85%] rounded-lg border shadow-md p-4 bg-white">
-        {isLoading && <LoadingComponent />}
 
-        <div className=" py-2 w-full flex rounded-lg bg-[#F4F4F4]">
-          <span className=" w-[5%]" />
-          <h4 className=" w-[14%] flex justify-center  items-center text-[#3F444D] text-lg">
+      {/* table */}
+      <div className="w-full max-w-7xl bg-white rounded-2xl border shadow-sm overflow-hidden">
+        <div className="hidden md:grid grid-cols-12 bg-[#F8F9FA] py-4 px-4 border-b text-sm text-[#3F444D] font-medium">
+          <div className="col-span-1" />
+
+          <div className="col-span-1 flex items-center justify-center gap-1">
             نام پزشک
             <TiArrowSortedDown />
-          </h4>
-          <h4 className=" w-[14%] flex justify-center items-center text-[#3F444D] text-lg">
-            نام مرکز درمانی
+          </div>
+
+          <div className="col-span-2 flex items-center justify-center gap-1">
+            مرکز درمانی
             <TiArrowSortedDown />
-          </h4>
-          <h4 className=" w-[14%] flex justify-center items-center text-[#3F444D] text-lg">
-            کد نظام پزشکی
+          </div>
+
+          <div className="col-span-2 flex items-center justify-center gap-1">
+            کد نظام
             <TiArrowSortedDown />
-          </h4>
-          <h4 className=" w-[14%] flex justify-center items-center text-[#3F444D] text-lg">
-            کد ملی <TiArrowSortedDown />
-          </h4>
+          </div>
+
+          <div className="col-span-2 flex items-center justify-center gap-1">
+            کد ملی
+            <TiArrowSortedDown />
+          </div>
+
+          <div className="col-span-3 flex items-center justify-center gap-1">
+            اقدامات
+            <TiArrowSortedDown />
+          </div>
         </div>
+
+        {isLoading && <LoadingComponent />}
+
         <DoctorsPagination
-          isLoading={isLoading}
           doctors={doctors}
+          isLoading={isLoading}
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
           totalPages={totalPages}

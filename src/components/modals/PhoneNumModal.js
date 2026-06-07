@@ -6,11 +6,14 @@ import {
   fullNameStorage,
   myStore,
   smeIdStorage,
+  userDoctorStorage,
   userProfileStore,
 } from "../../store/Store";
 import { signin, signup } from "../../api/ApiCalling";
 import ValidateModal from "./ValidateModal";
 function PhoneNumModal({ closeModal, setIsPhoneNumModal, setIsSignupModal }) {
+                  const { doctors,setDoctors } = userDoctorStorage();
+  
   const inputRef = useRef(null);
   const { setToken } = myStore();
   const { setFullName } = fullNameStorage();
@@ -30,7 +33,7 @@ function PhoneNumModal({ closeModal, setIsPhoneNumModal, setIsSignupModal }) {
 
   const handleSubmit = () => {
     loginByPass
-      ? signin(setIsLoading, data2, setFullName, setToken, closeModal, setSmeId)
+      ? signin(setIsLoading, data2, setFullName, setToken, closeModal, setSmeId,setDoctors)
       : signup(setIsLoading, data, setIsValidateModal);
   };
   const handleKeyDown = (e) => {

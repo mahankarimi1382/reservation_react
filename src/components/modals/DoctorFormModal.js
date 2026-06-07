@@ -1,5 +1,8 @@
-"use client";
 import React, { useState } from "react";
+import { RxCross2 } from "react-icons/rx";
+import { MdDeleteForever } from "react-icons/md";
+import { SyncLoader } from "react-spinners";
+
 import LoginFormImage from "../../assets/Pics/doctorLoginFormImg.png";
 import LoginFormImage_mobile from "../../assets/Pics/doctor-hand_doctor-form.png";
 
@@ -8,355 +11,299 @@ import {
   ProvinceSelectInput,
   SpecialtiesSelectInput,
 } from "../Inputs/Input";
-import { RxCross2 } from "react-icons/rx";
-import { SyncLoader } from "react-spinners";
-import { add_doctor, create_sme_profile } from "../../api/ApiCalling";
-import Cookies from "js-cookie";
+
+import { add_doctor } from "../../api/ApiCalling";
 import { smeIdStorage, userProfileStore } from "../../store/Store";
-import { MdDeleteForever } from "react-icons/md";
+import { Eror, success } from "../ToastAlerts";
+
 const DoctorFormModal = ({ setIsAddDoctorModal, fromSignup }) => {
   const { phoneNum } = userProfileStore();
-  const [cityId, setCityId] = useState("");
-  console.log(cityId);
-  console.log(cityId.id);
-  const [specialistId, setSpecialistId] = useState("");
-  const [image, setImage] = useState(null);
-
-  console.log(specialistId);
   const { smeId } = smeIdStorage();
 
-  const [doctorformData, setDoctorFormData] = useState({
+  const [isLoading, setIsLoading] = useState(false);
+  const [image, setImage] = useState(null);
+  const [cities, setCities] = useState([]);
+
+  const [formData, setFormData] = useState({
     name: "",
     lastName: "",
     gender: "",
     codeNezam: "",
     nationalCode: "",
-    phone: "",
+    phone: phoneNum || "",
     address: "",
     desc: "",
-    docInstaLink: image,
   });
+
+  const [specialistId, setSpecialistId] = useState("");
+  const [cityId, setCityId] = useState(null);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result);
-      };
+      reader.onloadend = () => setImage(reader.result);
       reader.readAsDataURL(file);
     }
   };
-  const data = {
-    doctorName: doctorformData.name,
-    doctorFamily: doctorformData.lastName,
-    nationalId: doctorformData.nationalCode,
-    codeNezam: doctorformData.codeNezam,
-    specialistId: specialistId,
-    mobile: doctorformData.phone,
-    city: cityId.id,
-    desc: doctorformData.desc,
-    gender: doctorformData.gender,
-    docExperiance: "string",
-    docInstaLink: doctorformData.docInstaLink,
-    smeProfileId: smeId || "",
-  };
 
-  const token = Cookies.get("token");
-  console.log("smeID", smeId);
-  const [isloading, setIsLoading] = useState(false);
-  const [cities, setCities] = useState([]);
-
-  const handleChange = (e) => {
-    setDoctorFormData({ ...doctorformData, [e.target.name]: e.target.value });
-  };
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (smeId) {
-      console.log("first");
-      setIsLoading(true);
-      add_doctor(data, setIsLoading, setIsAddDoctorModal);
+
+    if (!formData.name || !formData.lastName || !specialistId || !cityId) {
+      Eror("لطفا فیلدهای ضروری را پر کنید");
+      return;
     }
+
+    // ✅ ساختار دقیقاً مطابق با AddNewDoctorModal
+    const data = {
+      metadata: {
+        userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        userName: "string",
+        smeProfileId: smeId || 0,
+      },
+      doctorName: formData.name,
+      doctorFamily: formData.lastName,
+      nationalId: formData.nationalCode,
+      codeNezam: formData.codeNezam,
+      specialistId: specialistId,
+      mobile: formData.phone,
+      city: cityId?.id || cityId,
+      desc: formData.desc,
+      gender: formData.gender === "" ? null : formData.gender === "true",
+      docExperiance: "string",
+      docInstaLink: image,
+      smeProfileId: smeId || "",
+      uniqueSSR: formData.name + " " + formData.lastName,
+    };
+    add_doctor(data, setIsLoading, () => {
+      setIsAddDoctorModal(false);
+    });
   };
 
   return (
-    <div
-      dir="rtl"
-      className=" bg-[rgba(0,0,0,0.6)] w-full flex fixed justify-center items-center top-0 right-0 z-50 h-screen"
-    >
-      <div className=" p-4 pt-8 pb-16  lg:p-0 relative overflow-auto lg:overflow-hidden bg-white w-full lg:w-2/3 flex lg:flex-row flex-col lg:rounded-lg  items-center h-screen lg:max-h-[90%]">
-        <RxCross2
-          onClick={() => setIsAddDoctorModal(false)}
-          className=" absolute z-50 left-1 top-1 text-2xl cursor-pointer"
-        />
-        <img
-          className=" lg:hidden w-full h-[191px] object-cover "
-          width={332}
-          alt="image"
-          src={LoginFormImage_mobile}
-        />
-        <div className="   w-full lg:w-[80%] lg:p-5 gap-4 flex flex-col">
-          <h3 className=" flex lg:text-2xl items-center gap-2">
-            درخواست عضویت پزشکان در
-            <span className=" text-[#005DAD]">دکتر رزرو</span>
-          </h3>
-          {fromSignup && (
-            <h4 className=" lg:text-xl">
-              لطفا فرم زیر را پر کنید همکاران ما در اسرع وقت با شما تماس خواهند
-              گرفت.
-            </h4>
-          )}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+      <div className="bg-white w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-5 border-b">
+          <h2 className="text-2xl font-bold text-gray-800">
+            درخواست عضویت پزشک
+          </h2>
+          <RxCross2
+            onClick={() => setIsAddDoctorModal(false)}
+            className="w-8 h-8 cursor-pointer text-gray-500 hover:text-gray-700 transition-colors"
+          />
+        </div>
 
-          <form
-            className=" flex flex-col justify-start lg:overflow-auto lg:h-[500px] gap-3"
-            onSubmit={handleSubmit}
-          >
-            <div className=" flex lg:flex-row flex-col gap-4 lg:gap-8 ">
-              <div className=" lg:w-1/2 flex flex-col ">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="firstName"
-                >
-                  نام
-                </label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  className="w-full px-3 py-2 border-[#636972] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={doctorformData.name}
-                  onChange={handleChange}
-                  required
-                />
+        <div className="flex flex-col lg:flex-row overflow-hidden">
+          {/* فرم */}
+          <div className="flex-1 p-6 lg:p-8 overflow-auto">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* نام و نام خانوادگی */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">نام</label>
+                  <input
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:border-[#005DAD] focus:ring-1 focus:ring-[#005DAD] outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    نام خانوادگی
+                  </label>
+                  <input
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    required
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:border-[#005DAD] focus:ring-1 focus:ring-[#005DAD] outline-none"
+                  />
+                </div>
               </div>
-              <div className="lg:w-1/2 flex flex-col ">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="lastName"
-                >
-                  نام خانوادگی
-                </label>
-                <input
-                  id="lastName"
-                  name="lastName"
-                  type="text"
-                  className="w-full px-3 py-2 border border-[#636972] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={doctorformData.lastName}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
-            <div className=" flex lg:flex-row flex-col gap-4 lg:gap-8">
-              <div className=" lg:w-1/2 flex flex-col ">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="gender"
-                >
-                  جنسیت
-                </label>
 
-                <select
-                  id="gender"
-                  name="gender"
-                  className="w-full px-3 py-[10px] border border-[#636972] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  onChange={handleChange}
-                  required
-                >
-                  <option value={null}>انتخاب کنید</option>
-                  <option value={true}>مرد</option>
-                  <option value={false}>زن</option>
-                </select>
+              {/* جنسیت + کد نظام */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    جنسیت
+                  </label>
+                  <select
+                    name="gender"
+                    value={formData.gender}
+                    onChange={handleChange}
+                    required
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:border-[#005DAD] focus:ring-1 focus:ring-[#005DAD] outline-none"
+                  >
+                    <option value="">انتخاب کنید</option>
+                    <option value="true">مرد</option>
+                    <option value="false">زن</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    کد نظام پزشکی
+                  </label>
+                  <input
+                    name="codeNezam"
+                    value={formData.codeNezam}
+                    onChange={handleChange}
+                    required
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:border-[#005DAD] focus:ring-1 focus:ring-[#005DAD] outline-none"
+                  />
+                </div>
               </div>
-              <div className=" lg:w-1/2 flex flex-col ">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="medicalCode"
-                >
-                  کد نظام پزشکی
-                </label>
 
-                <input
-                  id="codeNezam"
-                  name="codeNezam"
-                  type="text"
-                  className="w-full px-3 py-2 border border-[#636972] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={doctorformData.codeNezam}
-                  onChange={handleChange}
-                  required
-                />
+              {/* کد ملی + شماره همراه */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    کد ملی
+                  </label>
+                  <input
+                    name="nationalCode"
+                    value={formData.nationalCode}
+                    onChange={handleChange}
+                    required
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:border-[#005DAD] focus:ring-1 focus:ring-[#005DAD] outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    شماره همراه
+                  </label>
+                  <input
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    required
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:border-[#005DAD] focus:ring-1 focus:ring-[#005DAD] outline-none"
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className=" flex lg:flex-row flex-col gap-4 lg:gap-8">
-              <div className=" lg:w-1/2 flex flex-col ">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="gender"
-                >
-                  کد ملی
-                </label>
-                <input
-                  id="nationalCode"
-                  name="nationalCode"
-                  type="text"
-                  className="w-full px-3 py-2 border border-[#636972] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={doctorformData.nationalCode}
-                  onChange={handleChange}
-                  required
-                />
+              {/* استان و شهر */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    استان
+                  </label>
+                  <ProvinceSelectInput hiddentitle setCities={setCities} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">شهر</label>
+                  <CitySelectInput
+                    hiddentitle
+                    setCityId={setCityId}
+                    cities={cities}
+                  />
+                </div>
               </div>
-              <div className="lg:w-1/2 flex flex-col ">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="clinicAddress"
-                >
-                  شماره همراه
-                </label>
-                <input
-                  id="phone"
-                  name="phone"
-                  type="text"
-                  className="w-full px-3 py-2 border border-[#636972] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={doctorformData.phone}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
 
-            <div className="  flex lg:flex-row flex-col gap-4 lg:gap-8">
-              <div className=" lg:w-1/2 flex flex-col ">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="gender"
-                >
-                  استان
-                </label>
-
-                <ProvinceSelectInput hiddentitle setCities={setCities} />
+              {/* تخصص + آدرس */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <SpecialtiesSelectInput
+                    all={false}
+                    specialistId={specialistId}
+                    setSpecialistId={setSpecialistId}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    آدرس مطب
+                  </label>
+                  <input
+                    name="address"
+                    value={formData.address}
+                    onChange={handleChange}
+                    required
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:border-[#005DAD] focus:ring-1 focus:ring-[#005DAD] outline-none"
+                  />
+                </div>
               </div>
-              <div className=" lg:w-1/2 flex flex-col ">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="gender"
-                >
-                  شهر
-                </label>
 
-                <CitySelectInput
-                  hiddentitle
-                  setCityId={setCityId}
-                  cities={cities}
-                />
-              </div>
-            </div>
-
-            <div className=" flex lg:flex-row flex-col lg:gap-8">
-              <div className=" lg:w-1/2 flex flex-col ">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="gender"
-                >
-                  تخصص
+              {/* عکس دکتر */}
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  عکس دکتر
                 </label>
-                <SpecialtiesSelectInput
-                  specialistId={specialistId}
-                  setSpecialistId={setSpecialistId}
-                />
-              </div>
-              <div className="lg:w-1/2 flex flex-col ">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="clinicAddress"
-                >
-                  آدرس مطب
-                </label>
-                <input
-                  id="address"
-                  name="address"
-                  type="text"
-                  value={doctorformData.address}
-                  className="w-full px-3 py-2 border border-[#636972] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className=" w-full flex gap-1 flex-col">
-              <label
-                className="block text-gray-700 text-sm font-bold"
-                htmlFor="clinicAddress"
-              >
-                عکس دکتر
-              </label>
-              <div className=" w-full flex  justify-center items-center">
                 {image ? (
-                  <div className=" relative w-20 h-20 ">
+                  <div className="relative w-28 h-28 mx-auto group">
                     <img
-                      className="  w-20 h-20 aspect-square"
-                      width={50}
-                      height={20}
-                      src={image ? image : item.logoFile}
-                      alt="Uploaded"
+                      src={image}
+                      alt="doctor"
+                      className="w-28 h-28 object-cover rounded-2xl border"
                     />
                     <div
                       onClick={() => setImage(null)}
-                      className=" group flex justify-center items-center absolute top-0 w-full h-full bg-sky-300 bg-opacity-10 hover:bg-opacity-50 transition-all"
+                      className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-2xl opacity-0 group-hover:opacity-100 cursor-pointer transition-all"
                     >
-                      <MdDeleteForever className=" text-3xl text-red-600 opacity-0 transition-all group-hover:opacity-100 " />
+                      <MdDeleteForever className="text-white text-4xl" />
                     </div>
                   </div>
                 ) : (
                   <input
-                    className=" w-full border shadow-md rounded-lg p-3"
                     type="file"
                     accept="image/*"
                     onChange={handleImageChange}
+                    className="w-full border border-dashed border-gray-400 rounded-xl p-4 text-center cursor-pointer hover:border-[#005DAD]"
                   />
-                )}{" "}
+                )}
               </div>
-            </div>
-            <div className="">
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="comments"
-              >
-                توضیحات
-              </label>
-              <textarea
-                id="desc"
-                name="desc"
-                className="w-full outline-none  px-3 resize-none h-20 py-2 border rounded-lg focus:outline-none "
-                value={doctorformData.desc}
-                onChange={handleChange}
-                rows="4"
-              />
-            </div>
-            <button
-              className=" lg:w-1/3 w-[60%] mx-auto lg:mx-0 bg-[#005DAD] hover:bg-blue-700 text-white py-3 px-4 rounded-lg"
-              type="submit"
-            >
-              {isloading ? (
-                <SyncLoader color="white" size={10} />
-              ) : (
-                "ثبت درخواست"
-              )}
-            </button>
 
-            {/* <p className=" -mt-3 ">
-              قبلا ثبت نام کرده اید؟
-              <span className=" text-[#005DAD] cursor-pointer">ورود</span>
-            </p> */}
-          </form>
+              {/* توضیحات */}
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  توضیحات
+                </label>
+                <textarea
+                  name="desc"
+                  value={formData.desc}
+                  onChange={handleChange}
+                  rows={4}
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:border-[#005DAD] focus:ring-1 focus:ring-[#005DAD] outline-none resize-y"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full lg:w-1/2 mx-auto bg-[#005DAD] hover:bg-[#00438a] disabled:bg-blue-400 text-white py-4 rounded-xl font-medium text-lg transition-all"
+              >
+                {isLoading ? (
+                  <SyncLoader color="white" size={10} />
+                ) : (
+                  "ثبت درخواست عضویت"
+                )}
+              </button>
+            </form>
+          </div>
+
+          {/* تصویر سمت راست */}
+          <div className="hidden lg:block w-2/5 relative">
+            <img
+              src={LoginFormImage}
+              alt="doctor form"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          </div>
         </div>
-        <img
-          className=" hidden lg:block object-cover "
-          width={380}
-          alt="image"
-          src={LoginFormImage}
-        />
       </div>
+
+      {/* تصویر موبایل */}
+      <img
+        src={LoginFormImage_mobile}
+        alt="doctor form mobile"
+        className="lg:hidden w-full fixed bottom-0 left-0 z-[-1] opacity-30"
+      />
     </div>
   );
 };

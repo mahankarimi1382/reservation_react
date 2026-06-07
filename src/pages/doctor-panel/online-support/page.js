@@ -8,7 +8,10 @@ import { CiEdit } from "react-icons/ci";
 import { GoTrash } from "react-icons/go";
 import UploadingInputContainer from "../../../container\/doctor-panel/doctor-info/UploadingInputContainer";
 import message from "../../../assets/Pics/doctorPanel/messages.png";
+import { fullNameStorage } from "../../../store/Store";
 function page() {
+              const { fullName } = fullNameStorage();
+
   return (
     <div dir="rtl" className="flex pb-20  bg-[#F6FBFF]">
       <DoctorPanelMenu />
@@ -20,7 +23,7 @@ function page() {
           </label>
           <button className=" flex justify-center items-center p-2 border text-[#005DAD] gap-2 border-[#005DAD] rounded-xl">
             <img src={DoctorProfIcon} width={24} alt="icon" />
-            دکتر طاهر ثابتیان
+            دکتر {fullName}
             <IoIosArrowDown className=" text-xl" />
           </button>
         </div>

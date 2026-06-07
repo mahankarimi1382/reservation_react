@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import MakeProfIcon_blue from "../../../assets/Pics/doctorPanel/make-profile-icon-blue.png";
 import MakeProfIcon_black from "../../../assets/Pics/doctorPanel/make-profile-icon-black.png";

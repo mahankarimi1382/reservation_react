@@ -9,6 +9,8 @@ import { HiOutlineTrash } from "react-icons/hi2";
 import { IoEyeOutline } from "react-icons/io5";
 
 function page() {
+          const { fullName } = fullNameStorage();
+
   const fakeData = [
     {
       id: 1,
@@ -135,7 +137,7 @@ function page() {
                   <input className="border-[#005DAD] border" type="checkbox" />
                 </div>
                 <h4 className=" w-[14%] flex justify-center items-center text-[#3F444D] ">
-                  طاهر ثابتیان{" "}
+                  {fullName}{" "}
                 </h4>
                 <h4 className=" w-[14%] flex justify-center items-center text-[#3F444D] ">
                   1403/04/02{" "}

@@ -1,71 +1,75 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { RxCross2 } from "react-icons/rx";
+import { MdDeleteForever } from "react-icons/md";
+import { SyncLoader } from "react-spinners";
+
 import logo from "../../assets/Pics/logo-doctor.png";
 
+import { SpecialtiesSelectInput } from "../Inputs/Input";
 import {
-  CitySelectInput,
-  ProvinceSelectInput,
-  SpecialtiesSelectInput,
-} from "../Inputs/Input";
-import { add_doctor, edit_doctors } from "../../api/ApiCalling";
+  add_doctor,
+  edit_doctors,
+  get_doctor_profile_by_id,
+} from "../../api/ApiCalling";
 import { smeIdStorage } from "../../store/Store";
-import { RxCross2 } from "react-icons/rx";
-import { SyncLoader } from "react-spinners";
-import { ErrorHandler } from "../../utils/ErrorHandler";
-import { Eror } from "../ToastAlerts";
+import { Eror, success } from "../ToastAlerts";
 
 function AddNewDoctorModal({ setIsAddDoctorModal, doctorItems }) {
-  console.log(doctorItems);
-  const [isLoading, setIsLoading] = useState(false);
   const { smeId } = smeIdStorage();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(false); // برای لودینگ هنگام ویرایش
 
-  const [doctorName, setDoctorName] = useState(
-    doctorItems ? doctorItems.doctorName : ""
-  );
-  const [doctorFamily, setDoctorFamily] = useState(
-    doctorItems ? doctorItems.doctorFamily : ""
-  );
-  const [nationalId, setnationalId] = useState(
-    doctorItems ? doctorItems.nationalId : null
-  );
-  const [specialistId, setSpecialistId] = useState(
-    doctorItems ? doctorItems.smeProfile.doctors[0].specialist.id : ""
-  );
-  const [codeNezam, setCodeNezam] = useState(
-    doctorItems ? doctorItems.smeProfile.doctors[0].codeNezam : ""
-  );
-  const [mobile, setMobile] = useState(doctorItems ? doctorItems.mobile : "");
-  const [gender, setGender] = useState(doctorItems ? doctorItems.gender : null);
+  const [formData, setFormData] = useState({
+    doctorName: "",
+    doctorFamily: "",
+    nationalId: "",
+    codeNezam: "",
+    mobile: "",
+    gender: "",
+    desc: "",
+    photoBase64: "",
+  });
 
-  // جدید: عکس به‌صورت Base64
-  const [photoBase64, setPhotoBase64] = useState(
-    doctorItems?.photoBase64 || ""
-  );
+  const [specialistId, setSpecialistId] = useState("");
+console.log(specialistId)
+  // ==================== Fetch Doctor Data when Editing ====================
+  useEffect(() => {
+    const fetchDoctor = async () => {
+      if (!doctorItems?.id) return; // اگر id نبود یعنی حالت افزودن است
 
-  // جدید: توضیحات دکتر
-  const [desc, setDesc] = useState(doctorItems?.desc || "");
+      setIsFetching(true);
+      const data = await get_doctor_profile_by_id(doctorItems.id);
+      console.log(data);
+      if (data) {
+        const doctor = data; // یا data.result اگر ساختار متفاوت بود
 
-  const data = {
-    metadata: {
-      userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      userName: "string",
-      smeProfileId: smeId,
-    },
-    doctorName,
-    doctorFamily,
-    nationalId,
-    codeNezam,
-    specialistId,
-    docExperiance: "string",
-    docInstaLink: photoBase64,
-    mobile,
-    desc, // ← توضیحات واقعی از ورودی
-    smeProfileId: smeId,
-    gender,
-    uniqueSSR: doctorName + " " + doctorFamily,
+        setFormData({
+          doctorName: doctor.doctorName || "",
+          doctorFamily: doctor.doctorFamily || "",
+          nationalId: doctor.nationalId || "",
+          codeNezam: doctor.codeNezam || "",
+          mobile: doctor.mobile || "",
+          gender: doctor.gender?.toString() || "",
+          desc: doctor.desc || "",
+          photoBase64: doctor.docInstaLink || "",
+        });
+
+        setSpecialistId(doctor.specialistId || doctor.specialist?.id || "");
+      } else {
+        Eror("خطا در دریافت اطلاعات پزشک");
+      }
+      setIsFetching(false);
+    };
+
+    fetchDoctor();
+  }, [doctorItems?.id]);
+
+  // ==================== Handlers ====================
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // تبدیل فایل انتخاب‌شده به Base64
-  const handlePhotoFileChange = (e) => {
+  const handlePhotoChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -76,156 +80,235 @@ function AddNewDoctorModal({ setIsAddDoctorModal, doctorItems }) {
 
     const reader = new FileReader();
     reader.onload = () => {
-      // نتیجه شامل prefix مثل data:image/png;base64,...
-      setPhotoBase64(reader.result);
-    };
-    reader.onerror = () => {
-      Eror("خطا در خواندن فایل تصویر");
+      setFormData((prev) => ({ ...prev, photoBase64: reader.result }));
     };
     reader.readAsDataURL(file);
   };
 
-  const handleclick = () => {
-    if (!doctorName) {
-      Eror("نام دکتر را وارد کنید");
-    } else if (!doctorFamily) {
-      Eror("نام خانوادگی دکتر را وارد کنید");
-    } else if (!codeNezam) {
-      Eror("وارد کردن کد نظام پزشکی اجباریست");
-    } else if (!specialistId) {
-      Eror("تخصص را انتخاب کنید");
-    } else if (gender === null) {
-      Eror("جنسیت را انتخاب کنید");
-    } else {
-      doctorItems
-        ? edit_doctors(data, setIsLoading, setIsAddDoctorModal)
-        : add_doctor(data, setIsLoading, setIsAddDoctorModal);
-      setIsLoading(true);
-    }
+const handleSubmit = () => {
+  // ۱. اعتبارسنجی فیلدهای ضروری
+  if (
+    !formData.doctorName ||
+    !formData.doctorFamily ||
+    !formData.codeNezam ||
+    !specialistId
+  ) {
+    Eror("لطفا فیلدهای ضروری را پر کنید");
+    return;
+  }
+
+  // ۲. ساخت آبجکت نهایی مطابق با مستندات بک‌اند
+  const data = {
+    // اضافه کردن ID که برای متد PUT الزامی است
+    id: doctorItems?.id || 0, 
+    
+    metadata: {
+      userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      userName: "string",
+      smeProfileId: smeId || 0,
+    },
+    doctorName: formData.doctorName,
+    doctorFamily: formData.doctorFamily,
+    nationalId: formData.nationalId,
+    // تبدیل به عدد برای رعایت نوع داده (Integer)
+    codeNezam: parseInt(formData.codeNezam) || 0,
+    specialistId: specialistId,
+    mobile: formData.mobile,
+    desc: formData.desc || "string",
+    gender: formData.gender === "" ? null : formData.gender === "true",
+    docExperiance: "string", 
+    docInstaLink: formData.photoBase64 || "string",
+    uniqueSSR: `${formData.doctorName} ${formData.doctorFamily}`,
+          smeProfileId: smeId || 0,
+
   };
 
+  setIsLoading(true);
+
+  // ۳. ارسال درخواست
+  if (doctorItems?.id) {
+    edit_doctors(data, setIsLoading, setIsAddDoctorModal);
+  } else {
+    // در حالت افزودن، معمولاً فیلد id نباید فرستاده شود یا باید 0 باشد
+    // اگر بک‌اند در حالت افزودن به فیلد id ایراد گرفت، آن را از آبجکت ارسالی در اینجا حذف کنید
+    add_doctor(data, setIsLoading, setIsAddDoctorModal);
+    console.log(data)
+  }
+};
+
+
   return (
-    <div className=" z-20  w-screen h-screen top-0 justify-center items-center flex right-0 fixed bg-[rgba(0,0,0,0.6)]">
-      <div className=" relative w-1/2 h-[90%] gap-2 rounded-xl p-3 bg-white flex flex-col items-center">
-        <div className=" relative w-full justify-center items-center flex">
-          <img src={logo} alt="logo" width={67} />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl max-h-[92vh] overflow-hidden flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-5 border-b">
+          <div className="flex items-center gap-3">
+            <img src={logo} alt="logo" width={55} />
+            <h2 className="text-2xl font-bold text-gray-800">
+              {doctorItems?.id ? "ویرایش پزشک" : "افزودن پزشک جدید"}
+            </h2>
+          </div>
           <RxCross2
             onClick={() => setIsAddDoctorModal(false)}
-            className=" cursor-pointer absolute left-1 top-1 "
+            className="w-8 h-8 cursor-pointer text-gray-500 hover:text-gray-700"
           />
         </div>
 
-        <div className=" flex items-start justify-start w-full">
-          <h5 className=" text-xl">
-            لطفا فرم زیر را با توجه به{" "}
-            <span className=" text-[#005DAD] font-semibold">اطلاعات دکتر</span>{" "}
-            پر کنید
-          </h5>
-        </div>
+        {/* Body */}
+        <div className="flex-1 overflow-auto p-6 space-y-6">
+          {isFetching ? (
+            <div className="flex justify-center items-center h-64">
+              <SyncLoader color="#005DAD" size={12} />
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <label className="block text-sm font-medium mb-2">نام</label>
+                  <input
+                    value={formData.doctorName}
+                    onChange={handleChange}
+                    name="doctorName"
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:border-[#005DAD] outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    نام خانوادگی
+                  </label>
+                  <input
+                    value={formData.doctorFamily}
+                    onChange={handleChange}
+                    name="doctorFamily"
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:border-[#005DAD] outline-none"
+                  />
+                </div>
 
-        <div className=" flex flex-wrap w-full gap-x-16 gap-y-5 mx-auto justify-center">
-          <div className=" w-[40%] flex gap-2 flex-col items-start">
-            <h5>نام</h5>
-            <input
-              value={doctorName}
-              onChange={(e) => setDoctorName(e.target.value)}
-              className=" border border-[#636972] rounded-lg p-2 w-full"
-            />
-          </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    جنسیت
+                  </label>
+                  <select
+                    value={formData.gender}
+                    onChange={handleChange}
+                    name="gender"
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:border-[#005DAD] outline-none"
+                  >
+                    <option value="">انتخاب کنید</option>
+                    <option value="true">مرد</option>
+                    <option value="false">زن</option>
+                  </select>
+                </div>
 
-          <div className=" w-[40%] flex gap-2 flex-col items-start ">
-            <h5>نام خانوادگی</h5>
-            <input
-              value={doctorFamily}
-              onChange={(e) => setDoctorFamily(e.target.value)}
-              className=" border border-[#636972] rounded-lg p-2 w-full "
-            />
-          </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    کد نظام پزشکی
+                  </label>
+                  <input
+                    value={formData.codeNezam}
+                    onChange={handleChange}
+                    name="codeNezam"
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:border-[#005DAD] outline-none"
+                  />
+                </div>
 
-          <div className=" flex w-[40%] gap-2 flex-col items-start">
-            <h5>جنسیت</h5>
-            <select
-              value={gender}
-              onChange={(e) => setGender(e.target.value)}
-              className=" border border-[#636972] rounded-lg p-2 w-full"
-            >
-              <option value={null}>جنسیت را انتخاب کنید</option>
-              <option value={true}>مرد</option>
-              <option value={false}>زن</option>
-            </select>
-          </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    کد ملی
+                  </label>
+                  <input
+                    value={formData.nationalId}
+                    onChange={handleChange}
+                    name="nationalId"
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:border-[#005DAD] outline-none"
+                  />
+                </div>
 
-          <div className=" w-[40%] flex gap-2 flex-col items-start">
-            <h5>کد نظام پزشکی</h5>
-            <input
-              value={codeNezam}
-              onChange={(e) => setCodeNezam(e.target.value)}
-              className=" border w-full border-[#636972] rounded-lg p-2"
-            />
-          </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    شماره همراه
+                  </label>
+                  <input
+                    value={formData.mobile}
+                    onChange={handleChange}
+                    name="mobile"
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:border-[#005DAD] outline-none"
+                  />
+                </div>
+              </div>
 
-          <div className=" w-[40%] flex gap-2 flex-col items-start">
-            <h5>کد ملی</h5>
-            <input
-              value={nationalId}
-              onChange={(e) => setnationalId(e.target.value)}
-              className=" border w-full border-[#636972] rounded-lg p-2"
-            />
-          </div>
-
-          <div className=" w-[40%] flex gap-2 flex-col items-start">
-            <h5>شماره همراه</h5>
-            <input
-              value={mobile}
-              onChange={(e) => setMobile(e.target.value)}
-              className=" border w-full border-[#636972] rounded-lg p-2"
-            />
-          </div>
-
-          {/* ردیف: آپلود عکس (فایل→Base64) + توضیحات کنار هم */}
-          <div className=" w-[90%] flex flex-col lg:flex-row justify-between ">
-            {/* آپلود تصویر */}
-            <div className=" w-full lg:w-[45%] flex gap-2 flex-col items-start">
-              <h5>عکس پروفایل</h5>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handlePhotoFileChange}
-                className=" border w-full border-[#636972] rounded-lg p-2"
+              {/* تخصص */}
+              <div>
+                <SpecialtiesSelectInput
+                  all={false}
+                  specialistId={specialistId}
+                  setSpecialistId={setSpecialistId}
                 />
+              </div>
 
-            </div>
+              {/* عکس و توضیحات */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    عکس پروفایل
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoChange}
+                    className="w-full border border-dashed border-gray-400 rounded-xl p-4 cursor-pointer hover:border-[#005DAD]"
+                  />
+                  {formData.photoBase64 && (
+                    <div className="mt-3 relative w-24 h-24 mx-auto">
+                      <img
+                        src={formData.photoBase64}
+                        alt="preview"
+                        className="w-24 h-24 object-cover rounded-xl border"
+                      />
+                      <MdDeleteForever
+                        onClick={() =>
+                          setFormData((p) => ({ ...p, photoBase64: "" }))
+                        }
+                        className="absolute -top-2 -right-2 text-red-600 text-2xl cursor-pointer bg-white rounded-full shadow"
+                      />
+                    </div>
+                  )}
+                </div>
 
-            {/* توضیحات دکتر */}
-            <div className=" w-full lg:w-[45%] flex gap-2 flex-col items-start">
-              <h5>توضیحات درباره دکتر</h5>
-              <textarea
-                value={desc}
-                onChange={(e) => setDesc(e.target.value)}
-                rows={4}
-                className=" border w-full border-[#636972] rounded-lg p-2 resize-none h-10"
-                placeholder="مثلاً سوابق، مهارت‌ها، ساعات پاسخ‌گویی..."
-              />
-            </div>
-          </div>
-
-          <div className=" w-[90%] flex ">
-            <div className=" w-[45%]">
-              <SpecialtiesSelectInput
-                title
-                specialistId={specialistId}
-                setSpecialistId={setSpecialistId}
-              />
-            </div>
-          </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    توضیحات
+                  </label>
+                  <textarea
+                    value={formData.desc}
+                    onChange={handleChange}
+                    name="desc"
+                    rows={5}
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:border-[#005DAD] outline-none resize-y"
+                    placeholder="سوابق، مهارت‌ها، ساعات کاری و ..."
+                  />
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
-        <button
-          onClick={handleclick}
-          className=" w-1/2  absolute bottom-2  flex justify-center h-10 items-center gap-2 rounded-lg p-2 bg-[#005DAD] text-white"
-        >
-          {isLoading ? <SyncLoader color="white" size={10} /> : "ثبت"}
-        </button>
+        {/* Footer */}
+        <div className="p-5 border-t bg-gray-50">
+          <button
+            onClick={handleSubmit}
+            disabled={isLoading || isFetching}
+            className="w-full bg-[#005DAD] hover:bg-[#00438a] disabled:bg-blue-400 text-white py-4 rounded-xl font-medium text-lg transition-all"
+          >
+            {isLoading ? (
+              <SyncLoader color="white" size={9} />
+            ) : doctorItems?.id ? (
+              "ویرایش پزشک"
+            ) : (
+              "ثبت پزشک"
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

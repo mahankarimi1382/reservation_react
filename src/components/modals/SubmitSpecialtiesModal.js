@@ -4,119 +4,160 @@ import { add_specialties, edit_specialties } from "../../api/ApiCalling";
 import { nationalCodeStorage } from "../../store/Store";
 import { SyncLoader } from "react-spinners";
 import { MdDeleteForever } from "react-icons/md";
-import { RxCross1, RxCross2 } from "react-icons/rx";
+import { RxCross2 } from "react-icons/rx";
 import { ErrorHandler } from "../../utils/ErrorHandler";
-import { Eror } from "../ToastAlerts";
 
-function SubmitSpecialtiesModal({ setIsAddSpecialModal, item, setItem }) {
-  console.log(item);
+function SubmitSpecialtiesModal({ 
+  setIsAddSpecialModal, 
+  item, 
+  setItem 
+}) {
   const { userName } = nationalCodeStorage();
-  const [specialName, setSpecialName] = useState(item ? item.name : "");
-  const [maxa, setMaxa] = useState(item ? item.maxa : "");
+
+  const [specialName, setSpecialName] = useState(item?.name || "");
+  const [maxa, setMaxa] = useState(item?.maxa || "");
+  const [maxaName, setMaxaName] = useState(item?.maxaName || "");
+  const [image, setImage] = useState(item?.logoFile || null);
   const [isLoading, setIsLoading] = useState(false);
-  const [image, setImage] = useState(item ? item.logoFile : null);
-  const [maxaName, setMaxaName] = useState(item ? item.maxaName : "");
-  console.log(image);
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result);
-      };
+      reader.onloadend = () => setImage(reader.result);
       reader.readAsDataURL(file);
     }
   };
-  const data = {
-    metadata: {
-      userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      userName: userName,
-    },
-    id: item && item.id,
-    name: specialName,
-    maxa,
-    maxaName,
-    logoFile: image,
+
+  const handleSubmit = () => {
+    if (!specialName?.trim() || !maxa?.trim() || !image) {
+      ErrorHandler("empty value");
+      return;
+    }
+
+    const data = {
+      metadata: {
+        userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        userName: userName,
+      },
+      id: item?.id,
+      name: specialName.trim(),
+      maxa: maxa.trim(),
+      maxaName: maxaName.trim(),
+      logoFile: image,
+    };
+
+    setItem?.(); // اگر نیاز به پاک کردن حالت دارید
+
+    if (item) {
+      edit_specialties(data, setIsLoading, setIsAddSpecialModal);
+    } else {
+      add_specialties(data, setIsLoading, setIsAddSpecialModal);
+    }
   };
+
   return (
-    <div className=" z-20  w-screen h-screen top-0 justify-center items-center flex right-0 fixed bg-[rgba(0,0,0,0.6)]">
-      <div className=" w-1/3 h-[80%] rounded-xl p-3 bg-white flex flex-col items-center">
-        <div className=" relative w-full justify-center items-center flex">
-          <img src={logo} alt="logo" width={67} />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+      <div 
+        dir="rtl"
+        className="bg-white rounded-2xl w-full max-w-md max-h-[92vh] flex flex-col shadow-2xl overflow-hidden"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-5 border-b">
+          <img src={logo} alt="logo" width={70} />
           <RxCross2
             onClick={() => setIsAddSpecialModal(false)}
-            className=" cursor-pointer absolute left-1 top-1 "
+            className="w-8 h-8 cursor-pointer text-gray-500 hover:text-gray-700 transition-colors"
           />
         </div>
-        <div className=" w-full flex gap-2 p-2 flex-col">
-          <h5 className=" text-lg">کد مکسا :</h5>
-          <input
-            value={maxa}
-            onChange={(e) => setMaxa(e.target.value)}
-            className=" border shadow-md rounded-lg p-3"
-          />
-        </div>
-        <div className=" w-full flex gap-2 p-2 flex-col">
-          <h5 className=" text-lg">عنوان مکسا :</h5>
-          <input
-            value={maxaName}
-            onChange={(e) => setMaxaName(e.target.value)}
-            className=" border shadow-md rounded-lg p-3"
-          />
-        </div>
-        <div className=" w-full flex gap-2 p-2 flex-col">
-          <h5 className=" text-lg">عنوان تخصص</h5>
-          <input
-            value={specialName}
-            onChange={(e) => setSpecialName(e.target.value)}
-            className=" border shadow-md rounded-lg p-3"
-          />
-        </div>
-        <div className=" w-full flex gap-2 p-2 flex-col">
-          <h5 className=" text-lg">ویرایش آیکون :</h5>
 
-          <div className=" w-full flex  justify-center items-center">
+        {/* Content */}
+        <div className="flex-1 overflow-auto p-6 space-y-6">
+          {/* کد مکسا */}
+          <div className="space-y-2">
+            <label className="block text-lg font-medium">کد مکسا :</label>
+            <input
+              value={maxa}
+              onChange={(e) => setMaxa(e.target.value)}
+              className="w-full border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-xl px-4 py-3 text-base outline-none transition-all"
+              placeholder="کد مکسا را وارد کنید"
+            />
+          </div>
+
+          {/* عنوان مکسا */}
+          <div className="space-y-2">
+            <label className="block text-lg font-medium">عنوان مکسا :</label>
+            <input
+              value={maxaName}
+              onChange={(e) => setMaxaName(e.target.value)}
+              className="w-full border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-xl px-4 py-3 text-base outline-none transition-all"
+              placeholder="عنوان مکسا را وارد کنید"
+            />
+          </div>
+
+          {/* عنوان تخصص */}
+          <div className="space-y-2">
+            <label className="block text-lg font-medium">عنوان تخصص :</label>
+            <input
+              value={specialName}
+              onChange={(e) => setSpecialName(e.target.value)}
+              className="w-full border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-xl px-4 py-3 text-base outline-none transition-all"
+              placeholder="عنوان تخصص را وارد کنید"
+            />
+          </div>
+
+          {/* آپلود آیکون */}
+          <div className="space-y-3">
+            <label className="block text-lg font-medium">آیکون تخصص :</label>
+            
             {image ? (
-              <div className=" relative w-20 h-20 ">
-                <img
-                  className=" w-20 h-20 aspect-square"
-                  width={50}
-                  height={20}
-                  src={image ? image : item.logoFile}
-                  alt="Uploaded"
-                />
-                <div
-                  onClick={() => setImage(null)}
-                  className=" group flex justify-center items-center absolute top-0 w-full h-full bg-sky-300 bg-opacity-10 hover:bg-opacity-50 transition-all"
-                >
-                  <MdDeleteForever className=" text-3xl text-red-600 opacity-0 transition-all group-hover:opacity-100 " />
+              <div className="flex justify-center">
+                <div className="relative w-28 h-28 group">
+                  <img
+                    src={image}
+                    alt="آیکون"
+                    className="w-28 h-28 object-contain rounded-2xl border border-gray-200 shadow-sm"
+                  />
+                  <div
+                    onClick={() => setImage(null)}
+                    className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-2xl opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                  >
+                    <MdDeleteForever className="text-white text-4xl" />
+                  </div>
                 </div>
               </div>
             ) : (
               <input
-                className=" w-full border shadow-md rounded-lg p-3"
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
+                className="w-full border border-dashed border-gray-400 rounded-xl p-4 text-center cursor-pointer hover:border-blue-500 transition-colors"
               />
-            )}{" "}
+            )}
           </div>
         </div>
-        <button
-          onClick={() => {
-            if (specialName && maxa && image) {
-              setItem();
-              item
-                ? edit_specialties(data, setIsLoading, setIsAddSpecialModal)
-                : add_specialties(data, setIsLoading, setIsAddSpecialModal);
-            } else {
-              ErrorHandler("empty value");
-            }
-          }}
-          className=" flex justify-center items-center min-h-10 w-1/3 gap-2 rounded-lg bg-[#005DAD] text-white"
-        >
-          {isLoading ? <SyncLoader color="white" size={10} /> : "ثبت"}
-        </button>{" "}
+
+        {/* Footer */}
+        <div className="p-5 border-t bg-gray-50 flex gap-3">
+          <button
+            onClick={() => setIsAddSpecialModal(false)}
+            className="flex-1 py-3.5 text-base font-medium border border-gray-300 rounded-xl hover:bg-gray-100 transition-colors"
+          >
+            لغو
+          </button>
+
+          <button
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className="flex-1 py-3.5 text-base font-medium bg-[#005DAD] hover:bg-[#00438a] disabled:bg-blue-400 text-white rounded-xl transition-all flex items-center justify-center gap-2 shadow-md"
+          >
+            {isLoading ? (
+              <SyncLoader color="white" size={9} />
+            ) : (
+              item ? "ویرایش" : "ثبت تخصص"
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

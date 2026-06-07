@@ -1,61 +1,78 @@
-"use client";
-import { delete_specialties } from "../../../api/ApiCalling";
-import DeletingModal from "../../../components/modals/DeletingModal";
 import { Pagination } from "@mui/material";
-import React, { useState } from "react";
-import { CiEdit } from "react-icons/ci";
-import { HiOutlineTrash } from "react-icons/hi2";
+import React, { useMemo } from "react";
 
 const InsurancesPagination = ({
-  setInsurances,
-  items,
-  insurances,
+  items = [],
   currentPage,
   setCurrentPage,
+  onDetails,
 }) => {
-  console.log(items);
-  const handleChange = (event, value) => {
-    setCurrentPage(value);
-  };
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(items.length / itemsPerPage);
+
+  const totalPages = useMemo(() => {
+    return Math.max(1, Math.ceil(items.length / itemsPerPage));
+  }, [items.length]);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = items.slice(indexOfFirstItem, indexOfLastItem);
-  const pageNumbers = [];
-  for (let i = 1; i <= totalPages; i++) {
-    pageNumbers.push(i);
+
+  const handleChange = (event, value) => {
+    setCurrentPage(value);
+  };
+
+  if (!items.length) {
+    return (
+      <div className="py-10 text-center text-sm text-gray-500">
+        موردی برای نمایش وجود ندارد.
+      </div>
+    );
   }
+
   return (
-    <div>
-      {currentItems.map((item) => {
-        return (
+    <div className="mt-3">
+      <div className="flex flex-col gap-3">
+        {currentItems.map((item) => (
           <div
-            className=" border flex py-3 rounded-lg bg-white shadow-md"
+            className="grid grid-cols-12 items-center gap-2 rounded-lg border bg-white py-3 shadow-sm"
             key={item.id}
           >
-            <div className=" w-1/4 flex justify-center items-center">
-              <h4>{item.insuranceType.type}</h4>
+            <div className="col-span-3 flex justify-center">
+              <h4 className="text-[#3F444D]">
+                {item?.insuranceType?.type ?? "-"}
+              </h4>
             </div>
-            <h4 className=" w-1/4 flex justify-center items-center text-[#3F444D] text-lg">
-              {item.name}
-            </h4>
-            <div className=" w-2/4 flex justify-center items-center">
-              <button className=" gap-2 border rounded-lg px-5 p-1 flex justify-center items-center bg-[#F2FEF8] border-[#1F7168] text-[#1F7168]">
+
+            <div className="col-span-3 flex justify-center">
+              <h4 className="text-lg text-[#3F444D]">{item?.name ?? "-"}</h4>
+            </div>
+
+            <div className="col-span-6 flex justify-center">
+              <button
+                onClick={() => onDetails?.(item)}
+                className="flex items-center justify-center gap-2 rounded-lg border border-[#1F7168] bg-[#F2FEF8] px-5 py-1 text-[#1F7168]"
+              >
                 مشاهده جزئیات
               </button>
             </div>
           </div>
-        );
-      })}
-      <div className=" w-full flex justify-center items-center mt-5">
-        {/* دکمه‌های صفحه‌بندی */}
+        ))}
+      </div>
+
+      <div className="mt-5 flex w-full justify-center">
         <Pagination
           onChange={handleChange}
           page={currentPage}
           count={totalPages}
           color="primary"
+            sx={{
+    direction: "rtl",
+    "& .MuiPagination-ul": {
+      flexDirection: "row-reverse",
+    },
+  }}
+
+          // این خط مهمه برای راست‌چین شدن
         />
       </div>
     </div>

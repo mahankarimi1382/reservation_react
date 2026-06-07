@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import "./globals.css"
+import "./globals.css";
 import Home from "./pages/Home.jsx";
 
 // عمومی
@@ -83,6 +83,7 @@ import AdminSupportPatient from "./pages/adminPanel/support/patient/page";
 import AdminTransactions from "./pages/adminPanel/transactions/page";
 import AdminTurns from "./pages/adminPanel/turns/page";
 import AdminUserAccess from "./pages/adminPanel/useraccess/page";
+import { ToastContainer } from "react-toastify";
 
 function App() {
   return (
@@ -96,11 +97,23 @@ function App() {
         <Route path="/doctors" element={<Doctors />} />
         <Route path="/doctors/:ssrName" element={<DoctorProfile />} />
         <Route path="/healthMagezine" element={<HealthMagezine />} />
-        <Route path="/healthMagezine/new-articles" element={<HealthMagezineNewArticles />} />
-        <Route path="/healthMagezine/audio-articles" element={<HealthMagezineAudioArticles />} />
-        <Route path="/healthMagezine/video-articles" element={<HealthMagezineVideoArticles />} />
+        <Route
+          path="/healthMagezine/new-articles"
+          element={<HealthMagezineNewArticles />}
+        />
+        <Route
+          path="/healthMagezine/audio-articles"
+          element={<HealthMagezineAudioArticles />}
+        />
+        <Route
+          path="/healthMagezine/video-articles"
+          element={<HealthMagezineVideoArticles />}
+        />
         <Route path="/medical-centers" element={<MedicalCenters />} />
-        <Route path="/medical-centers/:SsrName" element={<MedicalCenterProfile />} />
+        <Route
+          path="/medical-centers/:SsrName"
+          element={<MedicalCenterProfile />}
+        />
         <Route path="/medicalCentersLogin" element={<MedicalCentersLogin />} />
         <Route path="/psychiatry" element={<Psychiatry />} />
         <Route path="/Reservation/:id" element={<Reservation />} />
@@ -123,54 +136,148 @@ function App() {
         <Route path="/userPanel/opinions" element={<UserOpinions />} />
         <Route path="/userPanel/rewards" element={<UserRewards />} />
         <Route path="/userPanel/saves" element={<UserSaves />} />
-        <Route path="/userPanel/subsetedusers" element={<UserSubsetedUsers />} />
+        <Route
+          path="/userPanel/subsetedusers"
+          element={<UserSubsetedUsers />}
+        />
         <Route path="/userPanel/transactions" element={<UserTransactions />} />
         <Route path="/userPanel/wallet" element={<UserWallet />} />
 
         {/* پنل دکتر */}
         <Route path="/doctor-panel/article" element={<DoctorPanelArticle />} />
-        <Route path="/doctor-panel/dashboard" element={<DoctorPanelDashboard />} />
-        <Route path="/doctor-panel/doctor-info/financial" element={<DoctorFinancialInfo />} />
-        <Route path="/doctor-panel/doctor-info/make-profile" element={<DoctorMakeProfile />} />
-        <Route path="/doctor-panel/doctor-info/submit-medicalcenter" element={<DoctorSubmitMedicalCenter />} />
-        <Route path="/doctor-panel/doctor-info/upload-licenses" element={<DoctorUploadLicenses />} />
-        <Route path="/doctor-panel/financial-reports/paid-list" element={<DoctorPaidList />} />
-        <Route path="/doctor-panel/financial-reports/Settlement-request" element={<DoctorSettlementRequest />} />
-        <Route path="/doctor-panel/insurances" element={<DoctorPanelInsurances />} />
-        <Route path="/doctor-panel/medicalcenter-setting" element={<DoctorMedicalCenterSetting />} />
-        <Route path="/doctor-panel/online-support" element={<DoctorOnlineSupport />} />
-        <Route path="/doctor-panel/opinions-about-me" element={<DoctorOpinionsAboutMe />} />
-        <Route path="/doctor-panel/patients-list" element={<DoctorPatientsList />} />
-        <Route path="/doctor-panel/reservation-managment/cancel-reservation" element={<CancelReservation />} />
-        <Route path="/doctor-panel/reservation-managment/delay-&-haste" element={<DelayAndHaste />} />
-        <Route path="/doctor-panel/reservation-managment/work-calendar" element={<WorkCalendar />} />
+        <Route
+          path="/doctor-panel/dashboard"
+          element={<DoctorPanelDashboard />}
+        />
+        <Route
+          path="/doctor-panel/doctor-info/financial"
+          element={<DoctorFinancialInfo />}
+        />
+        <Route
+          path="/doctor-panel/doctor-info/make-profile"
+          element={<DoctorMakeProfile />}
+        />
+        <Route
+          path="/doctor-panel/doctor-info/submit-medicalcenter"
+          element={<DoctorSubmitMedicalCenter />}
+        />
+        <Route
+          path="/doctor-panel/doctor-info/upload-licenses"
+          element={<DoctorUploadLicenses />}
+        />
+        <Route
+          path="/doctor-panel/financial-reports/paid-list"
+          element={<DoctorPaidList />}
+        />
+        <Route
+          path="/doctor-panel/financial-reports/Settlement-request"
+          element={<DoctorSettlementRequest />}
+        />
+        <Route
+          path="/doctor-panel/insurances"
+          element={<DoctorPanelInsurances />}
+        />
+        <Route
+          path="/doctor-panel/medicalcenter-setting"
+          element={<DoctorMedicalCenterSetting />}
+        />
+        <Route
+          path="/doctor-panel/online-support"
+          element={<DoctorOnlineSupport />}
+        />
+        <Route
+          path="/doctor-panel/opinions-about-me"
+          element={<DoctorOpinionsAboutMe />}
+        />
+        <Route
+          path="/doctor-panel/patients-list"
+          element={<DoctorPatientsList />}
+        />
+        <Route
+          path="/doctor-panel/reservation-managment/cancel-reservation"
+          element={<CancelReservation />}
+        />
+        <Route
+          path="/doctor-panel/reservation-managment/delay-&-haste"
+          element={<DelayAndHaste />}
+        />
+        <Route
+          path="/doctor-panel/reservation-managment/work-calendar"
+          element={<WorkCalendar />}
+        />
 
         {/* پنل ادمین */}
         <Route path="/adminPanel/blacklist" element={<AdminBlacklist />} />
         <Route path="/adminPanel/dashboard" element={<AdminDashboard />} />
         <Route path="/adminPanel/doctors" element={<AdminDoctors />} />
-        <Route path="/adminPanel/imagesetting/banner" element={<AdminBanner />} />
-        <Route path="/adminPanel/imagesetting/banner/add-banner" element={<AdminAddBanner />} />
-        <Route path="/adminPanel/imagesetting/doctorimage" element={<AdminDoctorImage />} />
-        <Route path="/adminPanel/imagesetting/magezine" element={<AdminMagezineImage />} />
-        <Route path="/adminPanel/imagesetting/medicalcenterimage" element={<AdminMedicalCenterImage />} />
+        <Route
+          path="/adminPanel/imagesetting/banner"
+          element={<AdminBanner />}
+        />
+        <Route
+          path="/adminPanel/imagesetting/banner/add-banner"
+          element={<AdminAddBanner />}
+        />
+        <Route
+          path="/adminPanel/imagesetting/doctorimage"
+          element={<AdminDoctorImage />}
+        />
+        <Route
+          path="/adminPanel/imagesetting/magezine"
+          element={<AdminMagezineImage />}
+        />
+        <Route
+          path="/adminPanel/imagesetting/medicalcenterimage"
+          element={<AdminMedicalCenterImage />}
+        />
         <Route path="/adminPanel/insurances" element={<AdminInsurances />} />
-        <Route path="/adminPanel/medicalcenters/clinics" element={<AdminClinics />} />
-        <Route path="/adminPanel/medicalcenters/offices" element={<AdminOffices />} />
+        <Route
+          path="/adminPanel/medicalcenters/clinics"
+          element={<AdminClinics />}
+        />
+        <Route
+          path="/adminPanel/medicalcenters/offices"
+          element={<AdminOffices />}
+        />
         <Route path="/adminPanel/opinions" element={<AdminOpinions />} />
         <Route path="/adminPanel/patients" element={<AdminPatients />} />
-        <Route path="/adminPanel/reports/centerstatus" element={<AdminCenterStatusReport />} />
-        <Route path="/adminPanel/reports/doctorscancels" element={<AdminDoctorsCancelsReport />} />
-        <Route path="/adminPanel/reports/doctorstatus" element={<AdminDoctorStatusReport />} />
-        <Route path="/adminPanel/reports/hozorireports" element={<AdminHozoriReports />} />
-        <Route path="/adminPanel/reports/onlinereports" element={<AdminOnlineReports />} />
+        <Route
+          path="/adminPanel/reports/centerstatus"
+          element={<AdminCenterStatusReport />}
+        />
+        <Route
+          path="/adminPanel/reports/doctorscancels"
+          element={<AdminDoctorsCancelsReport />}
+        />
+        <Route
+          path="/adminPanel/reports/doctorstatus"
+          element={<AdminDoctorStatusReport />}
+        />
+        <Route
+          path="/adminPanel/reports/hozorireports"
+          element={<AdminHozoriReports />}
+        />
+        <Route
+          path="/adminPanel/reports/onlinereports"
+          element={<AdminOnlineReports />}
+        />
         <Route path="/adminPanel/specialties" element={<AdminSpecialties />} />
-        <Route path="/adminPanel/support/doctor" element={<AdminSupportDoctor />} />
-        <Route path="/adminPanel/support/patient" element={<AdminSupportPatient />} />
-        <Route path="/adminPanel/transactions" element={<AdminTransactions />} />
+        <Route
+          path="/adminPanel/support/doctor"
+          element={<AdminSupportDoctor />}
+        />
+        <Route
+          path="/adminPanel/support/patient"
+          element={<AdminSupportPatient />}
+        />
+        <Route
+          path="/adminPanel/transactions"
+          element={<AdminTransactions />}
+        />
         <Route path="/adminPanel/turns" element={<AdminTurns />} />
         <Route path="/adminPanel/useraccess" element={<AdminUserAccess />} />
       </Routes>
+      <ToastContainer />
     </Router>
   );
 }

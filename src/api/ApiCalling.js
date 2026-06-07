@@ -1,4 +1,4 @@
-// import { success } from "../components/ToastAlerts";
+import { Eror, success } from "../components/ToastAlerts";
 import { axiosConfig } from "./axiosConfig";
 import axios from "axios";
 import Cookies from "js-cookie";
@@ -29,7 +29,7 @@ export const signin = (
   setFullName,
   setToken,
   closeModal,
-  setSmeId
+  setSmeId,setDoctors
 ) => {
   console.log(data2);
   setIsLoading(true);
@@ -46,6 +46,8 @@ export const signin = (
       setToken(token);
       Cookies.set("token", token);
       setFullName(name);
+      setDoctors(res.data.result.smeprofile.doctors)
+      console.log(res.data.result.smeprofile.doctors)
       success(`${name} خوش آمدید`);
       closeModal();
     })
@@ -55,6 +57,8 @@ export const signin = (
     });
 };
 export const activating_registarion = (
+  setDoctorId,
+  setDoctors,
   code,
   phoneNumber,
   setIsWrongCode,
@@ -83,6 +87,8 @@ export const activating_registarion = (
       success("ورود موفق");
       closeModal();
       setFullName(res.data.result.userFullname);
+            setDoctors(res.data.result.smeprofile.doctors)
+ setDoctorId(res.data.result.smeprofile.doctors[0].id)
       if (res.data.result.smeprofileId) {
         setSmeId(res.data.result.smeprofileId);
       }
@@ -185,21 +191,31 @@ export const read_city = (id, setCities) => {
       console.log(err);
     });
 };
-export const add_doctor = (data, setIsLoading, setIsAddDoctorModal) => {
-  console.log(data);
-  axiosConfig
-    .post("Doctor/create-doctor", data)
-    .then((res) => {
-      console.log(res);
+export const add_doctor = async (data, setIsLoading, setIsAddDoctorModal) => {
+  try {
+    const res = await axiosConfig.post("Doctor/create-doctor", data);
+console.log(res)
+    if (res?.status === 200) {
+      await axiosConfig.post("RoleManager/add-user-role", {
+        metadata: {
+          userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          userName: "string",
+          smeProfileId: data.smeProfileId,
+        },
+        userName: data.mobile,
+        userRoleName: "Doctor",
+      });
+
       success("پزشک با موفقیت ثبت شد");
       setIsAddDoctorModal(false);
-      setIsLoading(false);
-    })
-    .catch((err) => {
-      console.log(err);
-      setIsLoading(false);
-    });
+    }
+  } catch (err) {
+    console.log(err);
+  } finally {
+    setIsLoading(false);
+  }
 };
+
 export const add_article = (data, setLoading) => {
   console.log(data);
   axiosConfig
@@ -884,15 +900,32 @@ export const get_4first_doctor_turns = async () => {
 export const read_all_insirances = async () => {
   try {
     const response = await axiosConfig.get(`Insurance/read-all-insurances`);
-    const insurances = response.data.result.list;
-    console.log(insurances);
-    return insurances;
+    return response?.data?.result?.list ?? [];
   } catch (error) {
-    console.error("Error fetching specialties:", error);
-    return null;
+    console.error("Error fetching insurances:", error);
+    return [];
   }
 };
 
+export const create_insurance = async ({ name, insuranceTypeId, metadata }) => {
+  try {
+    const body = {
+      metadata: metadata ?? {
+        userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        userName: "string",
+        smeProfileId: 0,
+      },
+      insuranceTypeId,
+      name,
+    };
+
+    const response = await axiosConfig.post(`Insurance/create-insurances`, body);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating insurance:", error);
+    return null;
+  }
+};
 export const read_firsPage_doctors = async () => {
   console.log("first");
   try {
@@ -1123,14 +1156,21 @@ export const edit_category = (data, setLoading, closeModal) => {
     });
 };
 
+
 export const delete_category = async (
   id,
-  seList,
+  setList,
   closeModal,
   setIsLoading,
   list
 ) => {
-  console.log(id);
+  if (!id) {
+    Eror("شناسه دسته‌بندی نامعتبر است");
+    return;
+  }
+
+  setIsLoading(true);
+
   try {
     const response = await axiosConfig.delete("Specialist/delete-category", {
       data: {
@@ -1139,21 +1179,22 @@ export const delete_category = async (
           userName: "string",
           smeProfileId: 0,
         },
-        specialistId: 0,
-        categoryId: 0,
+        id: id,                    // ← اینجا اصلاح شد (مهم‌ترین قسمت)
       },
     });
-    const newList = list.filter((item) => item.id !== id);
-    seList(newList);
-    closeModal();
-    setIsLoading(false);
-    console.log(response);
 
+    // به‌روزرسانی لیست محلی
+    const newList = list.filter((item) => item.id !== id);
+    setList(newList);
+
+    success("دسته‌بندی با موفقیت حذف شد");
     closeModal();
-    console.log(response);
-    success("دسته بندی با موفقیت حذف شد");
+
   } catch (error) {
-    console.log(error);
+    console.error("Delete Category Error:", error);
+    Eror(error?.response?.data?.message || "خطا در حذف دسته‌بندی");
+  } finally {
+    setIsLoading(false);
   }
 };
 export const remove_specialist_from_category = (
@@ -1402,3 +1443,47 @@ export const read_DoctorComents = async (id) => {
   }
 };
 
+export const create_doctor_insurance = async (data) => {
+  try {
+    const payload = {
+      ...data,
+      metadata: {
+        userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        userName: "string",
+        smeProfileId: 0,
+      },
+    };
+
+    console.log("DoctorInsurance payload:", payload);
+
+    const response = await axiosConfig.post(
+      "DoctorInsurance/create-DoctorInsurance",
+      payload
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Error creating doctor insurance:", error);
+
+    if (error.response) {
+      console.error("Status:", error.response.status);
+      console.error("Backend error data:", error.response.data);
+    }
+
+    return null;
+  }
+};
+
+
+export const read_doctor_insurances_by_doctor_id = async (doctorId) => {
+  try {
+    const response = await axiosConfig.get(
+      `DoctorInsurance/read-insurances-bydoctorid?DoctorId=${doctorId}`
+    );
+    console.log(response)
+    return response.data?.result?.list || [];
+  } catch (error) {
+    console.error("Error fetching doctor insurances:", error);
+    return [];
+  }
+};

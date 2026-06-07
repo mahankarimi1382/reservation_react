@@ -1,59 +1,68 @@
-"use client";
-import { get_specialties } from "../../../api/ApiCalling";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { TiArrowSortedDown } from "react-icons/ti";
-import { SelectFilter } from "../../../components/Inputs/Input";
 import { GoPlus } from "react-icons/go";
+import { FiSearch } from "react-icons/fi";
+
 import SubmitSpecialtiesModal from "../../../components/modals/SubmitSpecialtiesModal";
+import SpecialtiesCategoryModal from "../../../components/modals/SpecialtiesCategoryModal";
 import SpecialistPagination from "./SpecialistPagination";
 import LoadingComponent from "../../../components/LoadingComponent";
+
+import { get_specialties } from "../../../api/ApiCalling";
 import { myStore } from "../../../store/Store";
-import AddSpecialtiesCategory from "../../../components/modals/AddSpecialtiesCategory";
-import SpecialtiesCategoryModal from "../../../components/modals/SpecialtiesCategoryModal";
 
 function SpecialtiesPanelSection() {
   const { setIsSerchDoctorLoading, isSerchDoctorLoading } = myStore();
-  const [specialist, setSpecialist] = useState([]);
+
+  const [specialist, setSpecialist] = useState([]);     // داده خام
+  const [searchTerm, setSearchTerm] = useState("");     // کنترل شده
   const [isAddSpecialModal, setIsAddSpecialModal] = useState(false);
-  const [filtredArr, setFiltredArr] = useState([]);
   const [isCategoryModal, setIsCategoryModal] = useState(false);
+  const [isAddCategory, setIsAddCategory] = useState(false);
   const [item, setItem] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isAddCategory, setIsAddCategory] = useState(false);
 
-  console.log(specialist);
-  const url = "Specialist/read-specialists";
-
+  // دریافت داده‌ها
   const fetchData = async () => {
-    const data = await get_specialties(url);
+    const data = await get_specialties("Specialist/read-specialists");
     if (data) {
       setSpecialist(data);
-      setFiltredArr(data);
-
       setIsSerchDoctorLoading(false);
     }
   };
+
   useEffect(() => {
     fetchData();
     setIsSerchDoctorLoading(true);
-  }, [isAddSpecialModal, isAddCategory]);
-  const handleInputChange = (event) => {
-    setCurrentPage(1);
-    filterArray(event.target.value);
-  };
-  const filterArray = (value) => {
-    const filtered = specialist.filter((item) =>
-      item.name.toLowerCase().includes(value.toLowerCase())
+  }, [isAddSpecialModal, isAddCategory]); // فقط وقتی مودال بسته شد رفرش شود
+
+  // فیلتر هوشمند با useMemo
+  const filteredSpecialists = useMemo(() => {
+    if (!searchTerm.trim()) return specialist;
+
+    return specialist.filter((item) =>
+      item.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    setFiltredArr(filtered);
+  }, [specialist, searchTerm]);
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // برگشت به صفحه اول
   };
+
+  const openAddModal = () => {
+    setItem(null);
+    setIsAddSpecialModal(true);
+  };
+
   return (
-    <div className=" gap-10 mt-20 w-full flex flex-col items-center ">
+    <div className="mt-20 w-full flex flex-col items-center px-4">
+      {/* Loading */}
       {isSerchDoctorLoading && <LoadingComponent />}
+
+      {/* مودال‌ها */}
       {isCategoryModal && (
-        <SpecialtiesCategoryModal
-          closeModal={() => setIsCategoryModal(false)}
-        />
+        <SpecialtiesCategoryModal closeModal={() => setIsCategoryModal(false)} />
       )}
 
       {isAddSpecialModal && (
@@ -64,60 +73,81 @@ function SpecialtiesPanelSection() {
         />
       )}
 
-      <div className=" w-[80%] flex justify-between">
-        <input
-          onChange={handleInputChange}
-          placeholder="جستجو تخصص "
-          className=" w-1/2 outline-none py-2 bg-white text-xs  lg:text-xl  "
-        />
-        <div className=" flex items-center gap-5">
+      <div className="w-full max-w-6xl flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8">
+        {/* جستجو */}
+        <div className="relative w-full lg:w-2/3">
+          <FiSearch className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={handleSearch}
+            placeholder="جستجوی تخصص..."
+            className="w-full bg-white border border-gray-300 focus:border-[#005DAD] focus:ring-1 focus:ring-[#005DAD] rounded-xl py-3 pr-12 pl-4 text-base outline-none transition-all"
+          />
+        </div>
+
+        {/* دکمه‌ها */}
+        <div className="flex items-center gap-4 w-full lg:w-auto">
           <button
-            onClick={() => {
-              setIsCategoryModal(true);
-            }}
-            className=" flex justify-center items-center gap-2 rounded-lg p-2 bg-[#005DAD] text-white"
+            onClick={() => setIsCategoryModal(true)}
+            className="flex-1 lg:flex-none px-5 py-3 bg-white border border-gray-300 hover:bg-gray-50 rounded-xl text-sm lg:text-base font-medium transition-all"
           >
-            دسته بندی ها
+            دسته‌بندی‌ها
           </button>
+
           <button
-            onClick={() => {
-              setIsAddSpecialModal(true);
-              setItem();
-            }}
-            className=" flex justify-center items-center gap-2 rounded-lg p-2 bg-[#005DAD] text-white"
+            onClick={openAddModal}
+            className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[#005DAD] hover:bg-[#00438a] text-white rounded-xl font-medium transition-all"
           >
-            <GoPlus className=" text-2xl" />
+            <GoPlus className="text-2xl" />
             افزودن تخصص
           </button>
         </div>
       </div>
-      <div className=" gap-3 flex flex-col w-[80%] rounded-lg border shadow-md p-4 bg-white">
-        <div className=" py-2 w-full flex rounded-lg bg-[#F4F4F4]">
-          <h4 className=" w-1/4 flex justify-center  items-center text-[#3F444D] text-lg">
-            آیکون
-            <TiArrowSortedDown />
-          </h4>
-          <h4 className=" w-1/4 flex justify-center items-center text-[#3F444D] text-lg">
-            تخصص ها
-            <TiArrowSortedDown />
-          </h4>
-          <h4 className=" w-1/2 flex justify-center items-center text-[#3F444D] text-lg">
-            اقدامات
-            <TiArrowSortedDown />
-          </h4>
-        </div>
+
+      {/* جدول */}
+      <div className="w-full max-w-6xl bg-white rounded-2xl border shadow-sm overflow-hidden">
+{/* هدر جدول */}
+<div className="hidden md:grid grid-cols-12 bg-[#F8F9FA] py-4 border-b text-[#3F444D] font-medium">
+  <div className="col-span-2 flex justify-center items-center gap-1">
+    آیکون
+    <TiArrowSortedDown />
+  </div>
+  <div className="col-span-3 flex justify-center items-center gap-1">
+    تخصص
+    <TiArrowSortedDown />
+  </div>
+  <div className="col-span-3 flex justify-center items-center gap-1">
+    کد مکسا
+    <TiArrowSortedDown />
+  </div>
+  <div className="col-span-4 flex justify-center items-center gap-1">
+    اقدامات
+    <TiArrowSortedDown />
+  </div>
+</div>
+
+        {/* محتوا */}
         <SpecialistPagination
-          isAddCategory={isAddCategory}
-          setIsAddCategory={setIsAddCategory}
-          setSpecialist={setFiltredArr}
+          items={filteredSpecialists}
+          specialist={filteredSpecialists}
+          setSpecialist={setSpecialist} // اگر نیاز به آپدیت محلی داری
           setItem={setItem}
           setIsAddSpecialModal={setIsAddSpecialModal}
-          items={filtredArr}
-          specialist={filtredArr}
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
+          isAddCategory={isAddCategory}
+          setIsAddCategory={setIsAddCategory}
         />
       </div>
+
+      {/* نمایش تعداد نتایج */}
+      {searchTerm && (
+        <div className="text-sm text-gray-500 mt-3 self-start">
+          {filteredSpecialists.length} نتیجه برای "
+          <span className="font-medium">{searchTerm}</span>"
+        </div>
+      )}
     </div>
   );
 }

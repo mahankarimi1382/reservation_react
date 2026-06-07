@@ -1,9 +1,13 @@
 import logo from "../assets/Pics/logo-doctor.png";
+import { userDoctorStorage } from "../store/Store";
 
 import { BurgerMenuButt, LoginButton } from "./Buttons/Button";
 import { NavLinks } from "./Links/Links";
 
 function Navbar() {
+                const { doctors,doctorid } = userDoctorStorage();
+  
+  console.log(doctorid)
   return (
     <div className="vazir  w-full py-2  px-5  flex justify-between items-center">
       <div className=" hidden lg:flex items-center xl:text-[18px] lg:text-sm font-medium gap-3 justify-center xl:gap-8 ">

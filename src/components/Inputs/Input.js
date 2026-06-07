@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
 import { Filtering_MedicalCenters_Store, myStore } from "../../store/Store";
@@ -329,184 +329,87 @@ export const ProvinceSelectInput = ({
   );
 };
 
+
+
 export const SpecialtiesSelectInput = ({
   specialistId,
   setSpecialistId,
   hiddenTitle,
-  title,
-  all,
+  all = true,
 }) => {
-  const [specialist, setSpecialist] = useState([]);
-  console.log(specialist);
+  const [specialists, setSpecialists] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const { setSpecialistSearch } = myStore();
+
   useEffect(() => {
     const fetchData = async () => {
-      const url = "Specialist/read-specialists";
-
-      const data = await get_specialties(url);
-      if (data) {
-        console.log(data);
-        setSpecialist(data);
-      }
+      const data = await get_specialties("Specialist/read-specialists");
+      if (data) setSpecialists(data);
     };
     fetchData();
   }, []);
 
-  const { setSpecialistSearch, specialistSearch } = myStore();
-  const [filtredArr, setFiltredArr] = useState([]);
-  const [specialistName, setSpecialistName] = useState("");
-  const [inputVal, setInputVal] = useState("");
-  const [loading, setLoading] = useState(false);
-  const handleInputChange = (event) => {
-    setIsSearching(true);
-    filterArray(event.target.value);
-    setInputVal(event.target.value);
-  };
-  const filterArray = (value) => {
-    const filtered = specialist.filter((item) =>
-      item.name.toLowerCase().includes(value.toLowerCase())
+  const filteredSpecialists = useMemo(() => {
+    if (!searchTerm.trim()) return specialists;
+    return specialists.filter((item) =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    setFiltredArr(filtered);
-  };
-  const fetchData = async () => {
-    const url = "Specialist/read-specialists";
-    const data = await get_specialties(url);
-    if (data) {
-      setSpecialist(data);
-      setFiltredArr(data);
-      setLoading(false);
-    }
-  };
-  useEffect(() => {
-    fetchData();
-  }, []);
+  }, [specialists, searchTerm]);
 
-  const [isSearching, setIsSearching] = useState(false);
-  // const [selectedOption, setSelectedOption] = useState("");
-  const handleSelectOption = (name, id) => {
-    if (storedIdsMultipleSearch) {
-      setStoredIdsMultipleSearch(`${storedIdsMultipleSearch},${id}`);
-    } else {
-      setStoredIdsMultipleSearch(id);
-    }
-    if (storedIdsMultipleSearch) {
-      setSpecialistSearch(`${storedIdsMultipleSearch},${id}`);
-    } else {
-      setSpecialistSearch(id);
-    }
+  const handleSelect = (id, name) => {
+    setSpecialistId(id);
+    setSpecialistSearch(id);
+    setSearchTerm("");
+    setIsOpen(false);
+  };
 
-    setCurrentPageDoctorSearch(1);
-    setIsSearching(false);
-    setInputVal("");
-    setSpecialistNames(name);
-    setCurrentPageDoctorSearch(1);
-    let IsBoxExist = multiSpecialtiesBoxes.find((item) => item.id == id);
-    if (!IsBoxExist) {
-      setMultiSpecialtiesBoxes([
-        ...multiSpecialtiesBoxes,
-        {
-          id: id,
-          caption: name,
-          type: "specialties",
-        },
-      ]);
-    }
+  const handleClear = () => {
+    setSpecialistId("");
+    setSearchTerm("");
+    setIsOpen(false);
   };
 
   return (
-    <div className=" relative  flex flex-col gap-3">
-      {title && <h5>تخصص</h5>}
-      <div
-        onClick={() => setIsSearching(!isSearching)}
-        className=" border w-full border-[#636972] rounded-lg p-2  bg-white px-2  flex justify-center items-center  "
-      >
-        <input
-          value={inputVal}
-          onChange={handleInputChange}
-          placeholder={specialistName ? specialistName : " تخصص "}
-          className=" outline-none w-full rounded-xl"
-        />
-        <IoIosArrowDown
-          className={` ${
-            isSearching && "rotate-180"
-          } transition-all   duration-300 text-xl text-[#858585]`}
-        />
-      </div>
-      <div className="bg-white shadow-lg rounded-xl">
-        {isSearching ? (
-          <div className=" absolute bg-white w-[300px] z-40 h-40 border rounded-lg  transition-all duration-500 overflow-auto customScroll flex flex-col">
-            {all && (
-              <div className=" w-full hover:text-[#005dad]  p-1 border-b flex items-starttext-start">
-                <button
-                  onClick={() => {
-                    setInputVal("");
-                    setIsSearching(false);
-                    setSpecialistId("");
-                  }}
-                >
-                  همه
-                </button>
-              </div>
-            )}
-            {filtredArr.length != 0 ? (
-              filtredArr.map((item) => {
-                return (
-                  <div
-                    className=" w-full hover:text-[#005dad]  p-1 border-b flex items-starttext-start"
-                    key={item.id}
-                  >
-                    <button
-                      onClick={() => {
-                        setInputVal("");
-                        setIsSearching(false);
-                        setSpecialistName(item.name);
-                        setSpecialistId(item.id);
-                      }}
-                    >
-                      {item.name}
-                    </button>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="  w-full flex justify-center items-center">
-                نتیجه ای یافت نشد
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="absolute bg-white w-[300px] z-40  rounded-lg transition-all mr-2 duration-300   h-0 overflow-auto customScroll flex flex-col">
-            {filtredArr.map((item) => {
-              return (
-                <div
-                  className=" border-b mx-2 p-1 flex items-center"
-                  key={item.id}
-                >
-                  <h5> {item.name}</h5>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </div>
-    // <div className=" min:w-[40%] w-full flex gap-2 flex-col items-start">
-    //   {!hiddenTitle && <h5>تخصص</h5>}
+    <div className="relative flex flex-col gap-2">
+      {!hiddenTitle && <h5 className="text-sm font-medium">تخصص</h5>}
 
-    //   <select
-    //     value={specialistId}
-    //     onChange={(e) => setSpecialistId(e.target.value)}
-    //     className=" border w-full border-[#636972] rounded-lg p-2"
-    //   >
-    //     <option value="">{hiddenTitle && "همه"}</option>
-    //     {specialist.map((item) => {
-    //       return (
-    //         <option value={item.id} key={item.id}>
-    //           {item.name}
-    //         </option>
-    //       );
-    //     })}
-    //   </select>
-    // </div>
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        className="border border-gray-300 bg-white rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer hover:border-[#005DAD] transition-all"
+      >
+        <span className="text-gray-700">
+          {specialistId
+            ? specialists.find((s) => s.id === specialistId)?.name || "انتخاب تخصص"
+            : "همه تخصص‌ها"}
+        </span>
+        <IoIosArrowDown className={`transition-transform ${isOpen ? "rotate-180" : ""}`} />
+      </div>
+
+      {isOpen && (
+        <div className="absolute top-[110%] left-0 w-full bg-white border border-gray-300 rounded-xl shadow-lg z-50 max-h-60 overflow-auto">
+          {all && (
+            <div
+              onClick={handleClear}
+              className="px-4 py-3 hover:bg-gray-100 cursor-pointer border-b"
+            >
+              همه تخصص‌ها
+            </div>
+          )}
+
+          {filteredSpecialists.map((item) => (
+            <div
+              key={item.id}
+              onClick={() => handleSelect(item.id, item.name)}
+              className="px-4 py-3 hover:bg-gray-100 cursor-pointer border-b last:border-none"
+            >
+              {item.name}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 export const ClinicSelectInput = ({ setType }) => {

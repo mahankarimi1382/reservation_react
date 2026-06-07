@@ -6,7 +6,10 @@ import DoctorPanelMenu from "../../../../container/doctor-panel/DoctorPanelMenu"
 import bahramMirzayi from "../../../../assets/Pics/bahramMirzayi.png";
 import DoctorUploadingOptions from "../../../../container/doctor-panel/doctor-info/DoctorUploadingOptions";
 import UploadLicensesForm from "../../../../container/doctor-panel/doctor-info/UploadLicensesForm";
+import { fullNameStorage } from "../../../../store/Store";
 function page() {
+              const { fullName } = fullNameStorage();
+
   return (
     <div dir="rtl" className="flex pb-20  bg-[#F6FBFF]">
       <DoctorPanelMenu />
@@ -18,7 +21,7 @@ function page() {
           </label>
           <button className=" flex justify-center items-center p-2 border text-[#005DAD] gap-2 border-[#005DAD] rounded-xl">
             <img src={DoctorProfIcon} width={24} alt="icon" />
-            دکتر طاهر ثابتیان
+            دکتر {fullName}
             <IoIosArrowDown className=" text-xl" />
           </button>
         </div>
@@ -29,7 +32,7 @@ function page() {
             width={113}
             className=" rounded-full bg-white"
           />
-          <h5 className=" text-xl font-semibold">طاهر ثابتیان</h5>
+          <h5 className=" text-xl font-semibold">{fullName}</h5>
           <h5 className=" text-lg">کد نظام پزشکی: 12345</h5>
         </div>
         <div className=" p-5 px-10 bg-white rounded-3xl shadow-md w-[80%] flex flex-col items-center">

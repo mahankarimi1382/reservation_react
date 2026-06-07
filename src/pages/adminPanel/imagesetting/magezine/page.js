@@ -12,8 +12,11 @@ import { CiEdit } from "react-icons/ci";
 import folder from "../../../../assets/Pics/folder.png";
 import medicalcenter from "../../../../assets/Pics/medicalcenter.png";
 import hamele from "../../../../assets/Pics/hamele.png";
+import { fullNameStorage } from "../../../../store/Store";
 
 function page() {
+      const { fullName } = fullNameStorage();
+  
   const fakeData = [
     {
       id: 1,
@@ -161,7 +164,7 @@ function page() {
                   صوتی{" "}
                 </h4>
                 <h4 className=" text-[#005DAD] w-[12%] flex justify-center items-center ">
-                  دکتر طاهر ثابتیان{" "}
+                  دکتر {fullName}{" "}
                 </h4>
                 <h4 className=" text-[#005DAD] w-[12%] flex justify-center items-center ">
                   1403/09/28{" "}

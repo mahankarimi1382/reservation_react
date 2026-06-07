@@ -9,6 +9,7 @@ import { FiEdit3 } from "react-icons/fi";
 import { LuLayoutDashboard } from "react-icons/lu";
 import { CiLogout } from "react-icons/ci";
 import { IoPersonCircleSharp, IoMenuOutline } from "react-icons/io5";
+import DoctorProfIcon from "../../assets/Pics/doctor-profile-icon.png";
 
 import {
   fullNameStorage,
@@ -16,6 +17,7 @@ import {
   nationalCodeStorage,
   smeIdStorage,
   userProfileStore,
+  userDoctorStorage,
 } from "../../store/Store";
 
 import { styled } from "@mui/material/styles";
@@ -42,38 +44,68 @@ import DoctorFormModal from "../modals/DoctorFormModal";
 import AddPatinetModal from "../modals/AddPatinetModal";
 import VisitSelectionModal_medical from "../modals/VisitSelectionModal_medical";
 
-import { read_office_type } from "../../api/ApiCalling";
+// ایمپورت تابع API برای چک کردن نقش
+import {
+  get_user_role_by_username,
+  read_office_type,
+} from "../../api/ApiCalling";
 import { Eror, success } from "../ToastAlerts";
 
 import { Link, useNavigate } from "react-router-dom";
 
 export const LoginButton = () => {
-
-  const token = Cookies.get("token");
   const { fullName, setFullName } = fullNameStorage();
   const { phoneNum, setPhoneNum } = userProfileStore();
-  const { removeSmeId, smeId } = smeIdStorage();
+  const { removeSmeId } = smeIdStorage();
+  const { setDoctors, setDoctorId } = userDoctorStorage();
 
   const [isHover, setIsHover] = useState(false);
   const [isModal, setIsModal] = useState(false);
 
   const navigate = useNavigate();
 
-  const openModal = () => {
-    setIsModal(true);
+  const openModal = () => setIsModal(true);
+
+  const handleDashboardNavigation = async () => {
+    try {
+      // این API باید شماره موبایل بگیرد
+      const usernameForRole = (phoneNum || "").trim();
+
+      // اگر موبایل در استور خالیه، حداقل کاربر رو بفرست پنل کاربری
+      if (!usernameForRole) {
+        navigate("/userPanel/dashboard");
+        return;
+      }
+
+      const roles = await get_user_role_by_username(usernameForRole);
+
+      const roleNameRaw = roles?.[0]?.roleName || "";
+      const roleName = roleNameRaw.trim().toLowerCase();
+
+      if (roleName === "superadmin") {
+        navigate("/adminpanel/dashboard");
+      } else if (roleName === "doctor") {
+        navigate("/doctor-panel/dashboard");
+      } else {
+        navigate("/userPanel/dashboard");
+      }
+    } catch (e) {
+      console.error("dashboard navigation error:", e);
+      navigate("/userPanel/dashboard");
+    } finally {
+      setIsHover(false);
+    }
   };
 
   return (
     <div className="flex justify-center items-center gap-3">
-
       {isModal && <LoginModal setIsModal={setIsModal} />}
 
       {/* دکمه ورود مرکز درمانی */}
       {!fullName && (
         <button
           onClick={() => navigate("/medicalCentersLogin")}
-          className="lg:flex hidden shadow-xl whitespace-nowrap
- text-[12px] lg:text-[14px] lg:p-2 p-1 px-2 lg:px-2  justify-center items-center gap-1 text-[#004D8F] rounded-lg border border-[#004D8F]"
+          className="lg:flex hidden shadow-xl whitespace-nowrap text-[12px] lg:text-[14px] lg:p-2 p-1 px-2 lg:px-2 justify-center items-center gap-1 text-[#004D8F] rounded-lg border border-[#004D8F]"
         >
           ثبت نام | ورود مرکز درمانی
         </button>
@@ -83,8 +115,7 @@ export const LoginButton = () => {
       {!fullName && (
         <button
           onClick={() => navigate("/doctor-login")}
-          className="lg:flex hidden shadow-xl whitespace-nowrap
- text-[12px] lg:text-[14px] lg:p-2 p-1 px-2 lg:px-2 justify-center items-center gap-1 text-[#004D8F] rounded-lg border border-[#004D8F]"
+          className="lg:flex hidden shadow-xl whitespace-nowrap text-[12px] lg:text-[14px] lg:p-2 p-1 px-2 lg:px-2 justify-center items-center gap-1 text-[#004D8F] rounded-lg border border-[#004D8F]"
         >
           ثبت نام | ورود پزشکان
         </button>
@@ -93,13 +124,12 @@ export const LoginButton = () => {
       {/* باکس پروفایل یا ورود */}
       <div
         onClick={fullName ? () => {} : openModal}
-        className="relative cursor-pointer whitespace-nowrap
- bg-white shadow-xl px-2 text-[12px] lg:text-[14px] lg:p-2 p-1 lg:px-2 flex justify-center items-center gap-1 text-[#004D8F] rounded-lg border border-[#004D8F]"
+        className="relative cursor-pointer whitespace-nowrap bg-white shadow-xl px-2 text-[12px] lg:text-[14px] lg:p-2 p-1 lg:px-2 flex justify-center items-center gap-1 text-[#004D8F] rounded-lg border border-[#004D8F]"
       >
         {fullName ? (
           <h5
             onMouseEnter={() => setIsHover(true)}
-            onClick={() => setIsHover(!isHover)}
+            onClick={() => setIsHover((prev) => !prev)}
             className="w-full justify-center items-center gap-2 flex"
           >
             <IoPersonCircleSharp className="text-xl" />
@@ -119,16 +149,18 @@ export const LoginButton = () => {
             onMouseLeave={() => setIsHover(false)}
             className="top-8 p-3 bg-white z-50 rounded-lg flex flex-col gap-3 shadow-xl border absolute"
           >
-            <Link
-              to="/userPanel/dashboard"
-              className="flex justify-center gap-10 items-center text-[#004D8F]"
+            <div
+              onClick={handleDashboardNavigation}
+              className="flex justify-center cursor-pointer gap-10 items-center text-[#004D8F]"
             >
               داشبورد
               <LuLayoutDashboard />
-            </Link>
+            </div>
 
             <div
               onClick={() => {
+                setDoctors([]);
+                setDoctorId("");
                 setPhoneNum("");
                 removeSmeId();
                 Cookies.remove("token");
@@ -136,7 +168,7 @@ export const LoginButton = () => {
                 navigate("/");
                 setIsHover(false);
               }}
-              className="text-red-600 flex justify-between gap-10 items-center"
+              className="text-red-600 cursor-pointer flex justify-between gap-10 items-center"
             >
               <h5>خروج</h5>
               <CiLogout />
@@ -176,19 +208,19 @@ export const NobatButton = (props) => {
     </div>
   );
 };
-export const SabteNazarButton = ({doctorDetails}) => {
+export const SabteNazarButton = ({ doctorDetails }) => {
   const [isNazarModal, setIsNazarModal] = useState(false);
   const [IsSuccessModal, setIsSuccessModal] = useState(false);
-  const [isLoginModal,setIsLoginModal]=useState(false)
+  const [isLoginModal, setIsLoginModal] = useState(false);
   const token = Cookies.get("token");
 
   return (
     <div>
-        {isLoginModal && <LoginModal setIsModal={setIsLoginModal} />}
+      {isLoginModal && <LoginModal setIsModal={setIsLoginModal} />}
 
       {isNazarModal && (
         <OpinionModal
-        doctorDetails={doctorDetails}
+          doctorDetails={doctorDetails}
           setIsNazarModal={setIsNazarModal}
           setIsSuccessModal={setIsSuccessModal}
         />
@@ -196,13 +228,14 @@ export const SabteNazarButton = ({doctorDetails}) => {
       {IsSuccessModal && <SuccessModal setIsSuccessModal={setIsSuccessModal} />}
 
       <button
-        onClick={() => {    if (!token) {
-          setIsLoginModal(true);
-          Eror("ابتدا لاگین کنید");
-        }else{
-          setIsNazarModal(true)
-
-        }}}
+        onClick={() => {
+          if (!token) {
+            setIsLoginModal(true);
+            Eror("ابتدا لاگین کنید");
+          } else {
+            setIsNazarModal(true);
+          }
+        }}
         className=" flex items-center bg-[#005DAD] text-white lg:p-3 p-1 rounded-lg px-3 lg:rounded-xl lg:px-5 lg:text-lg"
       >
         ثبت نظر
@@ -220,7 +253,7 @@ export const DoctorLoginButt = () => {
 
       <button
         onClick={() => setIsModal(true)}
-        className=" text-sm lg:text-lg flex justify-center items-center lg:gap-3 lg:px-16 p-[2px] lg:p-2 px-2 border whitespace-nowrap lg:border-2 border-[#005DAD] text-[#005DAD] rounded-lg"
+        className=" lg:text-lg flex justify-center text-xs p-1 px-2 whitespace-nowrap items-center lg:gap-3 lg:px-16 lg:p-2 lg:border-2 border-[#005DAD] text-[#005DAD] rounded-lg"
       >
         ورود پزشک
         <IoIosArrowBack />
@@ -297,80 +330,86 @@ export const EmtyReservButt = ({ docDetail }) => {
     </div>
   );
 };
+
 export const MatabShowButt = ({ items, setPosition }) => {
-  console.log(items)
+  const [selectedId, setSelectedId] = useState(null);
   const [address, setAddress] = useState("");
 
-  const handleAddres = (item) => {
-    if (item.clinic) {
-      return item.clinic.address || "";
-    } else if (item.office) {
-      return item.office.address || "";
-    } else {
-      return "";
-    }
+  const getAddress = (item) => {
+    return item.clinic?.address || item.office?.address || "";
   };
 
-  const [isMatadShow, setIsMatadShow] = useState(false);
-  const [unicId, setUnicId] = useState();
   const handleSeeMatab = (item) => {
-    setPosition &&
-      setPosition([
-        item.clinic ? item.clinic.geolon : item.office.geolon,
-        item.clinic ? item.clinic.geolat : item.office.geolat,
-      ]);
+    // اگر کاربر روی همان دکمه‌ای که باز است کلیک کرد، آن را ببند
+    if (selectedId === item.id) {
+      setSelectedId(null);
+      setAddress("");
+      // در صورت نیاز می‌توانید مختصات را هم ریست کنید
+      // setPosition && setPosition([null, null]);
+      return;
+    }
 
-    let id = item.id;
-    let address = handleAddres(item);
-    setUnicId(id);
-    setIsMatadShow(true);
-    setAddress(address);
+    // تنظیم مختصات (با چک کردن وجود آبجکت‌ها)
+    if (setPosition) {
+      const lon = item.clinic?.geolon || item.office?.geolon;
+      const lat = item.clinic?.geolat || item.office?.geolat;
+      if (lon && lat) {
+        setPosition([lon, lat]);
+      }
+    }
+
+    // باز کردن و نمایش آدرس جدید
+    setSelectedId(item.id);
+    setAddress(getAddress(item));
   };
+
   return (
-    <div className=" flex max-w-full flex-col">
+    <div className="flex max-w-full flex-col">
       <div className="flex items-center gap-2 lg:gap-4 max-w-full overflow-auto xl:flex-nowrap flex-wrap">
-        <h2 className=" text-[18px] flex whitespace-nowrap items-center">
-          <IoLocationOutline className=" text-xl text-[#005DAD]" />
+        <h2 className="text-[18px] flex whitespace-nowrap items-center">
+          <IoLocationOutline className="text-xl text-[#005DAD]" />
           نشانی:
         </h2>
 
         {items &&
           items.map((item) => {
+            const isActive = selectedId === item.id;
             return (
               <button
                 key={item.id}
                 onClick={() => handleSeeMatab(item)}
-                className={
-                  isMatadShow && item.id === unicId
-                    ? "gap-1 lg:p-2 p-1 text-xs lg:text-base flex items-center border transition-colors text-[#005dad] bg-[rgba(176,218,255,0.2)] rounded-xl"
-                    : "gap-1 lg:p-2 p-1 text-xs lg:text-base flex items-center border whitespace-nowrap transition-colors z-10 rounded-xl"
-                }
+                className={`gap-1 lg:p-2 p-1 text-xs lg:text-base flex items-center border transition-colors rounded-xl ${
+                  isActive
+                    ? "text-[#005dad] bg-[rgba(176,218,255,0.2)] border-[#005dad]"
+                    : "text-gray-700 hover:bg-gray-50 border-gray-200"
+                }`}
               >
-                {item.office && item.office.name}
-                {item.clinic && item.clinic.name}
+                {item.office?.name || item.clinic?.name}
 
                 <IoIosArrowDown
-                  className={` ${
-                    isMatadShow && item.id === unicId
-                      ? "rotate-180 text-[#005dad] "
-                      : "text-[#757575]"
-                  } transition-all    duration-300 text-xl `}
+                  className={`transition-all duration-300 text-xl ${
+                    isActive ? "rotate-180 text-[#005dad]" : "text-[#757575]"
+                  }`}
                 />
               </button>
             );
           })}
       </div>
 
-      <h2
-        className={`${
-          isMatadShow ? " opacity-100" : " opacity-0 -mt-8 z-0"
-        } transition-all  text-[#005DAD]`}
+      {/* نمایش بخش آدرس با انیمیشن نرم‌تر */}
+      <div
+        className={`transition-all duration-300 overflow-hidden ${
+          selectedId ? "max-h-20 opacity-100 mt-4" : "max-h-0 opacity-0"
+        }`}
       >
-        نشانی : {address}
-      </h2>
+        <h2 className="text-[#005DAD] font-medium">
+          نشانی دقیق: <span className="text-gray-800">{address}</span>
+        </h2>
+      </div>
     </div>
   );
 };
+
 export const EditUserInfoButt = () => {
   const { setIsEdit, isEdit } = myStore();
 
@@ -512,33 +551,21 @@ export const BurgerMenuButt = () => {
   );
 };
 
-export const AddDoctorButt = ({
-  setDoctorItems,
-  doctorItems,
-  isAddDoctorModal,
-  setIsAddDoctorModal,
-}) => {
+export const AddDoctorButt = ({ setDoctorItems, setIsAddDoctorModal }) => {
   return (
-    <div>
-      {isAddDoctorModal && (
-        <AddNewDoctorModal
-          doctorItems={doctorItems}
-          setIsAddDoctorModal={setIsAddDoctorModal}
-        />
-      )}
-      <button
-        onClick={() => {
-          setIsAddDoctorModal(true);
-          setDoctorItems();
-        }}
-        className=" flex justify-center items-center gap-2 rounded-lg p-2 bg-[#005DAD] text-white"
-      >
-        <GoPlus className=" text-2xl" />
-        افزودن دکتر
-      </button>
-    </div>
+    <button
+      onClick={() => {
+        setDoctorItems({});
+        setIsAddDoctorModal(true);
+      }}
+      className="flex justify-center items-center gap-2 rounded-lg p-2 bg-[#005DAD] text-white"
+    >
+      <GoPlus className="text-2xl" />
+      افزودن دکتر
+    </button>
   );
 };
+
 export const EditSpecialistButt = ({
   isEditSpecialModal,
   setIsEditSpecialModal,
@@ -727,7 +754,9 @@ export const DoctorsSignUpButt = () => {
   return (
     <div>
       {isLoginModal && <LoginModal setIsModal={setIsLoginModal} />}
-      {isModal && <DoctorFormModal setIsAddDoctorModal={setIsModal} fromSignup />}
+      {isModal && (
+        <DoctorFormModal setIsAddDoctorModal={setIsModal} fromSignup />
+      )}
       <button
         onClick={() => {
           if (token) {
@@ -788,3 +817,93 @@ export const NobatButton_medicalCenters = (props) => {
     </div>
   );
 };
+
+export const DoctorPanelProfileButton = () => {
+  const router = useNavigate();
+  const { setDoctors, setDoctorId } = userDoctorStorage();
+
+  const { fullName, setFullName } = fullNameStorage();
+  const { phoneNum, setPhoneNum } = userProfileStore();
+  const { removeSmeId } = smeIdStorage();
+
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleDashboardNavigation = async () => {
+    try {
+      const usernameForRole = (phoneNum || "").trim();
+
+      if (!usernameForRole) {
+        router("/userPanel/dashboard");
+        return;
+      }
+
+      const roles = await get_user_role_by_username(usernameForRole);
+
+      const roleNameRaw = roles?.[0]?.roleName || "";
+      const roleName = roleNameRaw.trim().toLowerCase();
+
+      if (roleName === "superadmin") {
+        router("/adminpanel/dashboard");
+      } else if (roleName === "doctor") {
+        router("/doctor-panel/dashboard");
+      } else {
+        router("/userPanel/dashboard");
+      }
+    } catch (error) {
+      console.error("dashboard navigation error:", error);
+      router("/userPanel/dashboard");
+    } finally {
+      setIsOpen(false);
+    }
+  };
+
+  const handleLogout = () => {
+    setDoctors([]);
+    setDoctorId("");
+    setPhoneNum("");
+    removeSmeId();
+    Cookies.remove("token");
+    setFullName(null);
+    router("/");
+    setIsOpen(false);
+  };
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setIsOpen(true)}
+      onMouseLeave={() => setIsOpen(false)}
+    >
+      <button
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="flex justify-center items-center p-2 border text-[#005DAD] gap-2 border-[#005DAD] rounded-xl bg-white"
+      >
+        <img src={DoctorProfIcon.src || DoctorProfIcon} width={24} alt="icon" />
+        دکتر {fullName || "کاربر"}
+        <IoIosArrowDown className="text-xl" />
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 top-[110%] min-w-[170px] p-3 bg-white z-50 rounded-xl flex flex-col gap-3 shadow-xl border">
+          <div
+            onClick={handleDashboardNavigation}
+            className="flex justify-between cursor-pointer gap-8 items-center text-[#004D8F] hover:bg-[#F6FBFF] rounded-lg px-2 py-2 transition"
+          >
+            <span>داشبورد</span>
+            <LuLayoutDashboard />
+          </div>
+
+          <div
+            onClick={handleLogout}
+            className="text-red-600 cursor-pointer flex justify-between gap-8 items-center hover:bg-red-50 rounded-lg px-2 py-2 transition"
+          >
+            <h5>خروج</h5>
+            <CiLogout />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default DoctorPanelProfileButton;

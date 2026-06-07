@@ -9,6 +9,7 @@ import {
   fullNameStorage,
   myStore,
   smeIdStorage,
+  userDoctorStorage,
   userSubmitedArrStore,
 } from "../../store/Store";
 
@@ -18,6 +19,8 @@ function ValidateModal({
   nationalCode,
   setIsValidateModal,
 }) {
+                    const { setDoctors,setDoctorId } = userDoctorStorage();
+  
   const input1Ref = useRef();
   const input2Ref = useRef();
   const input3Ref = useRef();
@@ -64,6 +67,8 @@ function ValidateModal({
         const allInputs = { ...inputs, [name]: value };
         const code = Object.values(allInputs).join("");
         activating_registarion(
+          setDoctorId,
+          setDoctors,
           code,
           phoneNumber,
           setIsWrongCode,

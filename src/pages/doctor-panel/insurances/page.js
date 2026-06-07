@@ -1,75 +1,316 @@
-import { CiSearch } from "react-icons/ci";
-import DoctorProfIcon from "../../../assets/Pics/doctor-profile-icon.png";
-import React from "react";
-import { IoIosArrowDown } from "react-icons/io";
-import DoctorPanelMenu from "../../../container/doctor-panel/DoctorPanelMenu";
+"use client";
 
+import React, { useEffect, useMemo, useState } from "react";
+import { CiSearch } from "react-icons/ci";
+import { IoIosArrowDown } from "react-icons/io";
 import { PiWarningCircle } from "react-icons/pi";
 import { BsPlusLg } from "react-icons/bs";
 
-function page() {
+import DoctorProfIcon from "../../../assets/Pics/doctor-profile-icon.png";
+import DoctorPanelMenu from "../../../container/doctor-panel/DoctorPanelMenu";
+
+import {
+  create_doctor_insurance,
+  read_all_insirances,
+  read_doctor_insurances_by_doctor_id,
+} from "../../../api/ApiCalling";
+
+import { fullNameStorage, userDoctorStorage } from "../../../store/Store";
+
+function InsurancePage() {
+  const { fullName } = fullNameStorage();
+  const { doctors, doctorid } = userDoctorStorage();
+
+  const currentDoctorId = doctorid || doctors?.id;
+
+  const [insurances, setInsurances] = useState([]);
+  const [doctorInsurances, setDoctorInsurances] = useState([]);
+  const [isLoadingInsurances, setIsLoadingInsurances] = useState(true);
+  const [isLoadingDoctorInsurances, setIsLoadingDoctorInsurances] =
+    useState(true);
+  const [insurancesError, setInsurancesError] = useState("");
+
+  const [formData, setFormData] = useState({
+    insuranceId: "",
+    contractStatus: "",
+    coveragePercent: "",
+    visitPrice: "",
+  });
+
+  const fetchAllData = async () => {
+    try {
+      setIsLoadingInsurances(true);
+      setInsurancesError("");
+
+      const list = await read_all_insirances();
+      setInsurances(Array.isArray(list) ? list : []);
+    } catch (e) {
+      setInsurances([]);
+      setInsurancesError("خطا در دریافت لیست بیمه‌ها");
+    } finally {
+      setIsLoadingInsurances(false);
+    }
+
+    try {
+      if (!currentDoctorId) {
+        setDoctorInsurances([]);
+        return;
+      }
+
+      setIsLoadingDoctorInsurances(true);
+      const list = await read_doctor_insurances_by_doctor_id(currentDoctorId);
+      setDoctorInsurances(Array.isArray(list) ? list : []);
+    } finally {
+      setIsLoadingDoctorInsurances(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllData();
+  }, [currentDoctorId]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const selectedInsurance = useMemo(() => {
+    return insurances.find((x) => String(x.id) === String(formData.insuranceId));
+  }, [insurances, formData.insuranceId]);
+
+const handleSubmit = async () => {
+  if (!currentDoctorId) {
+    console.log("doctor id وجود ندارد");
+    return;
+  }
+
+  if (!formData.insuranceId) {
+    console.log("insurance id انتخاب نشده");
+    return;
+  }
+
+  const payload = {
+    doctorId: Number(currentDoctorId),
+    insuranceId: Number(formData.insuranceId),
+    contractSituation: formData.contractStatus || "فعال",
+    insurancePercent: Number(formData.coveragePercent || 0),
+    visitCostId: 1004,
+    isActive: true,
+  };
+
+  console.log("final create doctor insurance payload:", payload);
+
+  const res = await create_doctor_insurance(payload);
+console.log(res)
+  if (res) {
+    setFormData({
+      insuranceId: "",
+      contractStatus: "",
+      coveragePercent: "",
+      visitPrice: "",
+    });
+
+    await fetchAllData();
+  }
+};
+
 
   return (
-    <div dir="rtl" className="flex pb-20  bg-[#F6FBFF]">
+    <div dir="rtl" className="flex min-h-screen bg-[#F6FBFF]">
       <DoctorPanelMenu />
-      <div className=" mt-10 w-full flex flex-col gap-7 items-center">
-        <div className=" flex justify-between items-center w-[80%]">
-          <label className=" bg-white w-[450px] border px-2 p-1 border-[#005DAD] rounded-xl flex justify-between ">
-            <input className=" w-full outline-none" placeholder="جستجو" />
-            <CiSearch className=" text-white text-4xl p-1 rounded-lg bg-[#005DAD]" />
-          </label>
-          <button className=" flex justify-center items-center p-2 border text-[#005DAD] gap-2 border-[#005DAD] rounded-xl">
+
+      <main className="mt-10 flex w-full flex-col items-center gap-7 pb-20">
+        <header className="flex w-[80%] items-center justify-between">
+          <button className="flex items-center gap-2 rounded-xl border border-[#005DAD] p-2 text-[#005DAD]">
             <img src={DoctorProfIcon} width={24} alt="icon" />
-            دکتر طاهر ثابتیان
-            <IoIosArrowDown className=" text-xl" />
+            دکتر {fullName}
+            <IoIosArrowDown className="text-xl" />
           </button>
-        </div>
-        <div className=" w-[80%] flex gap-7 flex-col">
-          <div className=" flex items-center gap-2 p-3 bg-[rgba(195,5,5,0.1)] border border-[#C30505] rounded-xl text-[#C30505]">
-            <PiWarningCircle className=" text-xl" />
+        </header>
+
+        <section className="flex w-[80%] flex-col gap-7">
+          <div className="flex items-center gap-2 rounded-xl border border-[#C30505] bg-[rgba(195,5,5,0.1)] p-3 text-[#C30505]">
+            <PiWarningCircle className="text-xl" />
             <h4>
-              پزشک گرامی لطفا بیمه هایی که با آن ها طرف قرار داد هستید را وارد
-              کنید.{" "}
+              پزشک گرامی لطفا بیمه‌هایی که با آن‌ها طرف قرارداد هستید را انتخاب
+              کنید.
             </h4>
           </div>
-          <div className=" flex justify-between items-center">
-            <h5 className=" text-lg">بیمه ها</h5>
-            <button className=" border border-[#005DAD] rounded-lg p-2 flex justify-center items-center gap-2 text-[#005DAD]">
-              <BsPlusLg className=" text-xl text-[#005DAD]" />
-              افزودن بیمه
-            </button>
+
+          <div className="flex items-center justify-between">
+            <h5 className="text-lg font-bold">بیمه‌ها</h5>
           </div>
-          <div className=" w-full gap-10 py-10 bg-white rounded-xl shadow border flex flex-col justify-center items-center">
-            <div className=" flex justify-between w-[92%]">
-              <div className=" flex-col flex items-start justify-center gap-10">
-                <div className=" flex flex-col items-start justify-center gap-2">
-                  <h5>نام بیمه :</h5>
-                  <input className=" p-2 w-[300px] rounded-lg border border-[#6B6B6B] bg-[#F7F7F7]" />
-                </div>
-                <div className=" flex flex-col items-start justify-center gap-2">
-                  <h5>وضعیت قرارداد :</h5>
-                  <input className=" p-2 w-[300px] rounded-lg border border-[#6B6B6B] bg-[#F7F7F7]" />
-                </div>
-              </div>
-              <div className=" flex-col flex gap-10 items-start justify-center ">
-                <div className=" flex flex-col items-start justify-center gap-2">
-                  <h5>درصد پوشش بیمه :</h5>
-                  <input className=" p-2 w-[565px] rounded-lg border border-[#6B6B6B] bg-[#F7F7F7]" />
-                </div>
-                <div className=" flex flex-col items-start justify-center gap-2">
-                  <h5>مبلغ ویزیت :</h5>
-                  <input className=" p-2 w-[565px] rounded-lg border border-[#6B6B6B] bg-[#F7F7F7]" />
-                </div>
-              </div>
-            </div>
-            <button className=" bg-[#005DAD] text-white rounded-lg px-24 p-3">
-              ثبت
-            </button>
-          </div>
+
+          <div className="rounded-xl border bg-white p-6 shadow-sm">
+            <div className="mb-6">
+              <h6 className="mb-3 text-base font-semibold text-[#005DAD]">
+                بیمه‌های ثبت‌شده برای این پزشک
+              </h6>
+
+              {isLoadingDoctorInsurances ? (
+                <p className="text-sm text-gray-500">در حال دریافت اطلاعات...</p>
+              ) : doctorInsurances.length === 0 ? (
+                <p className="text-sm text-gray-500">هنوز بیمه‌ای ثبت نشده است.</p>
+              ) : (
+<div className="grid gap-3">
+  {doctorInsurances.map((item, index) =>
+    item.doctorInsurances?.map((docIns, i) => (
+      <div
+        key={docIns.id || `${index}-${i}`}
+        className="rounded-lg border border-gray-200 p-3 text-sm"
+      >
+        <div className="font-semibold">
+          {item.name || "بیمه نامشخص"}
+        </div>
+
+        <div className="mt-1 text-gray-600">
+          وضعیت قرارداد: {docIns.contractSituation || "-"} | درصد پوشش:{" "}
+          {docIns.insurancePercent ?? "-"} | هزینه ویزیت:{" "}
+          {docIns.visitCostId ?? "-"}
         </div>
       </div>
+    ))
+  )}
+</div>
+
+              )}
+            </div>
+
+            <div className="w-full border-t pt-6">
+              <div className="w-[92%]">
+                {isLoadingInsurances && (
+                  <p className="text-sm text-gray-500">
+                    در حال دریافت لیست بیمه‌ها...
+                  </p>
+                )}
+
+                {!isLoadingInsurances && !!insurancesError && (
+                  <p className="text-sm text-red-600">{insurancesError}</p>
+                )}
+
+                {!isLoadingInsurances &&
+                  !insurancesError &&
+                  insurances.length === 0 && (
+                    <p className="text-sm text-gray-500">
+                      بیمه‌ای برای نمایش وجود ندارد.
+                    </p>
+                  )}
+              </div>
+
+              <div className="mt-6 grid w-[92%] grid-cols-1 gap-6 md:grid-cols-2">
+                <div className="flex flex-col gap-6">
+                  <FieldSelect
+                    label="نام بیمه"
+                    name="insuranceId"
+                    value={formData.insuranceId}
+                    onChange={handleInputChange}
+                    disabled={isLoadingInsurances || insurances.length === 0}
+                    placeholder={
+                      isLoadingInsurances
+                        ? "در حال بارگذاری..."
+                        : insurances.length === 0
+                        ? "لیست بیمه خالی است"
+                        : "انتخاب کنید"
+                    }
+                    options={insurances.map((ins) => ({
+                      value: ins.id,
+                      label: `${ins.name} (${ins.insuranceType?.type ?? "-"})`,
+                    }))}
+                  />
+
+                  <Field
+                    label="وضعیت قرارداد"
+                    name="contractStatus"
+                    value={formData.contractStatus}
+                    onChange={handleInputChange}
+                    placeholder="مثلاً: فعال"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-6">
+                  <Field
+                    label="درصد پوشش بیمه"
+                    name="coveragePercent"
+                    value={formData.coveragePercent}
+                    onChange={handleInputChange}
+                    type="number"
+                    placeholder="مثلاً 70"
+                  />
+                  <Field
+                    label="مبلغ ویزیت"
+                    name="visitPrice"
+                    value={formData.visitPrice}
+                    onChange={handleInputChange}
+                    type="number"
+                    placeholder="به تومان"
+                  />
+                </div>
+              </div>
+
+              {selectedInsurance && (
+                <div className="mt-6 w-[92%] rounded-lg bg-[#F6FBFF] p-4 text-sm text-gray-700">
+                  <span className="font-semibold">انتخاب شما:</span>{" "}
+                  {selectedInsurance.name} —{" "}
+                  {selectedInsurance.insuranceType?.type ?? "-"}
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={handleSubmit}
+                className="mt-6 rounded-lg bg-[#005DAD] px-24 py-3 text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                disabled={!formData.insuranceId || !currentDoctorId}
+              >
+                ثبت
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
 
-export default page;
+const Field = ({ label, name, value, onChange, type = "text", placeholder }) => (
+  <div className="flex flex-col gap-2">
+    <label className="text-sm font-medium text-gray-700">{label} :</label>
+    <input
+      name={name}
+      value={value}
+      onChange={onChange}
+      type={type}
+      placeholder={placeholder}
+      className="w-full rounded-lg border border-[#6B6B6B] bg-[#F7F7F7] p-2 outline-none focus:border-[#005DAD]"
+    />
+  </div>
+);
+
+const FieldSelect = ({
+  label,
+  name,
+  value,
+  onChange,
+  options,
+  placeholder,
+  disabled,
+}) => (
+  <div className="flex flex-col gap-2">
+    <label className="text-sm font-medium text-gray-700">{label} :</label>
+    <select
+      name={name}
+      value={value}
+      onChange={onChange}
+      disabled={disabled}
+      className="w-full rounded-lg border border-[#6B6B6B] bg-[#F7F7F7] p-2 outline-none focus:border-[#005DAD] disabled:opacity-60"
+    >
+      <option value="">{placeholder}</option>
+      {options.map((opt) => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
+  </div>
+);
+
+export default InsurancePage;

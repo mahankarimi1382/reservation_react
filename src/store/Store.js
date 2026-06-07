@@ -116,7 +116,20 @@ export const fullNameStorage = create(
     }
   )
 );
-
+export const userDoctorStorage = create(
+  persist(
+    (set) => ({
+      doctors: [],
+      doctorid: "",
+      setDoctors: (doctors) => set({ doctors: doctors }),
+      setDoctorId: (id) => set({ doctorid: id }),
+    }),
+    {
+      name: "userdoctor",
+      storage: createJSONStorage(() => sessionStorage),
+    }
+  )
+);
 export const smeIdStorage = create(
   persist(
     (set) => ({

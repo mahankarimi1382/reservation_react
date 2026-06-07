@@ -1,370 +1,285 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { CiSearch } from "react-icons/ci";
 import { IoLocationOutline } from "react-icons/io5";
 import { CgSortAz } from "react-icons/cg";
-import doctorprof from "../../assets/Pics/abbas.png";
-import star from "../../assets/Pics/star.png";
-import hospital from "../../assets/Pics/hospital.png";
-import monitor from "../../assets/Pics/monitor-mobbile.png";
 import { AiFillLike } from "react-icons/ai";
 import { IoIosArrowRoundBack } from "react-icons/io";
-import LoadingComponent from "../../components/LoadingComponent";
-import filterIcon from "../../assets/Pics/filter.png";
-import doctorIcon from "../../assets/Pics/doctor-icon.jpg";
+import { FaArrowLeft, FaArrowRight } from "react-icons/fa6";
+import { Link, useNavigate } from "react-router-dom";
+import { Pagination, PaginationItem } from "@mui/material";
 
+// Assets
+import starIcon from "../../assets/Pics/star.png";
+import hospitalIcon from "../../assets/Pics/hospital.png";
+import monitorIcon from "../../assets/Pics/monitor-mobbile.png";
+import filterIcon from "../../assets/Pics/filter.png";
+import doctorDefaultIcon from "../../assets/Pics/doctor-icon.jpg";
+
+// Components & API
+import LoadingComponent from "../../components/LoadingComponent";
+import FilterDoctors from "./FilterDoctors";
 import {
   CitySelectButtSearchingDoctors,
   EmtyReservButt,
   MatabShowButt,
   SeeDoctorNazaratButt,
 } from "../../components/Buttons/Button";
-
-import { Link, useNavigate } from "react-router-dom";
-
-import { Pagination, PaginationItem } from "@mui/material";
-
 import { search_doctors } from "../../api/ApiCalling";
 import { doctorProfileStore, myStore } from "../../store/Store";
 
-import { FaArrowLeft, FaArrowRight } from "react-icons/fa6";
-
-import FilterDoctors from "./FilterDoctors";
-
-function DoctorsPaginate() {
+const DoctorsPaginate = () => {
   const navigate = useNavigate();
-
   const { setDoctorId, setDoctorName } = doctorProfileStore();
-  const {
-    isSerchDoctorLoading,
-    setIsSerchDoctorLoading,
-
-    bimehTakmili,
-    bimeAsli,
-    justOnline,
-    hasTurn,
-    acceptInsurance,
-    gender,
-    sDate,
-    eDate,
-    onlineTypeId,
-    officeOrClinicHozoori,
-    specialistSearch,
-    provinceId,
-    cityId,
-
-    currentPageDoctorSearch,
-    setCurrentPageDoctorSearch,
-
-    setFiltredBoxes,
-    multiSpecialtiesBoxes,
-  } = myStore();
+  const store = myStore();
 
   const [isFilterClickMobile, setIsFilterClickMobile] = useState(false);
-  const [isDaste, setIsDaste] = useState(false);
-
-  const [name, setName] = useState("");
-  const [totalPages, setTotalPages] = useState("");
+  const [isDasteOpen, setIsDasteOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [totalPages, setTotalPages] = useState(0);
   const [doctors, setDoctors] = useState([]);
 
-  const onlineTypeFn = (id) => {
-    if (id == 2) return "تصویری";
-    if (id == 3) return "تلفنی";
-    if (id == 4) return "پیامرسان";
-    if (id == 1) return "مطب ها";
-  };
+  const pageSize = 6;
 
-  let boxItems = [
-    { id: 1, caption: bimeAsli, type: "bimeAsli" },
-    { id: 2, caption: bimehTakmili, type: "bimeTakmili" },
-    { id: 3, caption: onlineTypeFn(onlineTypeId), type: "onlineTypeId" },
-    { id: 4, caption: gender, type: "gender" },
-    { id: 5, caption: provinceId.label, type: "province" },
-    { id: 6, caption: cityId.label, type: "city" },
-    { id: 7, caption: justOnline && "فقط پزشکان آنلاین", type: "justOnline" },
-    {
-      id: 8,
-      caption: acceptInsurance && "فقط پزشکانی که بیمه قبول میکنند",
-      type: "acceptInsurance",
-    },
-  ];
+  // تبدیل اعداد به فارسی برای Pagination
+  const toPersianDigits = (n) => n?.toString().replace(/\d/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[d]);
 
-  const pagesize = 6;
-
-  const handleSearchDoctors = (value) => {
-    if (value.length >= 2) {
-      setIsSerchDoctorLoading(true);
-      getDoctors(value);
-      setName(value);
-      setCurrentPageDoctorSearch(1);
-    } else if (value.length === 0) {
-      setIsSerchDoctorLoading(true);
-      getDoctors("");
-      setName("");
-      setCurrentPageDoctorSearch(1);
-    }
-  };
-
-  const handleFiltredBoxes = () => {
-    setFiltredBoxes(boxItems);
-  };
-
-  const genderFn = (gender) => {
-    if (gender === "آقایان") return true;
-    if (gender === "خانم ها") return false;
-    return "";
-  };
-
-  const getDoctors = async (name) => {
-    let data = {
-      name: name || "",
-      pagesize,
-      currentPage: currentPageDoctorSearch || "",
-      specialistId: specialistSearch || "",
-      provinceId: provinceId.id || "",
-      cityId: cityId.id || "",
-      BimehTakmili: bimehTakmili || "",
-      BimeAsli: bimeAsli || "",
-      JustOnline: justOnline || "",
-      HasTurn: hasTurn || "",
-      AcceptInsurance: acceptInsurance || "",
-      Gender: genderFn(gender) || "",
-      Sdate: sDate || "",
-      Edate: eDate || "",
-      OnlineTypeId: onlineTypeId || "",
-      OfficeOrClinicHozoori: officeOrClinicHozoori || "",
+  const getDoctors = async (nameVal) => {
+    store.setIsSerchDoctorLoading(true);
+    const payload = {
+      name: nameVal || "",
+      pagesize: pageSize,
+      currentPage: store.currentPageDoctorSearch || 1,
+      specialistId: store.specialistSearch || "",
+      provinceId: store.provinceId.id || "",
+      cityId: store.cityId.id || "",
+      BimehTakmili: store.bimehTakmili || "",
+      BimeAsli: store.bimeAsli || "",
+      JustOnline: store.justOnline || "",
+      HasTurn: store.hasTurn || "",
+      AcceptInsurance: store.acceptInsurance || "",
+      Gender: store.gender === "آقایان" ? true : store.gender === "خانم ها" ? false : "",
+      Sdate: store.sDate || "",
+      Edate: store.eDate || "",
+      OnlineTypeId: store.onlineTypeId || "",
+      OfficeOrClinicHozoori: store.officeOrClinicHozoori || "",
     };
 
-    const result = await search_doctors(data);
-
-    if (result) {
-      setDoctors(result.list);
-      setIsSerchDoctorLoading(false);
-      handleFiltredBoxes();
-
-      const totalpages = Math.ceil(result.totalRecords / pagesize);
-      setTotalPages(totalpages);
+    try {
+      const result = await search_doctors(payload);
+      if (result) {
+        setDoctors(result.list || []);
+        setTotalPages(Math.ceil(result.totalRecords / pageSize));
+      }
+    } catch (error) {
+      console.error("Error fetching doctors:", error);
+    } finally {
+      store.setIsSerchDoctorLoading(false);
     }
   };
 
   useEffect(() => {
-    setIsSerchDoctorLoading(true);
-    getDoctors(name);
+    getDoctors(searchTerm);
   }, [
-    currentPageDoctorSearch,
-    specialistSearch,
-    bimehTakmili,
-    bimeAsli,
-    justOnline,
-    hasTurn,
-    acceptInsurance,
-    gender,
-    sDate,
-    eDate,
-    onlineTypeId,
-    officeOrClinicHozoori,
-    provinceId,
-    cityId,
+    store.currentPageDoctorSearch,
+    store.specialistSearch,
+    store.bimehTakmili,
+    store.bimeAsli,
+    store.justOnline,
+    store.hasTurn,
+    store.acceptInsurance,
+    store.gender,
+    store.onlineTypeId,
+    store.cityId,
   ]);
 
-  const handleChange = (event, value) => {
-    setCurrentPageDoctorSearch(value);
+  const handleSearch = (e) => {
+    const val = e.target.value;
+    setSearchTerm(val);
+    if (val.length >= 2 || val.length === 0) {
+      store.setCurrentPageDoctorSearch(1);
+      getDoctors(val);
+    }
   };
 
-  const ShowDaste = () => {
-    setIsDaste(!isDaste);
-  };
+  if (isFilterClickMobile) {
+    return <FilterDoctors hidden={false} setIsFilterClickMobile={setIsFilterClickMobile} />;
+  }
 
-  const imgFN = (img) => {
-    if (img === "string") return doctorIcon;
-    return img;
-  };
-
-  const toPersianDigits = (str) =>
-    str.toString().replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[digit]);
-
-  return !isFilterClickMobile ? (
-    <div className="lg:w-[900px] px-2 lg:px-0 w-[97%] flex flex-col items-center justify-center gap-2 lg:gap-10">
-      <div className="w-[100%]">
-        <div className="rounded-2xl lg:px-3 px-1 items-center justify-center lg:text-base text-[sm] lg:gap-1 flex h-[40px] lg:h-[73px] w-full bg-white">
-          <CiSearch className="text-[#919191] text-xl lg:text-3xl" />
-
-          <input
-            onChange={(e) => handleSearchDoctors(e.target.value)}
-            className="text-xs lg:text-sm outline-none h-full w-[80%]"
-            placeholder="جستجو پزشک،درمانگر،کلینیک..."
-          />
-
-          <CitySelectButtSearchingDoctors />
-        </div>
-      </div>
-
-      <div className="w-full flex gap-2 items-center justify-start">
-        <h2
-          onClick={() => setIsFilterClickMobile(true)}
-          className="lg:hidden flex items-center gap-2 text-[12px]"
-        >
-          <img width={20} src={filterIcon} alt="icon" />
-          فیلتر کردن
-        </h2>
-
-        <h2 onClick={ShowDaste} className="flex lg:hidden items-center text-[12px]">
-          <CgSortAz className="text-lg xl:text-3xl" />
-          دسته بندی
-        </h2>
-      </div>
-
-      {isDaste && (
-        <div className="flex lg:hidden w-full xl:gap-10 lg:gap-5 justify-between xl:text-base text-[9px] lg:text-sm px-3 xl:px-10 bg-white rounded-2xl h-11 lg:h-[62px]">
-          <button className="text-[#858585]">پیشفرض</button>
-          <button className="text-[#858585]">محبوب ترین ها</button>
-          <button className="text-[#858585]">نزدیک ترین نوبت</button>
-          <button className="text-[#858585]">کم ترین معطلی در مطب</button>
-        </div>
-      )}
-
-      <div className="hidden lg:flex w-full xl:gap-10 lg:gap-5 justify-between xl:text-base text-[9px] lg:text-sm px-3 xl:px-10 bg-white rounded-2xl h-11 lg:h-[62px]">
-        <h2 className="hidden lg:flex items-center text-[20px]">
-          <CgSortAz className="xl:text-3xl" />
-          دسته بندی :
-        </h2>
-
-        <button className="text-[#858585]">پیشفرض</button>
-        <button className="text-[#858585]">محبوب ترین ها</button>
-        <button className="text-[#858585]">نزدیک ترین نوبت</button>
-        <button className="text-[#858585]">کم ترین معطلی در مطب</button>
-      </div>
-
-      <div className="w-full flex flex-col gap-2 lg:gap-10">
-        {isSerchDoctorLoading && <LoadingComponent />}
-
-        {doctors.length !== 0
-          ? doctors.map((item) => (
-              <div
-                key={item.id}
-                className="rounded-2xl xl:px-10 px-2 lg:px-5 lg:gap-6 gap-2 flex flex-col w-full bg-white text-xs lg:text-base pb-2 lg:min-h-[400px]"
-              >
-                <div className="flex justify-between lg:items-center items-start border-[#CBCBCB] border-b py-3 lg:py-7">
-                  <div className="lg:w-1/2 flex items-start lg:items-center justify-start gap-2 lg:gap-5">
-                    <img
-                      onClick={() => {
-                        setDoctorName(item.doctorName + " " + item.doctorFamily);
-                        setDoctorId(item.id);
-                        navigate("/doctors/doctor-profile");
-                      }}
-                      width={90}
-                      height={90}
-                      className="w-[60px] h-[60px] lg:w-[90px] lg:h-[90px] object-cover object-center cursor-pointer border-2 border-[#005DAD] rounded-full"
-                      src={imgFN(item.docInstaLink)}
-                      alt="doctor-prof"
-                    />
-
-                    <div className="flex flex-col gap-2 lg:gap-5">
-                      <h2
-                        onClick={() => {
-                          setDoctorName(item.doctorName + " " + item.doctorFamily);
-                          setDoctorId(item.id);
-                          navigate("/doctors/doctor-profile");
-                        }}
-                        className="cursor-pointer text-sm lg:text-[22px]"
-                      >
-                        {item.doctorName} {item.doctorFamily}
-                      </h2>
-
-                      <h2 className="text-[12px] lg:text-base text-[#757575]">
-                        {item.specialist}
-                      </h2>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col items-end lg:items-start justify-center gap-2">
-                    <div className="flex gap-1">
-                      {Array.from({ length: 5 }).map((_, index) => (
-                        <img
-                          key={index}
-                          width={22}
-                          className="w-[15px] lg:w-[22px]"
-                          alt=""
-                          src={star}
-                        />
-                      ))}
-                    </div>
-
-                    <h2 className="rounded flex text-xs lg:text-base items-center justify-center gap-1 text-[#1F7168]">
-                      <AiFillLike className="lg:text-lg" />
-                      {item.recomend}
-                    </h2>
-
-                    <SeeDoctorNazaratButt />
-                  </div>
-                </div>
-
-                <h2 className="text-sm lg:text-lg">
-                  خدمات :
-                  <span className="text-[#7E7E7E]">{item.skills}</span>
-                </h2>
-
-                <div className="text-xs gap-1 flex lg:gap-5 lg:text-lg">
-                  <h2>روش نوبت دهی:</h2>
-
-                  <h2 className="flex gap-1 lg:gap-2">
-                    <img
-                      className="lg:w-[24px] w-[20px]"
-                      width={24}
-                      src={monitor}
-                      alt="monitor-icon"
-                    />
-                    ویزیت آنلاین
-                  </h2>
-
-                  <h2 className="flex gap-1 lg:gap-2">
-                    <img
-                      width={24}
-                      className="lg:w-[24px] w-[20px]"
-                      src={hospital}
-                      alt="hospital-icon"
-                    />
-                    ویزیت حضوری
-                  </h2>
-                </div>
-
-                <div className="w-full flex">
-                  <MatabShowButt items={item.doctorTreatmentCenterList} />
-                </div>
-
-                <div className="mt-5 lg:-mt-3 flex justify-between">
-                  <EmtyReservButt docDetail={item} />
-
-                  <Link
-                    to={`doctors/${item.doctorName + " " + item.doctorFamily}`}
-                    className="text-white flex rounded-xl lg:text-base text-sm justify-center items-center bg-[#005DAD] p-1 lg:p-2"
-                  >
-                    نوبت بگیرید
-                    <IoIosArrowRoundBack className="text-2xl" />
-                  </Link>
-                </div>
-              </div>
-            ))
-          : !isSerchDoctorLoading && "نتیجه ای یافت نشد"}
-
-        <Pagination
-          size="small"
-          onChange={handleChange}
-          page={currentPageDoctorSearch}
-          count={totalPages}
-          color="primary"
-          renderItem={(item) => (
-            <PaginationItem
-              slots={{ previous: FaArrowRight, next: FaArrowLeft }}
-              {...item}
-              page={item.page ? toPersianDigits(item.page) : item.page}
-            />
-          )}
+  return (
+    <div className="w-full max-w-[950px] mx-auto px-4 py-6 flex flex-col gap-6">
+      {/* Search Bar Section */}
+      <div className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-2 lg:p-3 flex items-center gap-3">
+        <CiSearch className="text-gray-400 text-2xl lg:text-3xl" />
+        <input
+          onChange={handleSearch}
+          className="flex-1 outline-none text-sm lg:text-base text-gray-700 bg-transparent"
+          placeholder="جستجو پزشک، درمانگر، کلینیک..."
         />
+        <div className="h-8 w-[1px] bg-gray-200 mx-1 hidden lg:block" />
+        <CitySelectButtSearchingDoctors />
+      </div>
+
+      {/* Mobile Quick Actions */}
+      <div className="flex lg:hidden items-center justify-between px-1">
+        <button
+          onClick={() => setIsFilterClickMobile(true)}
+          className="flex items-center gap-2 text-sm font-medium text-gray-600 bg-white px-4 py-2 rounded-xl border border-gray-100"
+        >
+          <img width={18} src={filterIcon} alt="filter" />
+          فیلترها
+        </button>
+        <button
+          onClick={() => setIsDasteOpen(!isDasteOpen)}
+          className="flex items-center gap-1 text-sm font-medium text-gray-600 bg-white px-4 py-2 rounded-xl border border-gray-100"
+        >
+          <CgSortAz className="text-2xl" />
+          مرتب‌سازی
+        </button>
+      </div>
+
+      {/* Sort Options (Desktop & Mobile Toggle) */}
+      <div
+        className={`${
+          isDasteOpen ? "flex" : "hidden lg:flex"
+        } w-full overflow-x-auto bg-white rounded-2xl p-2 lg:px-6 lg:h-16 items-center justify-between border border-gray-50 shadow-sm transition-all`}
+      >
+        <h3 className="hidden lg:flex items-center gap-2 font-bold text-gray-800 whitespace-nowrap">
+          <CgSortAz className="text-3xl text-primary" />
+          مرتب‌سازی:
+        </h3>
+        <div className="flex gap-4 lg:gap-8 overflow-x-auto no-scrollbar py-2">
+          {["پیش‌فرض", "محبوب‌ترین‌ها", "نزدیک‌ترین نوبت", "کمترین معطلی"].map((label) => (
+            <button
+              key={label}
+              className="whitespace-nowrap text-xs lg:text-sm text-gray-500 hover:text-[#005DAD] transition-colors"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Doctors List */}
+      <div className="flex flex-col gap-6">
+        {store.isSerchDoctorLoading ? (
+          <LoadingComponent />
+        ) : doctors.length > 0 ? (
+          doctors.map((doctor) => (
+            <DoctorCard
+              key={doctor.id}
+              doctor={doctor}
+              onNavigate={(id, name) => {
+                setDoctorId(id);
+                setDoctorName(name);
+                navigate("/doctors/doctor-profile");
+              }}
+            />
+          ))
+        ) : (
+          <div className="text-center py-20 bg-white rounded-3xl text-gray-400">
+            نتیجه‌ای یافت نشد.
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-4">
+            <Pagination
+              count={totalPages}
+              page={store.currentPageDoctorSearch}
+              onChange={(_, value) => store.setCurrentPageDoctorSearch(value)}
+              color="primary"
+              renderItem={(item) => (
+                <PaginationItem
+                  slots={{ previous: FaArrowRight, next: FaArrowLeft }}
+                  {...item}
+                  page={toPersianDigits(item.page)}
+                />
+              )}
+            />
+          </div>
+        )}
       </div>
     </div>
-  ) : (
-    <FilterDoctors hidden={false} setIsFilterClickMobile={setIsFilterClickMobile} />
   );
-}
+};
+
+// Sub-Component for Doctor Card
+const DoctorCard = ({ doctor, onNavigate }) => {
+  const fullName = `${doctor.doctorName} ${doctor.doctorFamily}`;
+
+  return (
+    <div className="bg-white rounded-3xl p-4 lg:p-8 shadow-sm border border-gray-50 hover:shadow-md transition-shadow flex flex-col gap-5">
+      {/* Header Info */}
+      <div className="flex justify-between items-start border-b border-gray-100 pb-5">
+        <div className="flex gap-4 lg:gap-6 items-center">
+          <img
+            onClick={() => onNavigate(doctor.id, fullName)}
+            src={doctor.docInstaLink !== "string" ? doctor.docInstaLink : doctorDefaultIcon}
+            alt={fullName}
+            className="w-16 h-16 lg:w-24 lg:h-24 rounded-full object-cover border-2 border-[#005DAD] p-0.5 cursor-pointer hover:scale-105 transition-transform"
+          />
+          <div className="flex flex-col gap-1 lg:gap-3">
+            <h2
+              onClick={() => onNavigate(doctor.id, fullName)}
+              className="text-base lg:text-xl font-bold text-gray-800 cursor-pointer hover:text-[#005DAD]"
+            >
+              {fullName}
+            </h2>
+            <p className="text-xs lg:text-sm text-gray-500 font-medium">{doctor.specialist}</p>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-end gap-2">
+          <div className="flex gap-0.5">
+            {[...Array(5)].map((_, i) => (
+              <img key={i} src={starIcon} className="w-3 lg:w-4 opacity-80" alt="star" />
+            ))}
+          </div>
+          <div className="flex items-center gap-1 text-[#1F7168] text-xs lg:text-sm font-bold bg-[#1f71680a] px-2 py-1 rounded-lg">
+            <AiFillLike />
+            {doctor.recomend} رضایت
+          </div>
+          <SeeDoctorNazaratButt />
+        </div>
+      </div>
+
+      {/* Services & Methods */}
+      <div className="flex flex-col gap-4">
+        <p className="text-xs lg:text-sm leading-relaxed text-gray-600">
+          <span className="font-bold text-gray-800 ml-2">خدمات:</span>
+          {doctor.skills}
+        </p>
+
+        <div className="flex flex-wrap gap-4 text-xs lg:text-sm">
+          <span className="text-gray-400">روش‌های نوبت‌دهی:</span>
+          <div className="flex items-center gap-1.5 text-gray-700">
+            <img src={monitorIcon} className="w-5" alt="online" /> ویزیت آنلاین
+          </div>
+          <div className="flex items-center gap-1.5 text-gray-700">
+            <img src={hospitalIcon} className="w-5" alt="in-person" /> ویزیت حضوری
+          </div>
+        </div>
+      </div>
+
+      {/* Address / Clinics Section */}
+      <div className="bg-gray-50 p-3 rounded-2xl">
+        <MatabShowButt items={doctor.doctorTreatmentCenterList} />
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex items-center justify-between mt-2 pt-2 border-t border-dashed border-gray-200">
+        <EmtyReservButt docDetail={doctor} />
+        <Link
+          to={`/doctors/${fullName}`}
+          className="bg-[#005DAD] text-white px-5 py-2.5 lg:px-8 rounded-xl text-sm lg:text-base font-bold flex items-center gap-2 hover:bg-[#004a8a] transition-colors shadow-lg shadow-blue-100"
+        >
+          نوبت بگیرید
+          <IoIosArrowRoundBack className="text-2xl" />
+        </Link>
+      </div>
+    </div>
+  );
+};
 
 export default DoctorsPaginate;

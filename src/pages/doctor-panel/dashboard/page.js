@@ -12,8 +12,11 @@ import DoctorInventory from "../../../container/doctor-panel/dashboard/DoctorInv
 import DoctorBarChart from "../../../container/doctor-panel/dashboard/DoctorBarChart";
 import GaugeChart from "../../../container/doctor-panel/dashboard/GuageChart";
 import DrLineChart from "../../../container/doctor-panel/dashboard/DrLineChart";
+import { fullNameStorage } from "../../../store/Store";
 
 function page() {
+              const { fullName } = fullNameStorage();
+
   const fakedata = [
     {
       id: 1,
@@ -49,7 +52,7 @@ function page() {
           </label>
           <button className=" flex justify-center items-center p-2 border text-[#005DAD] gap-2 border-[#005DAD] rounded-xl">
             <img src={DoctorProfIcon} width={24} alt="icon" />
-            دکتر طاهر ثابتیان
+            دکتر {fullName}
             <IoIosArrowDown className=" text-xl" />
           </button>
         </div>

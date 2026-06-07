@@ -5,9 +5,12 @@ import React from "react";
 import excel_icon from "../../../../assets/Pics/excelIcon.png";
 import printer from "../../../../assets/Pics/printer.png";
 import { TiArrowSortedDown } from "react-icons/ti";
+import { fullNameStorage } from "../../../../store/Store";
 
 
 function page() {
+      const { fullName } = fullNameStorage();
+  
   const fakeData = [
     {
       id: 1,
@@ -140,7 +143,7 @@ function page() {
                   <input className="border-[#005DAD] border" type="checkbox" />
                 </div>
                 <h4 className=" w-[14%] flex justify-center items-center text-[#3F444D] ">
-                  طاهر ثابتیان
+                  {fullName}
                 </h4>
                 <h4 className=" w-[14%] flex justify-center items-center text-[#3F444D] ">
                   حضوری، بیمارستان
