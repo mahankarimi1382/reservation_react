@@ -16,6 +16,7 @@ import {
 } from "../../../api/ApiCalling";
 
 import { fullNameStorage, userDoctorStorage } from "../../../store/Store";
+import ProfileDropdown from "../../../components/ProfileDropdown";
 
 function InsurancePage() {
   const { fullName } = fullNameStorage();
@@ -121,11 +122,11 @@ console.log(res)
 
       <main className="mt-10 flex w-full flex-col items-center gap-7 pb-20">
         <header className="flex w-[80%] items-center justify-between">
-          <button className="flex items-center gap-2 rounded-xl border border-[#005DAD] p-2 text-[#005DAD]">
-            <img src={DoctorProfIcon} width={24} alt="icon" />
-            دکتر {fullName}
-            <IoIosArrowDown className="text-xl" />
-          </button>
+         <ProfileDropdown
+            fullName={fullName}
+            title="دکتر"
+
+          />
         </header>
 
         <section className="flex w-[80%] flex-col gap-7">

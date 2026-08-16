@@ -1,11 +1,10 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import doctorAvatar from "../../assets/Pics/doctorLoginAvatar.png";
 
-// ایمپورت آیکون‌ها
+// آیکون‌ها
 import peopleIcon from "../../assets/Pics/people-blue.png";
 import trendDownIcon from "../../assets/Pics/trend-down-icon.png";
 import volumeIcon from "../../assets/Pics/volume-high-icon.png";
@@ -16,7 +15,11 @@ import {
   DoctorsSignUpButt,
 } from "../../components/Buttons/Button";
 
-import { userDoctorStorage } from "../../store/Store";
+import { userDoctorStorage, userProfileStore } from "../../store/Store";
+
+// ایمپورت API برای چک کردن نقش
+import { get_user_role_by_username } from "../../api/ApiCalling";
+import Cookies from "js-cookie";
 
 const cards = [
   {
@@ -52,24 +55,69 @@ const cards = [
 function DoctorSignupPage() {
   const navigate = useNavigate();
   const { doctors } = userDoctorStorage();
+  const { phoneNum } = userProfileStore();
 
-  useEffect(() => {
-    /**
-     * اگر doctors آبجکت یا آرایه باشد و خالی نباشد،
-     * کاربر به داشبورد پزشک هدایت می‌شود.
-     */
-    const hasDoctorData =
-      doctors &&
-      (
-        Array.isArray(doctors)
-          ? doctors.length > 0
-          : Object.keys(doctors).length > 0
-      );
+  const [isCheckingRole, setIsCheckingRole] = useState(false);
 
-    if (hasDoctorData) {
-      navigate("/doctor-panel/dashboard");
+  // تابع چک کردن نقش کاربر
+  const checkUserRole = useCallback(async () => {
+    if (!phoneNum) return false;
+
+    try {
+      setIsCheckingRole(true);
+      const roles = await get_user_role_by_username(phoneNum.trim());
+      
+      const roleNameRaw = roles?.[0]?.roleName || "";
+      const roleName = roleNameRaw.trim().toLowerCase();
+
+      return roleName === "doctor";
+    } catch (error) {
+      console.error("Error checking doctor role:", error);
+      return false;
+    } finally {
+      setIsCheckingRole(false);
     }
-  }, [doctors, navigate]);
+  }, [phoneNum]);
+
+  // چک کردن دسترسی به داشبورد پزشک
+useEffect(() => {
+  const checkDoctorAccess = async () => {
+    try {
+      const token = Cookies.get("token");
+      if (!token) return; // اگر لاگین نکرده اصلا API نزن
+
+      // شرط اول
+      const hasDoctorData =
+        doctors &&
+        (Array.isArray(doctors)
+          ? doctors.length > 0
+          : Object.keys(doctors).length > 0);
+
+      if (hasDoctorData) {
+        navigate("/doctor-panel/dashboard");
+        return;
+      }
+
+      // شرط دوم
+      const usernameForRole = (phoneNum || "").trim();
+      if (!usernameForRole) return;
+
+      const roles = await get_user_role_by_username(usernameForRole);
+
+      const roleName = roles?.[0]?.roleName?.trim().toLowerCase();
+
+      if (roleName === "doctor") {
+        navigate("/doctor-panel/dashboard");
+      }
+
+    } catch (error) {
+      console.error("role check error:", error);
+    }
+  };
+
+  checkDoctorAccess();
+}, [doctors, phoneNum]);
+
 
   return (
     <div dir="rtl" className="min-h-screen flex flex-col">
@@ -93,13 +141,11 @@ function DoctorSignupPage() {
               <h1 className="text-2xl lg:text-4xl font-bold text-gray-800 mb-4">
                 عضویت پزشک در دکتر رزرو
               </h1>
-
               <p className="text-gray-600 text-base lg:text-lg leading-relaxed mb-8">
                 دکتر رزرو پلتفرم رزرو آنلاین پزشک به صورت حضوری و مشاوره آنلاین
                 است. با ثبت درخواست عضویت، صفحه نوبت‌دهی اختصاصی شما ساخته
                 می‌شود و بیماران می‌توانند به راحتی نوبت خود را رزرو کنند.
               </p>
-
               <div className="flex flex-wrap gap-4">
                 <DoctorsSignUpButt />
                 <DoctorLoginButt />
@@ -113,7 +159,6 @@ function DoctorSignupPage() {
           <h2 className="text-3xl font-bold text-gray-800">
             خدمات دکتر رزرو برای پزشکان
           </h2>
-
           <p className="text-gray-500 mt-3 text-lg">
             چرا باید به جمع بزرگ پزشکان دکتر رزرو بپیوندید؟
           </p>
@@ -133,11 +178,9 @@ function DoctorSignupPage() {
                   className="w-14 h-14 object-contain"
                 />
               </div>
-
               <h3 className="text-xl font-semibold text-[#005DAD] mb-4">
                 {item.title}
               </h3>
-
               <p className="text-gray-600 leading-relaxed text-[15px] flex-1">
                 {item.caption}
               </p>

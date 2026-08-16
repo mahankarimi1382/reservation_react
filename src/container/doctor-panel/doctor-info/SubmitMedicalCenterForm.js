@@ -1,80 +1,526 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { PiWarningCircleLight } from "react-icons/pi";
 import { LuPlus } from "react-icons/lu";
+import { CiSearch } from "react-icons/ci";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  useMapEvents,
+  useMap,
+} from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+// آیکون‌های leaflet
+import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+});
+
+import {
+  add_Office,
+  read_office_type,
+  create_doctor_treatment,
+} from "../../../api/ApiCalling"; // مسیر را چک کن
+import { userProfileStore, userDoctorStorage } from "../../../store/Store"; // مسیر را چک کن
+import {
+  ProvinceSelectInput,
+  CitySelectInput,
+} from "../../../components/Inputs/Input"; // مسیر را چک کن
+
+// تغییر مرکز نقشه
+function ChangeView({ center, zoom }) {
+  const map = useMap();
+  useEffect(() => {
+    if (center) {
+      map.setView(center, zoom || 15);
+    }
+  }, [center, zoom, map]);
+  return null;
+}
+
+// گرفتن کلیک روی نقشه
+function LocationMarker({ position, setPosition }) {
+  useMapEvents({
+    click(e) {
+      setPosition({
+        lat: e.latlng.lat,
+        lng: e.latlng.lng,
+      });
+    },
+  });
+
+  return position ? <Marker position={[position.lat, position.lng]} /> : null;
+}
 
 function SubmitMedicalCenterForm() {
+  const { phoneNum } = userProfileStore();
+  const { doctorid } = userDoctorStorage(); // آیدی دکتر
+
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searching, setSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+
+  // نوع مطب
+  const [officeTypes, setOfficeTypes] = useState([]);
+
+  // استان و شهر
+  const [cities, setCities] = useState([]);
+  const [cityId, setCityId] = useState(null);
+
+  const [formData, setFormData] = useState({
+    name: "",
+    address: "",
+    geolat: 0,
+    geolon: 0,
+    phone: phoneNum || "",
+    PostalCode: "",
+    officeTypeId: "",
+  });
+
+  const [position, setPosition] = useState(null);
+  const [mapCenter, setMapCenter] = useState([35.6892, 51.389]);
+
+  // تشخیص نوع مطب تصویری یا صوتی
+  const selectedOfficeType = officeTypes.find(
+    (item) => String(item.id) === String(formData.officeTypeId)
+  )?.type;
+
+  const isVirtualOffice =
+    selectedOfficeType === "تصویری" || selectedOfficeType === "تلفی" || selectedOfficeType === "پیامرسان";
+
+  // خواندن انواع مطب
+  useEffect(() => {
+    const fetchOfficeTypes = async () => {
+      const data = await read_office_type();
+      if (data) {
+        setOfficeTypes(data);
+      }
+    };
+    fetchOfficeTypes();
+  }, []);
+
+  // وقتی نوع مطب مجازی شد، فیلدهای مربوطه رو پاک کن
+  useEffect(() => {
+    if (isVirtualOffice) {
+      setPosition(null);
+      setFormData((prev) => ({
+        ...prev,
+        geolat: 0,
+        geolon: 0,
+        PostalCode: "",
+        address: "",
+      }));
+      setSearchQuery("");
+      setSearchResults([]);
+    }
+  }, [isVirtualOffice]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleMapSelect = (pos) => {
+    setPosition(pos);
+    setFormData((prev) => ({
+      ...prev,
+      geolat: pos.lat,
+      geolon: pos.lng,
+    }));
+  };
+
+  // جستجوی آدرس
+  const handleSearch = async (e) => {
+    e?.preventDefault();
+    if (!searchQuery.trim()) return;
+
+    setSearching(true);
+    setSearchResults([]);
+
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          searchQuery
+        )}&countrycodes=ir&limit=8`,
+        {
+          headers: {
+            "Accept-Language": "fa",
+          },
+        }
+      );
+      const data = await response.json();
+
+      if (data && data.length > 0) {
+        setSearchResults(data);
+      } else {
+        setSearchResults([]);
+        alert("مکانی با این عبارت پیدا نشد");
+      }
+    } catch (error) {
+      console.error("خطا در جستجو:", error);
+      alert("خطا در جستجوی آدرس");
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  // انتخاب یکی از نتایج جستجو
+  const handleSelectResult = (result) => {
+    const lat = parseFloat(result.lat);
+    const lng = parseFloat(result.lon);
+
+    const newPos = { lat, lng };
+    setPosition(newPos);
+    setMapCenter([lat, lng]);
+    setFormData((prev) => ({
+      ...prev,
+      geolat: lat,
+      geolon: lng,
+      address: prev.address || result.display_name,
+    }));
+
+    setSearchResults([]);
+    setSearchQuery(result.display_name);
+  };
+
+  // ریست فرم
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      address: "",
+      geolat: 0,
+      geolon: 0,
+      phone: phoneNum || "",
+      PostalCode: "",
+      officeTypeId: "",
+    });
+    setPosition(null);
+    setSearchQuery("");
+    setSearchResults([]);
+    setCityId(null);
+    setCities([]);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (!formData.name) {
+      alert("لطفاً نام مطب را وارد کنید");
+      return;
+    }
+
+    // فقط برای مطب فیزیکی آدرس و موقعیت اجباریه
+    if (!isVirtualOffice) {
+      if (!formData.address) {
+        alert("لطفاً آدرس مطب را وارد کنید");
+        return;
+      }
+      if (!position) {
+        alert(
+          "لطفاً موقعیت مطب را روی نقشه انتخاب کنید یا از نتایج جستجو انتخاب کنید"
+        );
+        return;
+      }
+    }
+
+    if (!cityId || !cityId.id) {
+      alert("لطفاً شهر را انتخاب کنید");
+      return;
+    }
+
+    if (!formData.officeTypeId) {
+      alert("لطفاً نوع مطب را انتخاب کنید");
+      return;
+    }
+
+    if (!doctorid) {
+      alert("آیدی دکتر یافت نشد. لطفاً دوباره وارد شوید.");
+      return;
+    }
+
+    const payload = {
+      name: formData.name,
+      address: isVirtualOffice ? "" : formData.address,
+      geolat: isVirtualOffice ? 0 : Number(formData.geolat),
+      geolon: isVirtualOffice ? 0 : Number(formData.geolon),
+      phone: phoneNum || formData.phone,
+      cityId: Number(cityId.id),
+      PostalCode: isVirtualOffice ? "" : formData.PostalCode,
+      officeTypeId: Number(formData.officeTypeId),
+    };
+
+    console.log("Payload ایجاد مطب:", payload);
+
+    setLoading(true);
+
+    // ۱. اول مطب را می‌سازیم
+    add_Office(payload, setLoading, (res) => {
+      // ۲. بعد از موفقیت، آیدی مطب را می‌گیریم و به دکتر تخصیص می‌دهیم
+      const officeId = res?.data?.result?.office?.id;
+
+      if (!officeId) {
+        console.error("آیدی مطب از پاسخ سرور دریافت نشد");
+        resetForm();
+        return;
+      }
+
+      const treatmentPayload = {
+        doctorId: Number(doctorid),
+        clinicId: "", // خالی
+        officeId: officeId, // فقط این پر می‌شود
+        desc: "",
+        cityId: Number(cityId.id),
+      };
+
+      console.log("Payload تخصیص مطب به دکتر:", treatmentPayload);
+
+      // صدا زدن API تخصیص (پشت صحنه)
+      create_doctor_treatment(
+        treatmentPayload,
+        setLoading,
+        () => {
+          resetForm();
+        },
+        "مطب با موفقیت ثبت و به شما تخصیص داده شد"
+      );
+    });
+  };
+
   return (
-    <div className=" w-full flex gap-5 flex-col">
-      <div className=" flex w-full items-center text-[#005DAD] bg-[#ECF6FF] rounded-lg border border-[#005DAD] px-5 p-3 ">
-        <PiWarningCircleLight className=" text-xl" />
-        <h5>پزشک گرامی لطفا اطلاعات مربوط به مطب خود را وارد نمایید.</h5>
+    <div className="w-full flex flex-col gap-5">
+      {/* Warning banner */}
+      <div className="w-full flex items-center gap-3 text-[#005DAD] bg-[#ECF6FF] rounded-lg border border-[#005DAD] px-5 py-3">
+        <PiWarningCircleLight className="text-xl shrink-0" />
+        <h5 className="text-sm sm:text-base">
+          پزشک گرامی لطفا اطلاعات مربوط به مطب خود را وارد نمایید.
+        </h5>
       </div>
-      <div className=" flex w-full justify-end">
-        <button className=" flex justify-center p-2 gap-2 items-center rounded-lg text-[#005DAD] border border-[#005DAD]">
-          <LuPlus className=" text-3xl" />
-          افزودن مطب های بیشتر
-        </button>
-      </div>
-      <div className=" bg-white rounded-3xl shadow-md flex flex-col gap-5 p-3">
-        <div className=" flex items-center gap-1">
-          <h5 className=" text-lg font-semibold">اطلاعات مطب: </h5>
-          <h5 className=" text-[#7D7D7D]">
+
+      {/* Add more clinics button */}
+
+
+      {/* Main form */}
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white rounded-3xl shadow-md flex flex-col gap-6 p-5 sm:p-6"
+      >
+        {/* Section title */}
+        <div className="flex flex-wrap items-center gap-1">
+          <h5 className="text-lg font-semibold text-gray-800">اطلاعات مطب:</h5>
+          <h5 className="text-sm text-[#7D7D7D]">
             ( لطفا اطلاعات مطب خود را وارد کنید )
           </h5>
         </div>
-        <div className=" flex justify-between items-center">
-          <div className=" flex flex-col w-[45%] items-start justify-center gap-2">
-            <h5 className=" text-lg font-semibold">نام مطب</h5>
+
+        {/* Row 1: نام مطب + نوع مطب */}
+        <div className="flex flex-col sm:flex-row justify-between gap-5">
+          <div className="flex flex-col w-full sm:w-[48%] gap-2">
+            <label className="text-base font-semibold text-gray-800">
+              نام مطب
+            </label>
             <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
               placeholder="لطفا نام مطب را وارد کنید"
-              className=" w-full bg-[#F7F7F7] py-4 border border-[#6B6B6B] rounded-lg "
+              className="w-full bg-[#F7F7F7] py-3.5 px-4 border border-[#6B6B6B] rounded-lg outline-none focus:border-[#005DAD] focus:ring-1 focus:ring-[#005DAD] transition"
+              required
             />
           </div>
-          <div className=" flex flex-col w-[45%] items-start justify-center gap-2">
-            <h5 className=" text-lg font-semibold">نوع مطب</h5>
-            <input
-              placeholder="لطفا نوع مطب را وارد کنید"
-              className=" w-full bg-[#F7F7F7] py-4 border border-[#6B6B6B] rounded-lg "
+
+          <div className="flex flex-col w-full sm:w-[48%] gap-2">
+            <label className="text-base font-semibold text-gray-800">
+              نوع مطب
+            </label>
+            <select
+              name="officeTypeId"
+              value={formData.officeTypeId}
+              onChange={handleChange}
+              className="w-full bg-[#F7F7F7] py-3.5 px-4 border border-[#6B6B6B] rounded-lg outline-none focus:border-[#005DAD] focus:ring-1 focus:ring-[#005DAD] transition"
+              required
+            >
+              <option value="">نوع مطب را انتخاب کنید</option>
+              {officeTypes.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.type}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* استان و شهر */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="flex flex-col gap-2">
+            <label className="text-base font-semibold text-gray-800">
+              استان
+            </label>
+            <ProvinceSelectInput hiddentitle setCities={setCities} />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-base font-semibold text-gray-800">
+              شهر <span className="text-red-500">*</span>
+            </label>
+            <CitySelectInput
+              hiddentitle
+              setCityId={setCityId}
+              cities={cities}
+              cityId={cityId}
             />
           </div>
         </div>
-        <div className=" flex justify-between items-start">
-          <div className=" flex gap-5 flex-col w-[45%]">
-            <div className=" flex flex-col w-full items-start justify-center gap-2">
-              <h5 className=" text-lg font-semibold">نوع مطب</h5>
-              <input
-                placeholder="لطفا نوع مطب را وارد کنید"
-                className=" w-full bg-[#F7F7F7] py-4 border border-[#6B6B6B] rounded-lg "
-              />
+
+        {/* کد پستی + آدرس + نقشه - فقط برای مطب فیزیکی */}
+        {!isVirtualOffice && (
+          <div className="flex flex-col lg:flex-row justify-between gap-5 items-start">
+            <div className="flex flex-col gap-5 w-full lg:w-[48%]">
+              <div className="flex flex-col gap-2">
+                <label className="text-base font-semibold text-gray-800">
+                  کد پستی
+                </label>
+                <input
+                  type="text"
+                  name="PostalCode"
+                  value={formData.PostalCode}
+                  onChange={handleChange}
+                  placeholder="لطفا کد پستی را وارد کنید"
+                  className="w-full bg-[#F7F7F7] py-3.5 px-4 border border-[#6B6B6B] rounded-lg outline-none focus:border-[#005DAD] focus:ring-1 focus:ring-[#005DAD] transition"
+                  required
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-base font-semibold text-gray-800">
+                  آدرس مطب
+                </label>
+                <textarea
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  placeholder="لطفا آدرس مطب را وارد کنید"
+                  className="w-full resize-none px-4 h-[120px] bg-[#F7F7F7] py-3.5 border border-[#6B6B6B] rounded-lg outline-none focus:border-[#005DAD] focus:ring-1 focus:ring-[#005DAD] transition"
+                  required
+                />
+              </div>
             </div>
-            <div className=" flex flex-col w-full items-start justify-center gap-2">
-              <h5 className=" text-lg font-semibold">آدرس مطب</h5>
-              <textarea
-                placeholder="لطفا آدرس مطب را وارد کنید"
-                className=" w-full resize-none px-5 h-[120px] bg-[#F7F7F7] py-4 border border-[#6B6B6B] rounded-lg "
-              />
+
+            {/* نقشه + جستجو */}
+            <div className="w-full lg:w-[48%] flex flex-col gap-2">
+              <label className="text-base font-semibold text-gray-800">
+                لوکیشن مطب
+              </label>
+
+              <div className="relative">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSearch(e)}
+                    placeholder="جستجوی آدرس (مثال: تهران، ونک)"
+                    className="flex-1 bg-[#F7F7F7] py-2.5 px-3 border border-[#6B6B6B] rounded-lg outline-none focus:border-[#005DAD] text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSearch}
+                    disabled={searching}
+                    className="bg-[#005DAD] text-white px-3 rounded-lg hover:bg-[#004a8f] transition flex items-center justify-center disabled:opacity-60"
+                  >
+                    {searching ? (
+                      <span className="text-xs">...</span>
+                    ) : (
+                      <CiSearch className="text-xl" />
+                    )}
+                  </button>
+                </div>
+
+                {searchResults.length > 0 && (
+                  <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-52 overflow-y-auto">
+                    {searchResults.map((result, index) => (
+                      <button
+                        key={result.place_id || index}
+                        type="button"
+                        onClick={() => handleSelectResult(result)}
+                        className="w-full text-right px-3 py-2.5 text-sm hover:bg-[#ECF6FF] border-b border-gray-100 last:border-b-0 transition-colors"
+                      >
+                        <span className="line-clamp-2">
+                          {result.display_name}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="h-60 rounded-xl border border-[#6B6B6B] overflow-hidden relative z-0">
+                <MapContainer
+                  center={mapCenter}
+                  zoom={13}
+                  style={{ height: "100%", width: "100%" }}
+                  scrollWheelZoom={true}
+                >
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  <ChangeView center={mapCenter} zoom={15} />
+                  <LocationMarker
+                    position={position}
+                    setPosition={handleMapSelect}
+                  />
+                </MapContainer>
+              </div>
+
+              {position && (
+                <p className="text-xs text-gray-500">
+                  موقعیت انتخاب‌شده: {position.lat.toFixed(5)} ,{" "}
+                  {position.lng.toFixed(5)}
+                </p>
+              )}
             </div>
           </div>
-          <div className=" w-[45%] flex flex-col gap-2 ">
-            <h5 className=" font-semibold">لوکیشن مطب</h5>
-            <div className=" flex justify-center h-60 rounded-xl border border-[#6B6B6B] bg-[#F7F7F7] items-center">
-              <LuPlus className=" text-5xl " />
-            </div>
-          </div>
-        </div>
-        <div className=" flex flex-col w-full items-start justify-center gap-2">
-          <h5 className=" text-lg font-semibold">نوع مطب</h5>
+        )}
+
+        {/* تلفن */}
+        <div className="flex flex-col w-full gap-2">
+          <label className="text-base font-semibold text-gray-800">
+            شماره تلفن
+          </label>
           <input
-            placeholder="لطفا نوع مطب را وارد کنید"
-            className=" w-full bg-[#F7F7F7] py-4 border border-[#6B6B6B] rounded-lg "
+            type="text"
+            value={phoneNum || "شماره ثبت نشده"}
+            disabled
+            className="w-full bg-gray-100 py-3.5 px-4 border border-[#6B6B6B] rounded-lg text-gray-600 cursor-not-allowed"
           />
         </div>
-        <div className=" w-full justify-center items-center flex">
-          <button className=" text-white bg-[#005DAD] p-3 w-[40%] rounded-lg">
-            ثبت اطلاعات
+
+        {/* دکمه ثبت */}
+        <div className="w-full flex justify-center pt-2">
+          <button
+            type="submit"
+            disabled={loading}
+            className={`text-white bg-[#005DAD] hover:bg-[#004a8f] py-3 px-6 w-full sm:w-[40%] rounded-lg font-medium transition-colors ${
+              loading ? "opacity-70 cursor-not-allowed" : ""
+            }`}
+          >
+            {loading ? "در حال ثبت..." : "ثبت اطلاعات"}
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 }

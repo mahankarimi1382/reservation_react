@@ -10,6 +10,7 @@ import DoctorUploadingOptions from "../../../../container/doctor-panel/doctor-in
 import MakeProfileForm from "../../../../container/doctor-panel/doctor-info/MakeProfileForm";
 import { fullNameStorage, userDoctorStorage } from "../../../../store/Store";
 import { get_doctor_profile_by_id } from "../../../../api/ApiCalling";
+import ProfileDropdown from "../../../../components/ProfileDropdown";
 
 function Page() {
   const { fullName } = fullNameStorage();
@@ -20,7 +21,7 @@ function Page() {
   const [isLoading, setIsLoading] = useState(true);
 
   const currentDoctorId = doctorid || doctors?.id;
-
+console.log(currentDoctorId)
   useEffect(() => {
     const fetchDoctorProfile = async () => {
       if (!currentDoctorId) return;
@@ -54,11 +55,11 @@ function Page() {
             <CiSearch className="text-white text-4xl p-1 rounded-lg bg-[#005DAD]" />
           </label>
 
-          <button className="flex justify-center items-center p-2 border text-[#005DAD] gap-2 border-[#005DAD] rounded-xl">
-            <img src={DoctorProfIcon} width={24} alt="icon" />
-            دکتر {displayedFullName}
-            <IoIosArrowDown className="text-xl" />
-          </button>
+         <ProfileDropdown
+            fullName={fullName}
+            title="دکتر"
+
+          />
         </div>
 
         <div className="text-white gap-3 p-5 w-[80%] flex flex-col justify-center items-center rounded-3xl shadow-md bg-[#78C0FD]">

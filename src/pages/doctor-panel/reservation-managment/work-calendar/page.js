@@ -8,6 +8,7 @@ import DoctorWorkCalendar from "../../../../container/doctor-panel/reservation-m
 import setting from "../../../../assets/Pics/doctorPanel/setting.png";
 import { Switch } from "@mui/material";
 import { fullNameStorage } from "../../../../store/Store";
+import ProfileDropdown from "../../../../components/ProfileDropdown";
 function page() {
               const { fullName } = fullNameStorage();
 
@@ -20,11 +21,11 @@ function page() {
             <input className=" w-full outline-none" placeholder="جستجو" />
             <CiSearch className=" text-white text-4xl p-1 rounded-lg bg-[#005DAD]" />
           </label>
-          <button className=" flex justify-center items-center p-2 border text-[#005DAD] gap-2 border-[#005DAD] rounded-xl">
-            <img src={DoctorProfIcon} width={24} alt="icon" />
-            دکتر {fullName}
-            <IoIosArrowDown className=" text-xl" />
-          </button>
+         <ProfileDropdown
+            fullName={fullName}
+            title="دکتر"
+
+          />
         </div>
         <div className=" gap-8 w-[80%]  rounded-xl shadow-lg bg-white flex flex-col p-5">
           <div className=" text-xl flex gap-1 items-center">

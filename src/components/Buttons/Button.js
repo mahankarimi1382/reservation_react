@@ -72,20 +72,19 @@ export const LoginButton = () => {
       const usernameForRole = (phoneNum || "").trim();
 
       // اگر موبایل در استور خالیه، حداقل کاربر رو بفرست پنل کاربری
-      if (!usernameForRole) {
-        navigate("/userPanel/dashboard");
-        return;
-      }
 
       const roles = await get_user_role_by_username(usernameForRole);
 
       const roleNameRaw = roles?.[0]?.roleName || "";
       const roleName = roleNameRaw.trim().toLowerCase();
-
+      console.log(roleName);
       if (roleName === "superadmin") {
         navigate("/adminpanel/dashboard");
       } else if (roleName === "doctor") {
         navigate("/doctor-panel/dashboard");
+      } else if (!usernameForRole) {
+        navigate("/userPanel/dashboard");
+        return;
       } else {
         navigate("/userPanel/dashboard");
       }
@@ -759,6 +758,7 @@ export const DoctorsSignUpButt = () => {
       )}
       <button
         onClick={() => {
+          console.log(token);
           if (token) {
             setIsModal(true);
           } else {

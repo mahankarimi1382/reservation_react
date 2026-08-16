@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { RxCross2 } from "react-icons/rx";
 import { MdDeleteForever } from "react-icons/md";
 import { SyncLoader } from "react-spinners";
@@ -13,15 +13,17 @@ import {
 } from "../Inputs/Input";
 
 import { add_doctor } from "../../api/ApiCalling";
-import { smeIdStorage, userProfileStore } from "../../store/Store";
-import { Eror, success } from "../ToastAlerts";
+import { fullNameStorage, smeIdStorage, userProfileStore } from "../../store/Store";
+import { Eror } from "../ToastAlerts";
 
-const DoctorFormModal = ({ setIsAddDoctorModal, fromSignup }) => {
+const DoctorFormModal = ({ setIsAddDoctorModal }) => {
+    const { fullName, setFullName } = fullNameStorage();
+  
   const { phoneNum } = userProfileStore();
   const { smeId } = smeIdStorage();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [image, setImage] = useState(null);
+  const [image, setImage] = useState(null); // base64
   const [cities, setCities] = useState([]);
 
   const [formData, setFormData] = useState({
@@ -38,52 +40,94 @@ const DoctorFormModal = ({ setIsAddDoctorModal, fromSignup }) => {
   const [specialistId, setSpecialistId] = useState("");
   const [cityId, setCityId] = useState(null);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  // ==================== Handlers ====================
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setImage(reader.result);
-      reader.readAsDataURL(file);
-    }
-  };
+  const handleChange = useCallback((e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  }, []);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleImageChange = useCallback((e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    if (!formData.name || !formData.lastName || !specialistId || !cityId) {
-      Eror("لطفا فیلدهای ضروری را پر کنید");
+    if (!file.type.startsWith("image/")) {
+      Eror("لطفاً فقط فایل تصویر انتخاب کنید");
       return;
     }
 
-    // ✅ ساختار دقیقاً مطابق با AddNewDoctorModal
-    const data = {
+    const reader = new FileReader();
+    reader.onloadend = () => setImage(reader.result);
+    reader.readAsDataURL(file);
+  }, []);
+
+  const handleRemoveImage = useCallback(() => setImage(null), []);
+
+  const validateForm = () => {
+    if (!formData.name?.trim()) {
+      Eror("لطفا نام پزشک را وارد کنید");
+      return false;
+    }
+    if (!formData.lastName?.trim()) {
+      Eror("لطفا نام خانوادگی پزشک را وارد کنید");
+      return false;
+    }
+    if (!specialistId) {
+      Eror("لطفا تخصص پزشک را انتخاب کنید");
+      return false;
+    }
+    if (!cityId) {
+      Eror("لطفا شهر را انتخاب کنید");
+      return false;
+    }
+    if (!formData.codeNezam) {
+      Eror("لطفا کد نظام پزشکی را وارد کنید");
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    setIsLoading(true);
+
+    const payload = {
+      id: 0,
       metadata: {
         userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
         userName: "string",
         smeProfileId: smeId || 0,
       },
-      doctorName: formData.name,
-      doctorFamily: formData.lastName,
-      nationalId: formData.nationalCode,
-      codeNezam: formData.codeNezam,
+      doctorName: formData.name.trim(),
+      doctorFamily: formData.lastName.trim(),
+      nationalId: formData.nationalCode?.trim() || "",
+      codeNezam: parseInt(formData.codeNezam) || 0,
       specialistId: specialistId,
       mobile: formData.phone,
-      city: cityId?.id || cityId,
-      desc: formData.desc,
+      // city: cityId?.id || cityId,           // ← اینجا بود مشکل اصلی
+      address: formData.address?.trim() || "",
+      desc: formData.desc?.trim() || "string",
       gender: formData.gender === "" ? null : formData.gender === "true",
       docExperiance: "string",
-      docInstaLink: image,
-      smeProfileId: smeId || "",
-      uniqueSSR: formData.name + " " + formData.lastName,
+      docInstaLink: image || "string",
+      smeProfileId: smeId || 0,
+      uniqueSSR: `${formData.name.trim()} ${formData.lastName.trim()}`,
     };
-    add_doctor(data, setIsLoading, () => {
-      setIsAddDoctorModal(false);
-    });
+
+    try {
+      await add_doctor(payload, setIsLoading, () => {
+        setIsAddDoctorModal(false);
+      });
+    } catch (error) {
+      console.error("Error adding doctor:", error);
+    } finally {
+      // setIsLoading(false) داخل add_doctor مدیریت می‌شود
+    }
   };
+
+  // ==================== Render ====================
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
@@ -99,32 +143,34 @@ const DoctorFormModal = ({ setIsAddDoctorModal, fromSignup }) => {
           />
         </div>
 
-        <div className="flex flex-col lg:flex-row overflow-hidden">
+        <div className="flex flex-col lg:flex-row overflow-hidden flex-1">
           {/* فرم */}
           <div className="flex-1 p-6 lg:p-8 overflow-auto">
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* نام و نام خانوادگی */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">نام</label>
+                  <label className="block text-sm font-medium mb-2">
+                    نام <span className="text-red-500">*</span>
+                  </label>
                   <input
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    required
-                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:border-[#005DAD] focus:ring-1 focus:ring-[#005DAD] outline-none"
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:border-[#005DAD] focus:ring-1 focus:ring-[#005DAD] outline-none transition-all"
+                    placeholder="نام پزشک"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    نام خانوادگی
+                    نام خانوادگی <span className="text-red-500">*</span>
                   </label>
                   <input
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleChange}
-                    required
-                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:border-[#005DAD] focus:ring-1 focus:ring-[#005DAD] outline-none"
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:border-[#005DAD] focus:ring-1 focus:ring-[#005DAD] outline-none transition-all"
+                    placeholder="نام خانوادگی"
                   />
                 </div>
               </div>
@@ -132,14 +178,11 @@ const DoctorFormModal = ({ setIsAddDoctorModal, fromSignup }) => {
               {/* جنسیت + کد نظام */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    جنسیت
-                  </label>
+                  <label className="block text-sm font-medium mb-2">جنسیت</label>
                   <select
                     name="gender"
                     value={formData.gender}
                     onChange={handleChange}
-                    required
                     className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:border-[#005DAD] focus:ring-1 focus:ring-[#005DAD] outline-none"
                   >
                     <option value="">انتخاب کنید</option>
@@ -149,14 +192,15 @@ const DoctorFormModal = ({ setIsAddDoctorModal, fromSignup }) => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    کد نظام پزشکی
+                    کد نظام پزشکی <span className="text-red-500">*</span>
                   </label>
                   <input
                     name="codeNezam"
+                    type="number"
                     value={formData.codeNezam}
                     onChange={handleChange}
-                    required
                     className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:border-[#005DAD] focus:ring-1 focus:ring-[#005DAD] outline-none"
+                    placeholder="کد نظام"
                   />
                 </div>
               </div>
@@ -164,27 +208,22 @@ const DoctorFormModal = ({ setIsAddDoctorModal, fromSignup }) => {
               {/* کد ملی + شماره همراه */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    کد ملی
-                  </label>
+                  <label className="block text-sm font-medium mb-2">کد ملی</label>
                   <input
                     name="nationalCode"
                     value={formData.nationalCode}
                     onChange={handleChange}
-                    required
                     className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:border-[#005DAD] focus:ring-1 focus:ring-[#005DAD] outline-none"
+                    placeholder="کد ملی"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    شماره همراه
-                  </label>
+                  <label className="block text-sm font-medium mb-2">شماره همراه</label>
                   <input
+                    disabled
                     name="phone"
                     value={formData.phone}
-                    onChange={handleChange}
-                    required
-                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:border-[#005DAD] focus:ring-1 focus:ring-[#005DAD] outline-none"
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 bg-gray-50"
                   />
                 </div>
               </div>
@@ -192,13 +231,13 @@ const DoctorFormModal = ({ setIsAddDoctorModal, fromSignup }) => {
               {/* استان و شهر */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    استان
-                  </label>
+                  <label className="block text-sm font-medium mb-2">استان</label>
                   <ProvinceSelectInput hiddentitle setCities={setCities} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">شهر</label>
+                  <label className="block text-sm font-medium mb-2">
+                    شهر <span className="text-red-500">*</span>
+                  </label>
                   <CitySelectInput
                     hiddentitle
                     setCityId={setCityId}
@@ -218,68 +257,69 @@ const DoctorFormModal = ({ setIsAddDoctorModal, fromSignup }) => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    آدرس مطب
+                    آدرس مطب <span className="text-red-500">*</span>
                   </label>
                   <input
                     name="address"
                     value={formData.address}
                     onChange={handleChange}
-                    required
                     className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:border-[#005DAD] focus:ring-1 focus:ring-[#005DAD] outline-none"
+                    placeholder="آدرس کامل مطب"
                   />
                 </div>
               </div>
 
               {/* عکس دکتر */}
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  عکس دکتر
-                </label>
+                <label className="block text-sm font-medium mb-2">عکس دکتر</label>
                 {image ? (
-                  <div className="relative w-28 h-28 mx-auto group">
+                  <div className="relative w-32 h-32 mx-auto group">
                     <img
                       src={image}
-                      alt="doctor"
-                      className="w-28 h-28 object-cover rounded-2xl border"
+                      alt="پیش‌نمایش پزشک"
+                      className="w-32 h-32 object-cover rounded-2xl border-2 border-gray-200"
                     />
-                    <div
-                      onClick={() => setImage(null)}
-                      className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-2xl opacity-0 group-hover:opacity-100 cursor-pointer transition-all"
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 shadow-md hover:bg-red-600 transition-colors"
                     >
-                      <MdDeleteForever className="text-white text-4xl" />
-                    </div>
+                      <MdDeleteForever size={20} />
+                    </button>
                   </div>
                 ) : (
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="w-full border border-dashed border-gray-400 rounded-xl p-4 text-center cursor-pointer hover:border-[#005DAD]"
-                  />
+                  <label className="w-full border border-dashed border-gray-400 rounded-xl p-8 text-center cursor-pointer hover:border-[#005DAD] transition-colors block">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                    <span className="text-gray-500">کلیک کنید یا عکس را بکشید</span>
+                  </label>
                 )}
               </div>
 
               {/* توضیحات */}
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  توضیحات
-                </label>
+                <label className="block text-sm font-medium mb-2">توضیحات</label>
                 <textarea
                   name="desc"
                   value={formData.desc}
                   onChange={handleChange}
                   rows={4}
                   className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:border-[#005DAD] focus:ring-1 focus:ring-[#005DAD] outline-none resize-y"
+                  placeholder="توضیحات اضافی (اختیاری)"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full lg:w-1/2 mx-auto bg-[#005DAD] hover:bg-[#00438a] disabled:bg-blue-400 text-white py-4 rounded-xl font-medium text-lg transition-all"
+                className="w-full lg:w-1/2 mx-auto bg-[#005DAD] hover:bg-[#00438a] disabled:bg-blue-400 disabled:cursor-not-allowed text-white py-4 rounded-xl font-medium text-lg transition-all flex items-center justify-center gap-3"
               >
                 {isLoading ? (
-                  <SyncLoader color="white" size={10} />
+                  <SyncLoader color="white" size={8} />
                 ) : (
                   "ثبت درخواست عضویت"
                 )}
@@ -288,7 +328,7 @@ const DoctorFormModal = ({ setIsAddDoctorModal, fromSignup }) => {
           </div>
 
           {/* تصویر سمت راست */}
-          <div className="hidden lg:block w-2/5 relative">
+          <div className="hidden lg:block w-2/5 relative overflow-hidden">
             <img
               src={LoginFormImage}
               alt="doctor form"
@@ -302,7 +342,7 @@ const DoctorFormModal = ({ setIsAddDoctorModal, fromSignup }) => {
       <img
         src={LoginFormImage_mobile}
         alt="doctor form mobile"
-        className="lg:hidden w-full fixed bottom-0 left-0 z-[-1] opacity-30"
+        className="lg:hidden w-full fixed bottom-0 left-0 z-[-1] opacity-30 pointer-events-none"
       />
     </div>
   );

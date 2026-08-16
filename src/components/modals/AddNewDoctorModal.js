@@ -11,10 +11,12 @@ import {
   edit_doctors,
   get_doctor_profile_by_id,
 } from "../../api/ApiCalling";
-import { smeIdStorage } from "../../store/Store";
+import { fullNameStorage, smeIdStorage } from "../../store/Store";
 import { Eror, success } from "../ToastAlerts";
 
 function AddNewDoctorModal({ setIsAddDoctorModal, doctorItems }) {
+    const { fullName, setFullName } = fullNameStorage();
+  
   const { smeId } = smeIdStorage();
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false); // برای لودینگ هنگام ویرایش
@@ -31,7 +33,7 @@ function AddNewDoctorModal({ setIsAddDoctorModal, doctorItems }) {
   });
 
   const [specialistId, setSpecialistId] = useState("");
-console.log(specialistId)
+  console.log(specialistId);
   // ==================== Fetch Doctor Data when Editing ====================
   useEffect(() => {
     const fetchDoctor = async () => {
@@ -85,57 +87,55 @@ console.log(specialistId)
     reader.readAsDataURL(file);
   };
 
-const handleSubmit = () => {
-  // ۱. اعتبارسنجی فیلدهای ضروری
-  if (
-    !formData.doctorName ||
-    !formData.doctorFamily ||
-    !formData.codeNezam ||
-    !specialistId
-  ) {
-    Eror("لطفا فیلدهای ضروری را پر کنید");
-    return;
-  }
+  const handleSubmit = () => {
+    // ۱. اعتبارسنجی فیلدهای ضروری
+    if (
+      !formData.doctorName ||
+      !formData.doctorFamily ||
+      !formData.codeNezam ||
+      !specialistId
+    ) {
+      Eror("لطفا فیلدهای ضروری را پر کنید");
+      return;
+    }
 
-  // ۲. ساخت آبجکت نهایی مطابق با مستندات بک‌اند
-  const data = {
-    // اضافه کردن ID که برای متد PUT الزامی است
-    id: doctorItems?.id || 0, 
-    
-    metadata: {
-      userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      userName: "string",
+    // ۲. ساخت آبجکت نهایی مطابق با مستندات بک‌اند
+    const data = {
+      // اضافه کردن ID که برای متد PUT الزامی است
+      id: doctorItems?.id || 0,
+
+      metadata: {
+        userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        userName: "string",
+        smeProfileId: smeId || 0,
+      },
+      doctorName: formData.doctorName,
+      doctorFamily: formData.doctorFamily,
+      nationalId: formData.nationalId,
+      // تبدیل به عدد برای رعایت نوع داده (Integer)
+      codeNezam: parseInt(formData.codeNezam) || 0,
+      specialistId: specialistId,
+      mobile: formData.mobile,
+      desc: formData.desc || "string",
+      gender: formData.gender === "" ? null : formData.gender === "true",
+      docExperiance: "string",
+      docInstaLink: formData.photoBase64 || "string",
+      uniqueSSR: `${formData.doctorName} ${formData.doctorFamily}`,
       smeProfileId: smeId || 0,
-    },
-    doctorName: formData.doctorName,
-    doctorFamily: formData.doctorFamily,
-    nationalId: formData.nationalId,
-    // تبدیل به عدد برای رعایت نوع داده (Integer)
-    codeNezam: parseInt(formData.codeNezam) || 0,
-    specialistId: specialistId,
-    mobile: formData.mobile,
-    desc: formData.desc || "string",
-    gender: formData.gender === "" ? null : formData.gender === "true",
-    docExperiance: "string", 
-    docInstaLink: formData.photoBase64 || "string",
-    uniqueSSR: `${formData.doctorName} ${formData.doctorFamily}`,
-          smeProfileId: smeId || 0,
+    };
 
+    setIsLoading(true);
+
+    // ۳. ارسال درخواست
+    if (doctorItems?.id) {
+      edit_doctors(data, setIsLoading, setIsAddDoctorModal);
+    } else {
+      // در حالت افزودن، معمولاً فیلد id نباید فرستاده شود یا باید 0 باشد
+      // اگر بک‌اند در حالت افزودن به فیلد id ایراد گرفت، آن را از آبجکت ارسالی در اینجا حذف کنید
+      add_doctor(data, setIsLoading, setIsAddDoctorModal);
+      console.log(data);
+    }
   };
-
-  setIsLoading(true);
-
-  // ۳. ارسال درخواست
-  if (doctorItems?.id) {
-    edit_doctors(data, setIsLoading, setIsAddDoctorModal);
-  } else {
-    // در حالت افزودن، معمولاً فیلد id نباید فرستاده شود یا باید 0 باشد
-    // اگر بک‌اند در حالت افزودن به فیلد id ایراد گرفت، آن را از آبجکت ارسالی در اینجا حذف کنید
-    add_doctor(data, setIsLoading, setIsAddDoctorModal);
-    console.log(data)
-  }
-};
-
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">

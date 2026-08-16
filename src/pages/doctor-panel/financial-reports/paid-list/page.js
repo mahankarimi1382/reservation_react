@@ -6,6 +6,7 @@ import DoctorPanelMenu from "../../../../container/doctor-panel/DoctorPanelMenu"
 import PaidListChart from "../../../../container/doctor-panel/financial-reports/PaidListChart";
 import PaideListTable from "../../../../container/doctor-panel/financial-reports/PaidListTable";
 import { fullNameStorage } from "../../../../store/Store";
+import ProfileDropdown from "../../../../components/ProfileDropdown";
 
 function page() {
             const { fullName } = fullNameStorage();
@@ -19,11 +20,11 @@ function page() {
             <input className=" w-full outline-none" placeholder="جستجو" />
             <CiSearch className=" text-white text-4xl p-1 rounded-lg bg-[#005DAD]" />
           </label>
-          <button className=" flex justify-center items-center p-2 border text-[#005DAD] gap-2 border-[#005DAD] rounded-xl">
-            <img src={DoctorProfIcon} width={24} alt="icon" />
-            دکتر {fullName}
-            <IoIosArrowDown className=" text-xl" />
-          </button>
+         <ProfileDropdown
+            fullName={fullName}
+            title="دکتر"
+
+          />
         </div>
         <div className=" w-[80%] flex gap-7 flex-col">
           <div className=" w-full justify-between flex">

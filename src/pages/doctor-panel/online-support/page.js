@@ -9,6 +9,7 @@ import { GoTrash } from "react-icons/go";
 import UploadingInputContainer from "../../../container\/doctor-panel/doctor-info/UploadingInputContainer";
 import message from "../../../assets/Pics/doctorPanel/messages.png";
 import { fullNameStorage } from "../../../store/Store";
+import ProfileDropdown from "../../../components/ProfileDropdown";
 function page() {
               const { fullName } = fullNameStorage();
 
@@ -21,11 +22,11 @@ function page() {
             <input className=" w-full outline-none" placeholder="جستجو" />
             <CiSearch className=" text-white text-4xl p-1 rounded-lg bg-[#005DAD]" />
           </label>
-          <button className=" flex justify-center items-center p-2 border text-[#005DAD] gap-2 border-[#005DAD] rounded-xl">
-            <img src={DoctorProfIcon} width={24} alt="icon" />
-            دکتر {fullName}
-            <IoIosArrowDown className=" text-xl" />
-          </button>
+         <ProfileDropdown
+            fullName={fullName}
+            title="دکتر"
+
+          />
         </div>
         <div className=" border shadow w-[80%] mt-14 p-5 flex gap-7 bg-white rounded-3xl flex-col">
           <div className=" flex items-center gap-5">
