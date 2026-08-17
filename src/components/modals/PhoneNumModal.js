@@ -12,7 +12,7 @@ import {
 import { signin, signup } from "../../api/ApiCalling";
 import ValidateModal from "./ValidateModal";
 function PhoneNumModal({ closeModal, setIsPhoneNumModal, setIsSignupModal }) {
-                  const { doctors,setDoctors } = userDoctorStorage();
+                  const { doctors,setDoctors,setDoctorId } = userDoctorStorage();
   
   const inputRef = useRef(null);
   const { setToken } = myStore();
@@ -33,7 +33,16 @@ function PhoneNumModal({ closeModal, setIsPhoneNumModal, setIsSignupModal }) {
 
   const handleSubmit = () => {
     loginByPass
-      ? signin(setIsLoading, data2, setFullName, setToken, closeModal, setSmeId,setDoctors)
+      ? signin(
+          setIsLoading,
+          data2,
+          setFullName,
+          setToken,
+          closeModal,
+          setSmeId,
+          setDoctors,
+          setDoctorId
+        )
       : signup(setIsLoading, data, setIsValidateModal);
   };
   const handleKeyDown = (e) => {

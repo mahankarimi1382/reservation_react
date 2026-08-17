@@ -28,6 +28,21 @@ const MedicalFormModal = ({ closeModal, selectedMedical }) => {
     if (result) {
       console.log(result);
       setOfficeTypes(result);
+
+      // هنگام ویرایش، اگر نوع مطب غیرحضوری بود باید فیلدهای آدرس/نقشه مخفی شوند
+      const currentTypeId =
+        selectedMedical && selectedMedical.officeTypeId
+          ? selectedMedical.officeTypeId
+          : null;
+
+      if (currentTypeId) {
+        const currentType = result.find(
+          (item) => String(item.id) === String(currentTypeId)
+        );
+        if (currentType && currentType.type !== "حضوری") {
+          setIsVirtual(true);
+        }
+      }
     }
   };
   const get_clinics_type = async () => {
@@ -116,6 +131,7 @@ const MedicalFormModal = ({ closeModal, selectedMedical }) => {
     cityId: cityId.id || cityId,
     postalCode: siamCode,
     officeTypeId,
+    desc,
   };
   const handleSubmit = () => {
     if (
@@ -253,15 +269,12 @@ const MedicalFormModal = ({ closeModal, selectedMedical }) => {
                     }}
                     className="w-full px-3 py-2 border border-[#636972] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    {officeTypes.map((item) => {
-                      <option value={null}>انتخاب نوع مطب</option>;
-
-                      return (
-                        <option key={item.id} value={item.id}>
-                          {item.type}
-                        </option>
-                      );
-                    })}
+                    <option value={0}>انتخاب نوع مطب</option>
+                    {officeTypes.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.type}
+                      </option>
+                    ))}
                   </select>
                 ) : (
                   <select
@@ -271,15 +284,11 @@ const MedicalFormModal = ({ closeModal, selectedMedical }) => {
                   >
                     <option value={null}>انتخاب نوع مرکز درمانی</option>
 
-                    {clinicTypes.map((item) => {
-                      <option value={null}>انتخاب نوع مطب</option>;
-
-                      return (
-                        <option key={item.id} value={item.id}>
-                          {item.type}
-                        </option>
-                      );
-                    })}
+                    {clinicTypes.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.type}
+                      </option>
+                    ))}
                   </select>
                 )}
               </div>

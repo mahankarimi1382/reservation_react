@@ -28,7 +28,9 @@ import {
   add_Office,
   read_office_type,
   create_doctor_treatment,
+  extract_office_id,
 } from "../../../api/ApiCalling"; // مسیر را چک کن
+import { Eror } from "../../../components/ToastAlerts";
 import { userProfileStore, userDoctorStorage } from "../../../store/Store"; // مسیر را چک کن
 import {
   ProvinceSelectInput,
@@ -60,7 +62,7 @@ function LocationMarker({ position, setPosition }) {
   return position ? <Marker position={[position.lat, position.lng]} /> : null;
 }
 
-function SubmitMedicalCenterForm() {
+function SubmitMedicalCenterForm({ onCreated }) {
   const { phoneNum } = userProfileStore();
   const { doctorid } = userDoctorStorage(); // آیدی دکتر
 
@@ -84,6 +86,7 @@ function SubmitMedicalCenterForm() {
     phone: phoneNum || "",
     PostalCode: "",
     officeTypeId: "",
+    desc: "",
   });
 
   const [position, setPosition] = useState(null);
@@ -166,11 +169,11 @@ function SubmitMedicalCenterForm() {
         setSearchResults(data);
       } else {
         setSearchResults([]);
-        alert("مکانی با این عبارت پیدا نشد");
+        Eror("مکانی با این عبارت پیدا نشد");
       }
     } catch (error) {
       console.error("خطا در جستجو:", error);
-      alert("خطا در جستجوی آدرس");
+      Eror("خطا در جستجوی آدرس");
     } finally {
       setSearching(false);
     }
@@ -205,6 +208,7 @@ function SubmitMedicalCenterForm() {
       phone: phoneNum || "",
       PostalCode: "",
       officeTypeId: "",
+      desc: "",
     });
     setPosition(null);
     setSearchQuery("");
@@ -213,22 +217,22 @@ function SubmitMedicalCenterForm() {
     setCities([]);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.name) {
-      alert("لطفاً نام مطب را وارد کنید");
+    if (!formData.name.trim()) {
+      Eror("لطفاً نام مطب را وارد کنید");
       return;
     }
 
     // فقط برای مطب فیزیکی آدرس و موقعیت اجباریه
     if (!isVirtualOffice) {
-      if (!formData.address) {
-        alert("لطفاً آدرس مطب را وارد کنید");
+      if (!formData.address.trim()) {
+        Eror("لطفاً آدرس مطب را وارد کنید");
         return;
       }
       if (!position) {
-        alert(
+        Eror(
           "لطفاً موقعیت مطب را روی نقشه انتخاب کنید یا از نتایج جستجو انتخاب کنید"
         );
         return;
@@ -236,23 +240,28 @@ function SubmitMedicalCenterForm() {
     }
 
     if (!cityId || !cityId.id) {
-      alert("لطفاً شهر را انتخاب کنید");
+      Eror("لطفاً شهر را انتخاب کنید");
       return;
     }
 
     if (!formData.officeTypeId) {
-      alert("لطفاً نوع مطب را انتخاب کنید");
+      Eror("لطفاً نوع مطب را انتخاب کنید");
       return;
     }
 
     if (!doctorid) {
-      alert("آیدی دکتر یافت نشد. لطفاً دوباره وارد شوید.");
+      Eror("آیدی پزشک یافت نشد. لطفاً دوباره وارد شوید.");
       return;
     }
 
     const payload = {
-      name: formData.name,
-      address: isVirtualOffice ? "" : formData.address,
+      metadata: {
+        userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        userName: "string",
+        smeProfileId: 0,
+      },
+      name: formData.name.trim(),
+      address: isVirtualOffice ? "" : formData.address.trim(),
       geolat: isVirtualOffice ? 0 : Number(formData.geolat),
       geolon: isVirtualOffice ? 0 : Number(formData.geolon),
       phone: phoneNum || formData.phone,
@@ -265,37 +274,53 @@ function SubmitMedicalCenterForm() {
 
     setLoading(true);
 
-    // ۱. اول مطب را می‌سازیم
-    add_Office(payload, setLoading, (res) => {
-      // ۲. بعد از موفقیت، آیدی مطب را می‌گیریم و به دکتر تخصیص می‌دهیم
-      const officeId = res?.data?.result?.office?.id;
+    // ۱. اول مطب را می‌سازیم (setLoading را پاس نمی‌دهیم تا تا پایان تخصیص لودینگ بماند)
+    const res = await add_Office(payload, null, null);
 
-      if (!officeId) {
-        console.error("آیدی مطب از پاسخ سرور دریافت نشد");
-        resetForm();
-        return;
-      }
+    if (!res) {
+      // خطای ساخت مطب توسط اینترسپتور نمایش داده شده است
+      setLoading(false);
+      return;
+    }
 
-      const treatmentPayload = {
-        doctorId: Number(doctorid),
-        clinicId: "", // خالی
-        officeId: officeId, // فقط این پر می‌شود
-        desc: "",
-        cityId: Number(cityId.id),
-      };
+    // ۲. آیدی مطب را می‌گیریم و به پزشک تخصیص می‌دهیم
+    const officeId = extract_office_id(res);
 
-      console.log("Payload تخصیص مطب به دکتر:", treatmentPayload);
-
-      // صدا زدن API تخصیص (پشت صحنه)
-      create_doctor_treatment(
-        treatmentPayload,
-        setLoading,
-        () => {
-          resetForm();
-        },
-        "مطب با موفقیت ثبت و به شما تخصیص داده شد"
+    if (!officeId) {
+      console.error("آیدی مطب از پاسخ سرور دریافت نشد", res?.data);
+      setLoading(false);
+      Eror(
+        "مطب ثبت شد اما تخصیص خودکار انجام نشد. لطفاً از «تنظیمات مرکز درمانی» تخصیص را انجام دهید."
       );
-    });
+      resetForm();
+      onCreated && onCreated();
+      return;
+    }
+
+    const treatmentPayload = {
+      doctorId: Number(doctorid),
+      clinicId: "", // خالی
+      officeId: officeId, // فقط این پر می‌شود
+      desc: formData.desc?.trim() || "",
+      cityId: Number(cityId.id),
+    };
+
+    console.log("Payload تخصیص مطب به دکتر:", treatmentPayload);
+
+    // ۳. تخصیص مطب به پزشک
+    const assignRes = await create_doctor_treatment(
+      treatmentPayload,
+      null,
+      null,
+      "مطب با موفقیت ثبت و به شما تخصیص داده شد"
+    );
+
+    setLoading(false);
+
+    if (assignRes) {
+      resetForm();
+      onCreated && onCreated();
+    }
   };
 
   return (
@@ -494,6 +519,24 @@ function SubmitMedicalCenterForm() {
             </div>
           </div>
         )}
+
+        {/* توضیحات */}
+        <div className="flex flex-col w-full gap-2">
+          <label className="text-base font-semibold text-gray-800">
+            توضیحات{" "}
+            <span className="text-sm font-normal text-[#7D7D7D]">
+              (اختیاری — مثلا شرایط یا قوانین خاص مطب)
+            </span>
+          </label>
+          <textarea
+            name="desc"
+            value={formData.desc}
+            onChange={handleChange}
+            rows={3}
+            placeholder="توضیحات مربوط به این مطب را وارد کنید"
+            className="w-full resize-none bg-[#F7F7F7] py-3.5 px-4 border border-[#6B6B6B] rounded-lg outline-none focus:border-[#005DAD] focus:ring-1 focus:ring-[#005DAD] transition"
+          />
+        </div>
 
         {/* تلفن */}
         <div className="flex flex-col w-full gap-2">
