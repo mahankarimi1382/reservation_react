@@ -30,7 +30,8 @@ export const signin = (
   setToken,
   closeModal,
   setSmeId,
-  setDoctors
+  setDoctors,
+  setDoctorId
 ) => {
   console.log(data2);
   setIsLoading(true);
@@ -40,15 +41,25 @@ export const signin = (
       setIsLoading(false);
       console.log(res);
       console.log(res.data);
-      let token = res.data.result.token;
-      let name = res.data.result.userFullname;
-      let smeId = res.data.result.smeprofileId;
+      const result = res?.data?.result ?? {};
+      let token = result.token;
+      let name = result.userFullname;
+      let smeId = result.smeprofileId;
       setSmeId(smeId);
       setToken(token);
       Cookies.set("token", token);
       setFullName(name);
-      setDoctors(res.data.result.smeprofile.doctors);
-      console.log(res.data.result.smeprofile.doctors);
+
+      // پزشکان ممکن است مستقیم یا زیر smeprofile بیایند
+      const doctorsList = result.smeprofile?.doctors ?? result.doctors ?? [];
+      setDoctors && setDoctors(doctorsList);
+
+      // آیدی پزشک را هم ست می‌کنیم تا پنل پزشک (ثبت مطب و ...) کار کند
+      if (setDoctorId && Array.isArray(doctorsList) && doctorsList.length > 0) {
+        setDoctorId(doctorsList[0].id);
+      }
+
+      console.log(doctorsList);
       success(`${name} خوش آمدید`);
       closeModal();
     })
@@ -93,12 +104,18 @@ export const activating_registarion = (
         setPatients(res.data.result.patients);
       }
       success("ورود موفق");
-      console.log(res.data.result.smeprofile?res.data.result.smeprofile.doctors:res.data.result.doctors);
 
       closeModal();
       setFullName(res.data.result.userFullname);
-      setDoctors(res.data.result.smeprofile?res.data.result.smeprofile.doctors:res.data.result.doctors);
-      setDoctorId(res.data.result.smeprofile?res.data.result.smeprofile.doctors[0].id:res.data.result.doctors[0].id);
+
+      // ممکن است کاربر اصلا پزشک نباشد یا لیست خالی باشد → نباید کرش کند
+      const doctorsList =
+        res.data.result.smeprofile?.doctors ?? res.data.result.doctors ?? [];
+      console.log(doctorsList);
+      setDoctors(doctorsList);
+      if (Array.isArray(doctorsList) && doctorsList.length > 0) {
+        setDoctorId(doctorsList[0].id);
+      }
       if (res.data.result.smeprofileId) {
         setSmeId(res.data.result.smeprofileId);
       }
@@ -446,19 +463,29 @@ export const add_medical_center = (data, setLoading, closeModal) => {
       console.log(err);
     });
 };
+// استخراج آیدی مطب از پاسخ سرور (ساختار پاسخ در اندپوینت‌ها یکسان نیست)
+export const extract_office_id = (res) =>
+  res?.data?.result?.office?.id ??
+  res?.data?.result?.data?.id ??
+  res?.data?.result?.id ??
+  res?.data?.id ??
+  null;
+
 export const add_Office = (data, setLoading, closeModal) => {
   console.log(data);
-  axiosConfig
+  return axiosConfig
     .post("Office/create-Office", data)
     .then((res) => {
-      setLoading(false);
+      setLoading && setLoading(false);
       console.log(res);
       success("مطب با موفقیت ثبت شد");
-      closeModal(res); // ← res را پاس می‌دهیم
+      closeModal && closeModal(res); // ← res را پاس می‌دهیم
+      return res;
     })
     .catch((err) => {
-      setLoading(false);
+      setLoading && setLoading(false);
       console.log(err);
+      return null;
     });
 };
 export const sendCodeAgain = (phoneNumber) => {
@@ -599,17 +626,29 @@ export const create_doctor_treatment = (
   closeModal,
   message
 ) => {
-  axiosConfig
-    .post("/DoctorTreatmentCenter/create-DoctorTreatmentCenter", data)
+  // metadata همیشه باید همراه پیلود ارسال شود
+  const payload = {
+    metadata: data?.metadata ?? {
+      userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      userName: "string",
+      smeProfileId: 0,
+    },
+    ...data,
+  };
+
+  return axiosConfig
+    .post("/DoctorTreatmentCenter/create-DoctorTreatmentCenter", payload)
     .then((res) => {
-      setIsLoading(false);
+      setIsLoading && setIsLoading(false);
       console.log(res);
       success(message);
-      closeModal();
+      closeModal && closeModal(res);
+      return res;
     })
     .catch((err) => {
-      setIsLoading(false);
+      setIsLoading && setIsLoading(false);
       console.log(err);
+      return null;
     });
 };
 
@@ -1498,8 +1537,11 @@ export const delete_doctor_treatment = async (
     closeModal && closeModal();
     console.log(response);
     success("مرکز درمانی دکتر با موفقیت حذف شد");
+    return response;
   } catch (error) {
     console.log(error);
+    closeModal && closeModal();
+    return null;
   }
 };
 export const update_doctor_treatment = async (
@@ -1510,9 +1552,18 @@ export const update_doctor_treatment = async (
   message = "با موفقیت ویرایش شد"
 ) => {
   try {
+    const payload = {
+      metadata: data?.metadata ?? {
+        userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        userName: "string",
+        smeProfileId: 0,
+      },
+      ...data,
+    };
+
     const response = await axiosConfig.put(
       "DoctorTreatmentCenter/update-DoctorTreatmentCenter",
-      data
+      payload
     );
 
     const list = await get_doctor_treatmentCenter(doctorId);
@@ -1523,7 +1574,10 @@ export const update_doctor_treatment = async (
     closeModal && closeModal();
     success(message);
     console.log(response);
+    return response;
   } catch (error) {
     console.log(error);
+    closeModal && closeModal();
+    return null;
   }
 };

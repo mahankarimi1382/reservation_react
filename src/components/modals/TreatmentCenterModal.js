@@ -2,6 +2,7 @@
 import {
   delete_doctor_treatment,
   get_doctor_treatmentCenter,
+  update_doctor_treatment,
 } from "../../api/ApiCalling";
 import React, { useEffect, useState } from "react";
 import { RxCross2 } from "react-icons/rx";
@@ -16,7 +17,29 @@ function TreatmentCenterModal({ setIsTreatmentCenter, id, name }) {
   const [isSeeReservsModal, setIsSeeReservsModal] = useState(false);
   const [isAddTreatmentModal, setIsAddTreatmentModal] = useState(false);
   const [isDeleteModal, setIsDeleteModal] = useState(false);
+  const [isEditModal, setIsEditModal] = useState(false);
+  const [editDesc, setEditDesc] = useState("");
+  const [isEditLoading, setIsEditLoading] = useState(false);
   const [selectedItem, setSelectedItem] = useState({});
+
+  const handleEditSave = async () => {
+    setIsEditLoading(true);
+    await update_doctor_treatment(
+      {
+        id: selectedItem.id,
+        doctorId: selectedItem.doctorId || Number(id),
+        clinicId: selectedItem.clinicId || "",
+        officeId: selectedItem.officeId || "",
+        desc: editDesc,
+        cityId: selectedItem.cityId || 0,
+      },
+      id,
+      setTreatmenCenters,
+      () => setIsEditModal(false),
+      "توضیحات با موفقیت ویرایش شد"
+    );
+    setIsEditLoading(false);
+  };
   console.log(selectedItem);
   const [treatmentCenters, setTreatmenCenters] = useState([]);
   const [treatmentId, setTrearmentId] = useState("");
@@ -48,10 +71,82 @@ function TreatmentCenterModal({ setIsTreatmentCenter, id, name }) {
           closeModal={() => setIsSeeReservsModal(false)}
         />
       )}
+      {isEditModal && (
+        <div className="fixed inset-0 z-30 flex items-center justify-center bg-[rgba(0,0,0,0.6)] p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
+            <div className="flex justify-between items-center p-4 border-b">
+              <h3 className="text-base font-semibold text-[#005DAD]">
+                ویرایش توضیحات
+              </h3>
+              <RxCross2
+                onClick={() => setIsEditModal(false)}
+                className="cursor-pointer text-xl text-[#717171]"
+              />
+            </div>
+
+            <div className="p-4 flex flex-col gap-3">
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">
+                  نام مرکز
+                </label>
+                <input
+                  disabled
+                  value={
+                    selectedItem.officeName || selectedItem.clinicName || ""
+                  }
+                  className="w-full bg-gray-100 py-2 px-3 border border-gray-300 rounded-lg text-gray-600 cursor-not-allowed"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">
+                  توضیحات
+                </label>
+                <textarea
+                  rows={4}
+                  value={editDesc}
+                  onChange={(e) => setEditDesc(e.target.value)}
+                  placeholder="توضیحات را وارد کنید..."
+                  className="w-full resize-none py-2 px-3 border border-gray-300 rounded-lg outline-none focus:border-[#005DAD]"
+                />
+              </div>
+            </div>
+
+            <div className="p-4 border-t flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setIsEditModal(false)}
+                disabled={isEditLoading}
+                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 text-sm hover:bg-gray-50"
+              >
+                انصراف
+              </button>
+              <button
+                type="button"
+                onClick={handleEditSave}
+                disabled={isEditLoading}
+                className="px-4 py-2 rounded-lg bg-[#005DAD] text-white text-sm hover:bg-[#004a8f] disabled:opacity-60"
+              >
+                {isEditLoading ? "در حال ذخیره..." : "ذخیره"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {isDeleteModal && (
         <DeletingModal
-          DeletingFn={delete_doctor_treatment}
-          id={selectedItem.officeId || selectedItem.clinicId}
+          // امضای delete_doctor_treatment: (id, doctorId, setList, closeModal)
+          // پس آیدی خودِ رکورد تخصیص را می‌فرستیم نه officeId/clinicId
+          DeletingFn={(recordId, _setList, closeModal) =>
+            delete_doctor_treatment(
+              recordId,
+              id,
+              setTreatmenCenters,
+              closeModal
+            )
+          }
+          id={selectedItem.id}
           name={selectedItem.officeName || selectedItem.clinicName}
           setList={setTreatmenCenters}
           closeModal={() => setIsDeleteModal(false)}
@@ -90,18 +185,30 @@ function TreatmentCenterModal({ setIsTreatmentCenter, id, name }) {
                     key={item.id}
                   >
                     <div className=" w-[15%] flex items-center justify-start gap-3 ">
-                      <FaEdit className=" text-green-400 hover:text-green-600 transition-all" />
+                      <FaEdit
+                        onClick={() => {
+                          setSelectedItem(item);
+                          setEditDesc(item.desc || "");
+                          setIsEditModal(true);
+                        }}
+                        className=" cursor-pointer text-green-400 hover:text-green-600 transition-all"
+                      />
                       <MdDelete
                         onClick={() => {
                           setSelectedItem(item);
                           setIsDeleteModal(true);
                         }}
-                        className=" text-red-400 hover:text-red-600 transition-all"
+                        className=" cursor-pointer text-red-400 hover:text-red-600 transition-all"
                       />
                     </div>
-                    <h5 className=" w-[25%]">
-                      {item.officeName || item.clinicName}
-                    </h5>
+                    <div className=" w-[25%] flex flex-col">
+                      <h5>{item.officeName || item.clinicName}</h5>
+                      {item.desc ? (
+                        <span className="text-[10px] text-gray-400 truncate">
+                          {item.desc}
+                        </span>
+                      ) : null}
+                    </div>
                     <h5 className=" w-[30%]  text-center">
                       {item.officeName ? "مطب" : "بیمارستان,درمانگاه"}
                     </h5>
@@ -126,6 +233,9 @@ function TreatmentCenterModal({ setIsTreatmentCenter, id, name }) {
             isAddTreatmentModal={isAddTreatmentModal}
             setIsAddTreatmentModal={setIsAddTreatmentModal}
             id={id}
+            assignedIds={treatmentCenters.map(
+              (item) => item.officeId || item.clinicId
+            )}
           />
         </div>
       </div>

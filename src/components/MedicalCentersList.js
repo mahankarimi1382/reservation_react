@@ -123,7 +123,13 @@ function MedicalCentersList({ type }) {
       <div className=" gap-3 flex flex-col w-[80%] rounded-lg border shadow-md p-4 bg-white">
         {isDeletingModal && (
           <DeletingModal
-            DeletingFn={type == "office" ? delete_office : delete_clinic}
+            // delete_office(id, setList, closeModal) اما delete_clinic(id, setList, closeModal, setIsLoading)
+            // پس هر دو را با امضای یکسان صدا می‌زنیم
+            DeletingFn={(id, setList, closeModal, setIsLoading) =>
+              type == "office"
+                ? delete_office(id, setList, closeModal)
+                : delete_clinic(id, setList, closeModal, setIsLoading)
+            }
             id={selectedItem.id}
             name={
               type == "office" ? selectedItem.name : selectedItem.clinicName

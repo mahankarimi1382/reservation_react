@@ -12,12 +12,19 @@ import {
 } from "../../api/ApiCalling";
 import { SyncLoader } from "react-spinners";
 
-function AddTreatmentModal({ closeModal, id }) {
+function AddTreatmentModal({ closeModal, id, assignedIds = [] }) {
   const [type, setType] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [clinicId, setClinicId] = useState("");
   const [officeId, setOfficeId] = useState("");
+  const [desc, setDesc] = useState("");
   const [medicalCenters, setMedicalCenters] = useState([]);
+  const [isListLoading, setIsListLoading] = useState(false);
+
+  // مرکز انتخاب‌شده برای برداشتن cityId
+  const selectedCenter = medicalCenters.find(
+    (item) => String(item.id) === String(clinicId || officeId)
+  );
 
   const data = {
     metadata: {
@@ -25,33 +32,42 @@ function AddTreatmentModal({ closeModal, id }) {
       userName: "string",
       smeProfileId: 0,
     },
-    doctorId: id,
+    doctorId: Number(id),
     clinicId,
     officeId,
-    desc: "string",
+    desc: desc.trim(),
+    cityId: Number(selectedCenter?.cityId) || 0,
   };
 
   console.log(medicalCenters);
   const getClinics = async () => {
+    setIsListLoading(true);
     const data = await get_clinics();
-    if (data) {
-      setMedicalCenters(data);
-    }
+    setMedicalCenters(data || []);
+    setIsListLoading(false);
   };
   const getOffices = async () => {
+    setIsListLoading(true);
     const data = await get_offices();
-    if (data) {
-      setMedicalCenters(data);
-    }
+    setMedicalCenters(data || []);
+    setIsListLoading(false);
   };
+
+  // مراکزی که قبلا به این پزشک تخصیص داده شده‌اند را کنار می‌گذاریم
+  const availableCenters = medicalCenters.filter(
+    (item) => !assignedIds.map(String).includes(String(item.id))
+  );
   const handleChange = (e) => {
+    // با تعویض نوع، انتخاب قبلی باید پاک شود
+    setClinicId("");
+    setOfficeId("");
+    setMedicalCenters([]);
+
     if (e.target.value === "بیمارستان") {
       getClinics();
-      setOfficeId("");
       setType("بیمارستان");
     } else {
       getOffices();
-      setClinicId("");
       setType("مطب");
     }
   };
@@ -92,7 +108,19 @@ function AddTreatmentModal({ closeModal, id }) {
             </div>
           </div>
         </RadioGroup>
-        {medicalCenters.length != 0 && (
+        {isListLoading && (
+          <h5 className="text-sm text-[#858585] py-2">در حال بارگذاری...</h5>
+        )}
+
+        {!isListLoading && type && availableCenters.length === 0 && (
+          <h5 className="text-sm text-[#858585] py-2 text-center px-3">
+            {medicalCenters.length === 0
+              ? "موردی برای تخصیص یافت نشد"
+              : "همه‌ی موارد این دسته قبلاً به این پزشک تخصیص داده شده است"}
+          </h5>
+        )}
+
+        {availableCenters.length != 0 && (
           <div className=" overflow-auto overflow-x-hidden   w-full border rounded-xl border-[#005DAD]">
             <RadioGroup
               onChange={(e) => {
@@ -106,7 +134,7 @@ function AddTreatmentModal({ closeModal, id }) {
               aria-labelledby="demo-controlled-radio-buttons-group"
               name="controlled-radio-buttons-group"
             >
-              {medicalCenters.map((item) => {
+              {availableCenters.map((item) => {
                 return (
                   <div
                     key={item.id}
@@ -133,32 +161,30 @@ function AddTreatmentModal({ closeModal, id }) {
             </RadioGroup>
           </div>
         )}
-        {medicalCenters.length != 0 && (
+        {availableCenters.length != 0 && (
+          <input
+            type="text"
+            value={desc}
+            onChange={(e) => setDesc(e.target.value)}
+            placeholder="توضیحات (اختیاری)"
+            className="w-full border border-[#B9B9B9] rounded-lg p-2 text-sm outline-none focus:border-[#005DAD]"
+          />
+        )}
+
+        {availableCenters.length != 0 && (
           <button
             onClick={() => {
-              if (type == "بیمارستان") {
-                let message = "مرکز درمانی با موفقیت تخصیص داده شد";
+              const message =
+                type == "بیمارستان"
+                  ? "مرکز درمانی با موفقیت تخصیص داده شد"
+                  : "مطب با موفقیت تخصیص داده شد";
 
-                create_doctor_treatment(
-                  data,
-                  setIsLoading,
-                  closeModal,
-                  message
-                );
-              } else {
-                let message = "مطب با موفقیت تخصیص داده شد";
-
-                create_doctor_treatment(
-                  data,
-                  setIsLoading,
-                  closeModal,
-                  message
-                );
-              }
               console.log(data);
               setIsLoading(true);
+              create_doctor_treatment(data, setIsLoading, closeModal, message);
             }}
             disabled={
+              isLoading ||
               (type == "بیمارستان" && !clinicId) ||
               (type != "بیمارستان" && !officeId)
             }

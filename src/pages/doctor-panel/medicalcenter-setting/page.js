@@ -2,9 +2,12 @@ import React, { useState, useEffect, useMemo } from "react";
 import { CiSearch, CiEdit } from "react-icons/ci";
 import { HiOutlineTrash } from "react-icons/hi2";
 import { IoClose, IoEyeOutline } from "react-icons/io5";
+import { LuPlus } from "react-icons/lu";
+import { Link } from "react-router-dom";
 import DoctorPanelMenu from "../../../container/doctor-panel/DoctorPanelMenu";
 import { fullNameStorage, userDoctorStorage } from "../../../store/Store";
 import ProfileDropdown from "../../../components/ProfileDropdown";
+import AddTreatmentModal from "../../../components/modals/AddTreatmentModal";
 import {
   get_doctor_treatmentCenter,
   update_doctor_treatment,
@@ -25,6 +28,7 @@ function page() {
   const [deleteItem, setDeleteItem] = useState(null);
   const [editDesc, setEditDesc] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
+  const [isAssignModal, setIsAssignModal] = useState(false);
 
   const fetchList = async () => {
     if (!doctorid) {
@@ -68,6 +72,8 @@ function page() {
       desc: editDesc,
       cityId: editItem.cityId || 0,
     };
+
+    console.log("Payload ویرایش تخصیص:", payload);
 
     setActionLoading(true);
     update_doctor_treatment(
@@ -121,7 +127,7 @@ function page() {
         </div>
 
         {/* عنوان */}
-        <div className="w-full max-w-[80%] flex justify-between items-center">
+        <div className="w-full max-w-[80%] flex flex-wrap gap-3 justify-between items-center">
           <div>
             <h2 className="text-xl font-bold text-gray-800">
               مراکز درمانی و مطب‌های من
@@ -129,6 +135,26 @@ function page() {
             <p className="text-sm text-gray-500 mt-1">
               {filteredList.length} مورد یافت شد
             </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsAssignModal(true)}
+              disabled={!doctorid}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-[#005DAD] text-[#005DAD] text-sm hover:bg-[#ECF6FF] transition disabled:opacity-50"
+            >
+              <LuPlus className="text-lg" />
+              تخصیص مرکز موجود
+            </button>
+
+            <Link
+              to="/doctor-panel/doctor-info/submit-medicalcenter"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#005DAD] text-white text-sm hover:bg-[#004a8f] transition"
+            >
+              <LuPlus className="text-lg" />
+              ثبت مطب جدید
+            </Link>
           </div>
         </div>
 
@@ -203,6 +229,17 @@ function page() {
           )}
         </div>
       </div>
+
+      {/* ========== مودال تخصیص مرکز درمانی موجود ========== */}
+      {isAssignModal && (
+        <AddTreatmentModal
+          id={doctorid}
+          closeModal={() => {
+            setIsAssignModal(false);
+            fetchList();
+          }}
+        />
+      )}
 
       {/* ========== مودال جزئیات ========== */}
       {detailItem && (

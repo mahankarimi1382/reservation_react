@@ -688,12 +688,14 @@ export const AddTreatmentButt = ({
   id,
   isAddTreatmentModal,
   setIsAddTreatmentModal,
+  assignedIds = [],
 }) => {
   return (
     <div>
       {isAddTreatmentModal && (
         <AddTreatmentModal
           id={id}
+          assignedIds={assignedIds}
           closeModal={() => setIsAddTreatmentModal(false)}
         />
       )}

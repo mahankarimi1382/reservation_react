@@ -9,9 +9,11 @@ import MakeProfileForm from "../../../../container/doctor-panel/doctor-info/Make
 import SubmitMedicalCenterForm from "../../../../container/doctor-panel/doctor-info/SubmitMedicalCenterForm";
 import { fullNameStorage } from "../../../../store/Store";
 import ProfileDropdown from "../../../../components/ProfileDropdown";
+import { useNavigate } from "react-router-dom";
 
 function page() {
   const { fullName } = fullNameStorage();
+  const navigate = useNavigate();
 
   return (
     <div dir="rtl" className="flex min-h-screen pb-20 bg-[#F6FBFF]">
@@ -52,7 +54,9 @@ function page() {
         {/* Content card */}
         <div className="bg-white rounded-3xl gap-8 sm:gap-10 p-5 sm:p-6 px-5 sm:px-10 shadow-md w-full max-w-[80%] flex flex-col items-center">
           <DoctorUploadingOptions />
-          <SubmitMedicalCenterForm />
+          <SubmitMedicalCenterForm
+            onCreated={() => navigate("/doctor-panel/medicalcenter-setting")}
+          />
         </div>
       </div>
     </div>
