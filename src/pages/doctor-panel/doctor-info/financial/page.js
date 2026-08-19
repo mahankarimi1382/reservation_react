@@ -3,9 +3,9 @@ import DoctorProfIcon from "../../../../assets/Pics/doctor-profile-icon.png";
 import React, { useState } from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import DoctorPanelMenu from "../../../../container/doctor-panel/DoctorPanelMenu";
-import bahramMirzayi from "../../../../assets/Pics/bahramMirzayi.png";
 import DoctorUploadingOptions from "../../../../container/doctor-panel/doctor-info/DoctorUploadingOptions";
 import FinancialForm from "../../../../container/doctor-panel/doctor-info/FinancialForm";
+import DoctorInfoHeader from "../../../../container/doctor-panel/doctor-info/DoctorInfoHeader";
 
 import {
   fullNameStorage,
@@ -93,16 +93,7 @@ function page() {
         </div>
 
         {/* کارت اطلاعات پزشک */}
-        <div className="text-white gap-3 p-5 w-[80%] flex flex-col justify-center items-center rounded-3xl shadow-md bg-[#78C0FD]">
-          <img
-            src={bahramMirzayi}
-            alt="img"
-            width={113}
-            className="rounded-full bg-white"
-          />
-          <h5 className="text-xl font-semibold">{fullName}</h5>
-          <h5 className="text-lg">کد نظام پزشکی: 12345</h5>
-        </div>
+        <DoctorInfoHeader />
 
         {/* فرم‌ها */}
         <div className="bg-white rounded-3xl gap-10 p-5 px-10 shadow-md w-[80%] flex flex-col items-center">

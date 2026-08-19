@@ -620,6 +620,67 @@ export const get_doctor_treatmentCenter = async (id) => {
     return null;
   }
 };
+
+// پزشکانِ تخصیص‌داده‌شده به یک مرکز (مطب/مرکز درمانی) را برمی‌گرداند.
+// بک‌اند اندپوینت مستند مشخصی برای این کار ندارد، پس چند مسیر محتمل را با
+// { silent: true } امتحان می‌کنیم و در نهایت روی خواندن همه‌ی تخصیص‌ها و
+// فیلتر سمت کلاینت fallback می‌کنیم.
+export const read_DoctorTreatmentCenterByCenter = async (centerId, type) => {
+  const isOffice = type === "office";
+
+  const candidates = isOffice
+    ? [
+        `DoctorTreatmentCenter/read-DoctorTreatmentCenterByOfficeId?Id=${centerId}`,
+        `DoctorTreatmentCenter/read-DoctorTreatmentCenterByOfficeId?OfficeId=${centerId}`,
+      ]
+    : [
+        `DoctorTreatmentCenter/read-DoctorTreatmentCenterByClinicId?Id=${centerId}`,
+        `DoctorTreatmentCenter/read-DoctorTreatmentCenterByClinicId?ClinicId=${centerId}`,
+      ];
+
+  const pickList = (result) => {
+    if (Array.isArray(result)) return result;
+    if (result && Array.isArray(result.list)) return result.list;
+    if (result && Array.isArray(result.data)) return result.data;
+    return null;
+  };
+
+  for (const url of candidates) {
+    try {
+      const response = await axiosConfig.get(url, { silent: true });
+      const list = pickList(response?.data?.result);
+      if (Array.isArray(list)) return list;
+    } catch (error) {
+      console.log(
+        `[read_DoctorTreatmentCenterByCenter] مسیر یافت نشد: ${url}`,
+        error?.message
+      );
+    }
+  }
+
+  // fallback: خواندن همه‌ی تخصیص‌ها و فیلتر سمت کلاینت
+  try {
+    const response = await axiosConfig.get(
+      "DoctorTreatmentCenter/read-DoctorTreatmentCenters",
+      { silent: true }
+    );
+    const list = pickList(response?.data?.result);
+    if (Array.isArray(list)) {
+      return list.filter((item) =>
+        isOffice
+          ? String(item?.officeId) === String(centerId)
+          : String(item?.clinicId) === String(centerId)
+      );
+    }
+  } catch (error) {
+    console.log(
+      "[read_DoctorTreatmentCenterByCenter] خواندن همه‌ی تخصیص‌ها ناموفق بود",
+      error?.message
+    );
+  }
+
+  return [];
+};
 export const create_doctor_treatment = (
   data,
   setIsLoading,

@@ -3,9 +3,9 @@ import DoctorProfIcon from "../../../../assets/Pics/doctor-profile-icon.png";
 import React from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import DoctorPanelMenu from "../../../../container/doctor-panel/DoctorPanelMenu";
-import bahramMirzayi from "../../../../assets/Pics/bahramMirzayi.png";
 import DoctorUploadingOptions from "../../../../container/doctor-panel/doctor-info/DoctorUploadingOptions";
 import UploadLicensesForm from "../../../../container/doctor-panel/doctor-info/UploadLicensesForm";
+import DoctorInfoHeader from "../../../../container/doctor-panel/doctor-info/DoctorInfoHeader";
 import { fullNameStorage } from "../../../../store/Store";
 import ProfileDropdown from "../../../../components/ProfileDropdown";
 function page() {
@@ -26,16 +26,7 @@ function page() {
 
           />
         </div>
-        <div className=" text-white gap-3 p-5 w-[80%] flex flex-col justify-center items-center rounded-3xl shadow-md bg-[#78C0FD]">
-          <img
-            src={bahramMirzayi}
-            alt="img"
-            width={113}
-            className=" rounded-full bg-white"
-          />
-          <h5 className=" text-xl font-semibold">{fullName}</h5>
-          <h5 className=" text-lg">کد نظام پزشکی: 12345</h5>
-        </div>
+        <DoctorInfoHeader />
         <div className=" p-5 px-10 bg-white rounded-3xl shadow-md w-[80%] flex flex-col items-center">
           <DoctorUploadingOptions />
           <UploadLicensesForm/>

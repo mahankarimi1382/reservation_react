@@ -22,6 +22,7 @@ import medicalProf from "../assets/Pics/medicalcenters.jpg";
 import MedicalFormModal from "./modals/MedicalFormModal";
 import MedicalDetails from "./modals/MedicalDetails";
 import LoadingComponent from "./LoadingComponent";
+import AssignDoctorToCenterModal from "./modals/AssignDoctorToCenterModal";
 
 function MedicalCentersList({ type }) {
   const [isLoading, setIsLoading] = useState(true);
@@ -59,6 +60,7 @@ function MedicalCentersList({ type }) {
   const [isDeletingModal, setIsDeletingModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState({});
   const [IsSeeMedicalDetails, setIsSeeMedicalDetails] = useState(false);
+  const [isAssignDoctorModal, setIsAssignDoctorModal] = useState(false);
   console.log(selectedItem);
   const [currentPage, setCurrentPage] = useState(1);
   const handleChange = (event, value) => {
@@ -94,6 +96,13 @@ function MedicalCentersList({ type }) {
           <SeeReservsModal
             closeModal={() => setIsSeeReservsModal(false)}
             selectedMedical={selectedMedical}
+          />
+        )}
+        {isAssignDoctorModal && (
+          <AssignDoctorToCenterModal
+            center={selectedItem}
+            type={type}
+            closeModal={() => setIsAssignDoctorModal(false)}
           />
         )}
         {/* <DatePickerComponent title="از تاریخ" />
@@ -220,6 +229,15 @@ function MedicalCentersList({ type }) {
                   className=" gap-2 border rounded-lg p-1 flex justify-center items-center bg-[#DBEDFF] border-[#005DAD] text-[#005DAD]"
                 >
                   مشاهده جزئیات
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedItem(item);
+                    setIsAssignDoctorModal(true);
+                  }}
+                  className=" gap-2 border rounded-lg p-1 flex justify-center items-center bg-[#F2FEF8] border-[#1F7168] text-[#1F7168]"
+                >
+                  تخصیص پزشک
                 </button>
                 {/* <button
                   onClick={() => {

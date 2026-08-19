@@ -3,10 +3,10 @@ import DoctorProfIcon from "../../../../assets/Pics/doctor-profile-icon.png";
 import React from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import DoctorPanelMenu from "../../../../container/doctor-panel/DoctorPanelMenu";
-import bahramMirzayi from "../../../../assets/Pics/bahramMirzayi.png";
 import DoctorUploadingOptions from "../../../../container/doctor-panel/doctor-info/DoctorUploadingOptions";
 import MakeProfileForm from "../../../../container/doctor-panel/doctor-info/MakeProfileForm";
 import SubmitMedicalCenterForm from "../../../../container/doctor-panel/doctor-info/SubmitMedicalCenterForm";
+import DoctorInfoHeader from "../../../../container/doctor-panel/doctor-info/DoctorInfoHeader";
 import { fullNameStorage } from "../../../../store/Store";
 import ProfileDropdown from "../../../../components/ProfileDropdown";
 import { useNavigate } from "react-router-dom";
@@ -37,19 +37,7 @@ function page() {
         </div>
 
         {/* Doctor profile card */}
-        <div className="text-white gap-3 p-5 w-full max-w-[80%] flex flex-col justify-center items-center rounded-3xl shadow-md bg-[#78C0FD]">
-          <img
-            src={bahramMirzayi}
-            alt="doctor"
-            width={113}
-            height={113}
-            className="rounded-full bg-white object-cover"
-          />
-          <h5 className="text-xl font-semibold">{fullName}</h5>
-          <h5 className="text-base sm:text-lg opacity-90">
-            کد نظام پزشکی: 12345
-          </h5>
-        </div>
+        <DoctorInfoHeader />
 
         {/* Content card */}
         <div className="bg-white rounded-3xl gap-8 sm:gap-10 p-5 sm:p-6 px-5 sm:px-10 shadow-md w-full max-w-[80%] flex flex-col items-center">
