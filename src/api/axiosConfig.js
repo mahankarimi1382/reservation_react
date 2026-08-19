@@ -36,6 +36,9 @@ axiosConfig.interceptors.response.use(
   (response) => response,
   (err) => {
     console.log(err);
+    if (err.config && err.config.silent) {
+      return Promise.reject(err);
+    }
     if (err.message === "Request failed with status code 401") {
       Eror("لطفا در ابتدا وارد شوید");
     } else if (err.message === "Network Error") {

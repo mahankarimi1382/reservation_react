@@ -10,6 +10,7 @@ import DoctorUploadingOptions from "../../../../container/doctor-panel/doctor-in
 import MakeProfileForm from "../../../../container/doctor-panel/doctor-info/MakeProfileForm";
 import { fullNameStorage, userDoctorStorage } from "../../../../store/Store";
 import { get_doctor_profile_by_id } from "../../../../api/ApiCalling";
+import { resolveDoctorImage } from "../../../../container/doctor-panel/doctor-info/DoctorInfoHeader";
 import ProfileDropdown from "../../../../components/ProfileDropdown";
 
 function Page() {
@@ -64,10 +65,14 @@ console.log(currentDoctorId)
 
         <div className="text-white gap-3 p-5 w-[80%] flex flex-col justify-center items-center rounded-3xl shadow-md bg-[#78C0FD]">
           <img
-            src={doctorProfile?.docInstaLink || bahramMirzayi}
+            src={resolveDoctorImage(doctorProfile?.docInstaLink)}
             alt="img"
             width={113}
             className="rounded-full bg-white w-24 h-24"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = bahramMirzayi;
+            }}
           />
 
           <h5 className="text-xl font-semibold">
