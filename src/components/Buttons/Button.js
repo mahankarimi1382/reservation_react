@@ -57,7 +57,7 @@ export const LoginButton = () => {
   const { fullName, setFullName } = fullNameStorage();
   const { phoneNum, setPhoneNum } = userProfileStore();
   const { removeSmeId } = smeIdStorage();
-  const { setDoctors, setDoctorId } = userDoctorStorage();
+  const { doctors, doctorid, setDoctors, setDoctorId } = userDoctorStorage();
 
   const [isHover, setIsHover] = useState(false);
   const [isModal, setIsModal] = useState(false);
@@ -78,13 +78,17 @@ export const LoginButton = () => {
       const roleNameRaw = roles?.[0]?.roleName || "";
       const roleName = roleNameRaw.trim().toLowerCase();
       console.log(roleName);
+
+      const hasDoctorData =
+        Boolean(doctorid) ||
+        (Array.isArray(doctors)
+          ? doctors.length > 0
+          : !!doctors && Object.keys(doctors).length > 0);
+
       if (roleName === "superadmin") {
         navigate("/adminpanel/dashboard");
-      } else if (roleName === "doctor") {
+      } else if (roleName === "doctor" || hasDoctorData) {
         navigate("/doctor-panel/dashboard");
-      } else if (!usernameForRole) {
-        navigate("/userPanel/dashboard");
-        return;
       } else {
         navigate("/userPanel/dashboard");
       }

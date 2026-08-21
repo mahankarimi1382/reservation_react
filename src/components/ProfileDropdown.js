@@ -22,7 +22,7 @@ function ProfileDropdown({ fullName, title = "دکتر" }) {
 
   const { setFullName } = fullNameStorage();
   const { phoneNum } = userProfileStore();
-  const { setDoctors, setDoctorId } = userDoctorStorage();
+  const { doctors, doctorid, setDoctors, setDoctorId } = userDoctorStorage();
   const { removeSmeId } = smeIdStorage();
 
   // خروج
@@ -41,8 +41,16 @@ function ProfileDropdown({ fullName, title = "دکتر" }) {
     try {
       const usernameForRole = (phoneNum || "").trim();
 
+      const hasDoctorData =
+        Boolean(doctorid) ||
+        (Array.isArray(doctors)
+          ? doctors.length > 0
+          : !!doctors && Object.keys(doctors).length > 0);
+
       if (!usernameForRole) {
-        navigate("/userPanel/dashboard");
+        navigate(
+          hasDoctorData ? "/doctor-panel/dashboard" : "/userPanel/dashboard"
+        );
         return;
       }
 
@@ -56,17 +64,12 @@ function ProfileDropdown({ fullName, title = "دکتر" }) {
         .trim()
         .toLowerCase();
 
-      switch (roleName) {
-        case "superadmin":
-          navigate("/adminpanel/dashboard");
-          break;
-
-        case "doctor":
-          navigate("/doctor-panel/dashboard");
-          break;
-
-        default:
-          navigate("/userPanel/dashboard");
+      if (roleName === "superadmin") {
+        navigate("/adminpanel/dashboard");
+      } else if (roleName === "doctor" || hasDoctorData) {
+        navigate("/doctor-panel/dashboard");
+      } else {
+        navigate("/userPanel/dashboard");
       }
     } catch (error) {
       console.error("Dashboard navigation error:", error);

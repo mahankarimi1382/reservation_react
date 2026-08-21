@@ -13,7 +13,12 @@ import {
 } from "../Inputs/Input";
 
 import { add_doctor } from "../../api/ApiCalling";
-import { fullNameStorage, smeIdStorage, userProfileStore } from "../../store/Store";
+import {
+  fullNameStorage,
+  smeIdStorage,
+  userProfileStore,
+  userDoctorStorage,
+} from "../../store/Store";
 import { Eror } from "../ToastAlerts";
 
 const DoctorFormModal = ({ setIsAddDoctorModal }) => {
@@ -21,6 +26,7 @@ const DoctorFormModal = ({ setIsAddDoctorModal }) => {
   
   const { phoneNum } = userProfileStore();
   const { smeId } = smeIdStorage();
+  const { doctors, setDoctors, setDoctorId } = userDoctorStorage();
 
   const [isLoading, setIsLoading] = useState(false);
   const [image, setImage] = useState(null); // base64
@@ -117,9 +123,35 @@ const DoctorFormModal = ({ setIsAddDoctorModal }) => {
     };
 
     try {
-      await add_doctor(payload, setIsLoading, () => {
+      const doctorId = await add_doctor(payload, setIsLoading, () => {
         setIsAddDoctorModal(false);
       });
+
+      // بعد از ثبت پزشک، سشن فعلی را تازه می‌کنیم تا کاربر همین حالا
+      // (بدون خروج/ورود مجدد) به‌عنوان پزشک شناخته شود.
+      if (doctorId) {
+        setDoctorId(doctorId);
+
+        const currentDoctors = Array.isArray(doctors) ? doctors : [];
+        const alreadyExists = currentDoctors.some(
+          (item) => String(item?.id) === String(doctorId)
+        );
+        if (!alreadyExists) {
+          setDoctors([
+            ...currentDoctors,
+            {
+              id: doctorId,
+              doctorName: formData.name.trim(),
+              doctorFamily: formData.lastName.trim(),
+            },
+          ]);
+        }
+
+        const newFullName = `${formData.name.trim()} ${formData.lastName.trim()}`.trim();
+        if (newFullName) {
+          setFullName(newFullName);
+        }
+      }
     } catch (error) {
       console.error("Error adding doctor:", error);
     } finally {
