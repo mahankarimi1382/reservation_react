@@ -237,9 +237,18 @@ export const add_doctor = async (data, setIsLoading, setIsAddDoctorModal) => {
 
       success("پزشک با موفقیت ثبت شد");
       setIsAddDoctorModal(false);
+
+      // آیدی پزشک جدید را برمی‌گردانیم تا caller سشن را تازه کند
+      const doctorId = extract_doctor_id(res);
+      if (doctorId == null) {
+        console.warn("آیدی پزشک از پاسخ create-doctor استخراج نشد", res?.data);
+      }
+      return doctorId;
     }
+    return null;
   } catch (err) {
     console.log(err);
+    return null;
   } finally {
     setIsLoading(false);
   }
@@ -466,6 +475,14 @@ export const add_medical_center = (data, setLoading, closeModal) => {
 // استخراج آیدی مطب از پاسخ سرور (ساختار پاسخ در اندپوینت‌ها یکسان نیست)
 export const extract_office_id = (res) =>
   res?.data?.result?.office?.id ??
+  res?.data?.result?.data?.id ??
+  res?.data?.result?.id ??
+  res?.data?.id ??
+  null;
+
+// استخراج آیدی پزشک از پاسخ create-doctor (ساختار پاسخ ثابت نیست)
+export const extract_doctor_id = (res) =>
+  res?.data?.result?.doctor?.id ??
   res?.data?.result?.data?.id ??
   res?.data?.result?.id ??
   res?.data?.id ??
