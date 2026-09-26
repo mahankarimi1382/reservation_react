@@ -1,5 +1,6 @@
 "use client";
 import {
+  create_visitcost,
   delete_doctor_treatment,
   get_doctor_treatmentCenter,
 } from "../../api/ApiCalling";
@@ -11,9 +12,12 @@ import { MdDelete } from "react-icons/md";
 import { AddTreatmentButt } from "../Buttons/Button";
 import DeletingModal from "./DeletingModal";
 import SeeReservsModal from "./SeeReservsModal";
+import { SyncLoader } from "react-spinners";
 
 function DoctorCostModal({ id, name, setIsDoctorCostModal }) {
   const [treatmentCenters, setTreatmenCenters] = useState([]);
+  const [prices, setPrices] = useState({});
+  const [submittingId, setSubmittingId] = useState(null);
 
   console.log(treatmentCenters);
   const getTreatMent = async () => {
@@ -71,10 +75,32 @@ function DoctorCostModal({ id, name, setIsDoctorCostModal }) {
                       {item.officeName ? "مطب" : "بیمارستان,درمانگاه"}
                     </h5>
                     <input
+                      value={prices[item.id] ?? ""}
+                      onChange={(e) =>
+                        setPrices({ ...prices, [item.id]: e.target.value })
+                      }
                       className=" p-1 text-xs border rounded-lg w-[30%]"
                       placeholder="قیمت ویزیت "
                     />
-                    <button className=" w-[10%] text-xs bg-[#005DAD] text-white p-1 px-2 rounded-lg">ثبت</button>
+                    <button
+                      onClick={async () => {
+                        const price = prices[item.id];
+                        if (!price || Number(price) <= 0) {
+                          setPrices({ ...prices, [item.id]: "" });
+                          return;
+                        }
+                        setSubmittingId(item.id);
+                        await create_visitcost(id, price);
+                        setSubmittingId(null);
+                      }}
+                      className=" w-[10%] text-xs bg-[#005DAD] text-white p-1 px-2 rounded-lg"
+                    >
+                      {submittingId === item.id ? (
+                        <SyncLoader color="white" size={6} />
+                      ) : (
+                        "ثبت"
+                      )}
+                    </button>
                   </div>
                 );
               })}

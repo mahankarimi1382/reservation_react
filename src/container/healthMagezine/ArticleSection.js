@@ -1,12 +1,12 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { IoIosArrowBack } from "react-icons/io";
 import articleImg from "../../assets/Pics/healthmagezine-pics/articleImage.png";
 import secondImg from "../../assets/Pics/healthmagezine-pics/articleSecondImage.png";
 import { CiBookmark } from "react-icons/ci";
 import { CiShare2 } from "react-icons/ci";
+import { axiosConfig } from "../../api/axiosConfig";
 
-function ArticleSection() {
-  const articles = [
+const fallbackArticles = [
     {
       id: 1,
       title: "سر درد های مزمن",
@@ -52,6 +52,33 @@ function ArticleSection() {
       img2: "",
     },
   ];
+
+  function ArticleSection() {
+
+  const [articles, setArticles] = useState(fallbackArticles);
+
+  // مقالات از بک‌اند خوانده می‌شوند؛ اگر سرور خالی بود لیست نمونه نمایش داده می‌شود
+  useEffect(() => {
+    axiosConfig
+      .get("Article/read-all-articles")
+      .then((res) => {
+        const list = res?.data?.result?.list ?? [];
+        if (list.length === 0) return;
+        setArticles(
+          list.slice(0, 6).map((a) => ({
+            id: a.id,
+            title: a.title,
+            caption: a.shortDesc || (a.desc ?? "").slice(0, 120) + "…",
+            doctor: a.authors ?? "",
+            skill: a.articleType?.articleTypeName ?? "",
+            date: (a.createdAt ?? "").slice(0, 10),
+            imageId: a.dRRFileId ?? null,
+          }))
+        );
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <div className=" gap-5 w-full flex flex-col">
       <div className=" text-lg w-full flex justify-between items-center">
@@ -70,7 +97,11 @@ function ArticleSection() {
             >
               <img
                 className=" rounded-xl"
-                src={articleImg}
+                src={
+                  item.imageId
+                    ? `https://myapi.dadehavaran.com:8040/api/v1/FileManagement/read-file?Id=${item.imageId}`
+                    : articleImg
+                }
                 alt="img"
                 width={211}
               />

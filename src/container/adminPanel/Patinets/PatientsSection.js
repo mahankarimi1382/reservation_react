@@ -1,5 +1,5 @@
 "use client";
-import { delete_doctor, delete_patient, get_patients } from "../../../api/ApiCalling";
+import { delete_patient, get_patients } from "../../../api/ApiCalling";
 import { AddPatinetButt } from "../../../components/Buttons/Button";
 import DatePickerComponent from "../../../components/DatePickerComponent";
 import { SelectFilter } from "../../../components/Inputs/Input";

@@ -65,7 +65,7 @@ function ProfileDropdown({ fullName, title = "دکتر" }) {
         .toLowerCase();
 
       if (roleName === "superadmin") {
-        navigate("/adminpanel/dashboard");
+        navigate("/adminPanel/dashboard");
       } else if (roleName === "doctor" || hasDoctorData) {
         navigate("/doctor-panel/dashboard");
       } else {

@@ -1,12 +1,13 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import abbas from "../../assets/Pics/abbas.png";
 import star from "../../assets/Pics/star.png";
 import { MdArrowBackIosNew } from "react-icons/md";
 import { IoIosArrowBack } from "react-icons/io";
 
 import { Link } from "react-router-dom";
-function DoctorsSection_dentist() {
-  const doctors = [
+import { axiosConfig } from "../../api/axiosConfig";
+
+const fallbackDoctors = [
     {
       id: 1,
       name: "عباس",
@@ -128,6 +129,46 @@ function DoctorsSection_dentist() {
       ],
     },
   ];
+
+  function DoctorsSection_dentist() {
+
+  const [doctors, setDoctors] = useState(fallbackDoctors);
+
+  // پزشکان دندانپزشک از بک‌اند خوانده می‌شوند؛ در نبود داده، لیست نمونه نمایش داده می‌شود
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const spRes = await axiosConfig.get("Specialist/read-specialists");
+        const specialistList = spRes?.data?.result?.list ?? [];
+        const dentistSpecialist = specialistList.find((sp) =>
+          (sp.name ?? "").includes("دندان")
+        );
+        if (!dentistSpecialist) return;
+        const docRes = await axiosConfig.get(
+          `Doctor/search-list-doctors?pagesize=8&pageNumber=1&specialist=${dentistSpecialist.id}`
+        );
+        const list = docRes?.data?.result?.list ?? [];
+        if (list.length === 0) return;
+        setDoctors(
+          list.map((d) => ({
+            id: d.id,
+            name: d.doctorName,
+            family: d.doctorFamily,
+            ability: d.specialist?.name ?? dentistSpecialist.name,
+            razi: 0,
+            raziPercent: 0,
+            rate: 0,
+            address: "",
+            tags: [],
+          }))
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    load();
+  }, []);
+
   return (
     <div className=" w-full flex flex-col items-center justify-center">
       <div className=" lg:mt-20 mt-5 flex justify-between w-11/12">

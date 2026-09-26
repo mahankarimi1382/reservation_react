@@ -35,7 +35,7 @@ function Pay({ setSteps, closeModal }) {
       userName: "string",
       smeProfileId: smeId,
     },
-    patientId: patientId || patients[0].id,
+    patientId: patientId ?? patients?.[0]?.id ?? 0,
     reservationId: reservationId,
     discountCodeId: null,
     turnId: turnId,
@@ -43,8 +43,10 @@ function Pay({ setSteps, closeModal }) {
 
   const handleCompleteStep2 = () => {
     setIsLoading(true);
-    patinet_reservation(data, setIsLoading, navigate); // ← جایگزینی router با navigate
-    closeModal();
+    // بعد از ثبت موفق نوبت، به مرحله‌ی رسید می‌رویم
+    patinet_reservation(data, setIsLoading, () => {
+      setSteps && setSteps(3);
+    });
   };
 
   return (

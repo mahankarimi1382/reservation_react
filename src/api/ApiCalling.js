@@ -95,36 +95,33 @@ export const activating_registarion = (
     })
     .then((res) => {
       console.log(res);
-            if (res.data.result.smeprofileId) {
-        setSmeId(res.data.result.smeprofileId);
+      setIsLoading(false);
+      const result = res.data.result ?? {};
+      if (result.smeprofileId) {
+        setSmeId(result.smeprofileId);
       }
-      console.log(res.data.result.token);
-      setToken(res.data.result.token);
-      Cookies.set("token", res.data.result.token);
-      if (res.data.result.patients) {
-        setPatients(res.data.result.patients);
+      setToken(result.token);
+      Cookies.set("token", result.token);
+      if (result.patients) {
+        setPatients(result.patients);
       }
       success("ورود موفق");
 
       closeModal();
-      setFullName(res.data.result.userFullname);
+      setFullName(result.userFullname);
 
       // ممکن است کاربر اصلا پزشک نباشد یا لیست خالی باشد → نباید کرش کند
       const doctorsList =
-        res.data.result.smeprofile?.doctors ?? res.data.result.doctors ?? [];
-      console.log(doctorsList);
+        result.smeprofile?.doctors ?? result.doctors ?? [];
       setDoctors(doctorsList);
       if (Array.isArray(doctorsList) && doctorsList.length > 0) {
         setDoctorId(doctorsList[0].id);
       }
-      if (res.data.result.smeprofileId) {
-        setSmeId(res.data.result.smeprofileId);
+      if (result.smeprofileId) {
+        setSmeId(result.smeprofileId);
       }
 
-      if (res.data.result.userFullname != "string") {
-        let name = res.data.result.userFullname;
-        setSmeId(create_sme_profile(name, token));
-      }
+      // پروفایل SmeProfile به صورت خودکار توسط بک‌اند بعد از تایید کد ساخته می‌شود
       if (onLoginSuccess) {
         onLoginSuccess();
       }
@@ -576,16 +573,40 @@ export const read_files = async (url) => {
 };
 export const search_doctors = async (data) => {
   console.log(data);
+  const buildFallbackUrl = () => {
+    const params = new URLSearchParams();
+    if (data.name) params.append("DoctorName", data.name);
+    if (data.specialistId) params.append("specialist", data.specialistId);
+    params.append("pagesize", data.pagesize ?? 10);
+    params.append("pageNumber", data.currentPage ?? 1);
+    return `Doctor/search-list-doctors?${params.toString()}`;
+  };
+
   try {
     const response = await axiosConfig.get(
       `Doctor/search-doctors?DoctorName=${data.name}&pagesize=${data.pagesize}&pageNumber=${data.currentPage}&specialistIds=${data.specialistId}&ProvinceId=${data.provinceId}&CityId=${data.cityId}&BimehTakmili=${data.BimehTakmili}&BimeAsli=${data.BimeAsli}&JustOnline=${data.JustOnline}&HasTurn=${data.HasTurn}&AcceptInsurance=${data.AcceptInsurance}&Gender=${data.Gender}&Sdate=${data.Sdate}&Edate=${data.Edate}&OnlineTypeId=${data.OnlineTypeId}&OfficeOrClinicHozoori=${data.OfficeOrClinicHozoori}`
     );
-    const doctors = response.data.result;
-    console.log(doctors);
-    return doctors;
+    const result = response.data.result;
+    console.log(result);
+
+    // اگر بک‌اند پاسخ معتبر ولی خالی داد (totalRecords عددی)، همان خالی را برمی‌گردانیم
+    // اما اگر Endpoint خطا/مقدار null داد (باگ فعلی بک‌اند)، از search-list-doctors استفاده می‌کنیم
+    const total = result?.totalRecords;
+    if (result && Array.isArray(result.list) && (result.list.length > 0 || (typeof total === "number" && total >= 0))) {
+      return result;
+    }
+    throw new Error("search-doctors returned empty/malformed result");
   } catch (error) {
-    console.error("Error fetching specialties:", error);
-    return null;
+    console.error("search-doctors failed, falling back to search-list-doctors:", error);
+    try {
+      const response = await axiosConfig.get(buildFallbackUrl());
+      const doctors = response.data.result;
+      console.log(doctors);
+      return doctors;
+    } catch (fallbackError) {
+      console.error(fallbackError);
+      return null;
+    }
   }
 };
 export const get_clinics = async () => {
@@ -875,7 +896,7 @@ export const add_patient_by_user = (
       setIsLoading(false);
     });
 };
-export const patinet_reservation = (data, setIsLoading, router) => {
+export const patinet_reservation = (data, setIsLoading, onSuccess) => {
   console.log(data);
   axiosConfig
     .post("PatientReservation/create-patientreservation", data)
@@ -883,7 +904,7 @@ export const patinet_reservation = (data, setIsLoading, router) => {
       console.log(res);
       setIsLoading(false);
       success("نوبت شما با موفقیت رزرو شد");
-      router.push("/");
+      onSuccess && onSuccess(res);
     })
     .catch((err) => {
       console.log(err);
@@ -1670,4 +1691,194 @@ export const get_specialists_by_clinic = async (clinicId) => {
   );
 
   return response.data.result.list;
+};
+
+// ---------- توابع کمکی هویت کاربر ----------
+// توکن JWT شامل آیدی کاربر (GUID) در claim نام است؛ برای صدا زدن
+// Endpointهایی مثل SiteMessage/read-recived-message به همین آیدی نیاز داریم
+export const get_current_user_id = () => {
+  const token = Cookies.get("token");
+  if (!token) return null;
+  try {
+    const jwt = token.replace("Bearer ", "");
+    const payload = JSON.parse(atob(jwt.split(".")[1]));
+    // claim نام در JWT به صورت طولانی serializes می‌شود
+    const nameClaim =
+      payload[
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+      ] ?? payload.name;
+    return nameClaim ?? null;
+  } catch (error) {
+    console.log("token decode error", error);
+    return null;
+  }
+};
+
+// ---------- کنسل کردن نوبت توسط بیمار ----------
+export const delete_patient_reservation = async (
+  id,
+  setList,
+  closeModal,
+  setIsLoading,
+  list
+) => {
+  try {
+    const response = await axiosConfig.delete(
+      "PatientReservation/delete-patientreservation",
+      {
+        data: {
+          metadata: {
+            userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            userName: "string",
+          },
+          id,
+        },
+      }
+    );
+    if (setList && list) {
+      setList(list.filter((item) => item.id !== id));
+    }
+    setIsLoading && setIsLoading(false);
+    closeModal && closeModal();
+    success("نوبت با موفقیت کنسل شد");
+    return response;
+  } catch (error) {
+    console.log(error);
+    setIsLoading && setIsLoading(false);
+    return null;
+  }
+};
+
+// ---------- هزینه ویزیت (VisitCost) ----------
+export const read_all_visitcosts = async () => {
+  try {
+    const response = await axiosConfig.get("Reservation/read-all-visitcosts");
+    return response?.data?.result?.list ?? [];
+  } catch (error) {
+    console.log(error);
+    return [];
+  }
+};
+
+export const read_all_visittypes = async () => {
+  try {
+    const response = await axiosConfig.get("Reservation/read-all-visittypes");
+    return response?.data?.result?.list ?? [];
+  } catch (error) {
+    console.log(error);
+    return [];
+  }
+};
+
+// قیمت ویزیت برای پزشک ثبت می‌کند؛ در صورت نبود نوع ویزیت مناسب، اولین نوع موجود استفاده می‌شود
+export const create_visitcost = async (doctorId, price, visitTypeName) => {
+  try {
+    const visitTypes = await read_all_visittypes();
+    const visitType =
+      visitTypes.find((vt) =>
+        visitTypeName ? (vt.visitTypeName ?? "").includes(visitTypeName) : true
+      ) ?? visitTypes[0];
+    if (!visitType) {
+      Eror("نوع ویزیت در سیستم ثبت نشده است");
+      return null;
+    }
+    const response = await axiosConfig.post("Reservation/create-visitcost", {
+      metadata: {
+        userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        userName: "string",
+      },
+      doctorId,
+      price: Number(price),
+      visitTypeId: visitType.id,
+    });
+    success("هزینه ویزیت با موفقیت ثبت شد");
+    return response?.data?.result ?? response?.data;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+
+// اولین هزینه ویزیت ثبت‌شده پزشک را برمی‌گرداند (برای ساخت تقویم کاری لازم است)
+export const read_doctor_visitcost = async (doctorId) => {
+  const all = await read_all_visitcosts();
+  return all.find((vc) => String(vc.doctorId) === String(doctorId)) ?? null;
+};
+
+// ---------- ویرایش/حذف بیمار (بستگان کاربر) ----------
+export const update_patient = async (data, setIsLoading, closeModal) => {
+  try {
+    const response = await axiosConfig.put("Patient/update-patient", data);
+    setIsLoading && setIsLoading(false);
+    closeModal && closeModal();
+    success("اطلاعات بیمار با موفقیت ویرایش شد");
+    return response;
+  } catch (error) {
+    console.log(error);
+    setIsLoading && setIsLoading(false);
+    return null;
+  }
+};
+
+// حذف بیمار بدون رفرش لیست سراسری (برای پنل کاربر)
+export const delete_patient_simple = async (id) => {
+  try {
+    const response = await axiosConfig.delete("Patient/delete-patient", {
+      data: {
+        metadata: {
+          userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          userName: "string",
+        },
+        id,
+      },
+    });
+    return response;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+
+// لیست بیماران ثبت‌شده‌ی یک SmeProfile (بستگانی که کاربر برایشان نوبت می‌گیرد)
+export const read_smeprofile_patients = async (smeProfileId) => {
+  try {
+    const response = await axiosConfig.get(
+      `Patient/read-smeprofile-patients?SmeProfileId=${smeProfileId}`
+    );
+    return response?.data?.result?.list ?? [];
+  } catch (error) {
+    console.log(error);
+    return [];
+  }
+};
+
+// ---------- درخواست عضویت پزشک (فرم عمومی) ----------
+// بک‌اند فعلاً وضعیت «در انتظار تایید» ندارد؛ پزشک مستقیماً ثبت می‌شود و
+// ادمین در پنل مدیریت آن را مشاهده/مدیریت می‌کند
+export const request_doctor_membership = async (data, setIsLoading) => {
+  try {
+    const response = await axiosConfig.post("Doctor/create-doctor", data);
+    setIsLoading && setIsLoading(false);
+    success("درخواست شما ثبت شد؛ همکاران ما با شما تماس خواهند گرفت");
+    return response;
+  } catch (error) {
+    console.log(error);
+    setIsLoading && setIsLoading(false);
+    return null;
+  }
+};
+
+// ---------- پیام‌های کاربر (اطلاع‌رسانی) ----------
+export const read_recived_messages = async (userId) => {
+  try {
+    const id = userId ?? get_current_user_id();
+    if (!id) return [];
+    const response = await axiosConfig.get(
+      `SiteMessage/read-recived-message?UserId=${id}`
+    );
+    return response?.data?.result?.list ?? [];
+  } catch (error) {
+    console.log(error);
+    return [];
+  }
 };

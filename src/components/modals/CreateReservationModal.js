@@ -1,6 +1,6 @@
 import DoctorWorkCalendar from "../../container/doctor-panel/reservation-managment/DoctorWorkCalendar";
 import { Switch } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { RxCross2 } from "react-icons/rx";
 import setting from "../../assets/Pics/doctorPanel/setting.png";
 import DatePicker, { Calendar } from "react-multi-date-picker";
@@ -8,21 +8,25 @@ import persian from "react-date-object/calendars/persian";
 import persian_fa from "react-date-object/locales/persian_fa";
 import moment from "moment-jalaali";
 import TimeInput from "../TimeInput";
-import { smeIdStorage } from "../../store/Store";
+import { smeIdStorage, userDoctorStorage } from "../../store/Store";
 import {
   create_Reservation,
   create_reservation_date_to_date,
+  read_doctor_visitcost,
 } from "../../api/ApiCalling";
 import { SyncLoader } from "react-spinners";
 import DatePickerComponent from "../DatePickerComponent";
+import { Eror } from "../ToastAlerts";
 
-function CreateReservationModal({ closeModal, treatmentId }) {
+function CreateReservationModal({ closeModal, treatmentId, doctorId }) {
   const [isLoading, setIsLoading] = useState(false);
   const { smeId } = smeIdStorage();
+  const { doctorid } = userDoctorStorage();
+  const effectiveDoctorId = doctorId ?? doctorid;
   const [reservationDate, setReservationDate] = useState("");
   const [cancleTimeDuration, setCancleTimeDuration] = useState(0);
   const [reservationTime, setReservationTime] = useState("");
-  const [visitCostId, setVisitCostId] = useState(2);
+  const [visitCostId, setVisitCostId] = useState(null);
   const [totalTurnCount, setTotalTurnCount] = useState(0);
   const [numberofturnsinlimit, setNumberofturnsinlimit] = useState(0);
   const [timeofturnsinlimit, setTimeofturnsinlimit] = useState(0);
@@ -31,6 +35,19 @@ function CreateReservationModal({ closeModal, treatmentId }) {
   const [reservationTimeEnd, setReservationTimeEnd] = useState(0);
   const [isDateToDate, setIsDateToDate] = useState(false);
   const [selectedDays, setSelectedDays] = useState(new Array(7).fill(false));
+
+  // هزینه ویزیت پزشک به صورت خودکار خوانده می‌شود (به جای آیدی هاردکد)
+  useEffect(() => {
+    if (!effectiveDoctorId) return;
+    read_doctor_visitcost(effectiveDoctorId).then((vc) => {
+      if (vc?.id) {
+        setVisitCostId(vc.id);
+      } else {
+        Eror("ابتدا هزینه ویزیت خود را ثبت کنید");
+      }
+    });
+  }, [effectiveDoctorId]);
+
   const data = {
     metadata: {
       userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -221,6 +238,10 @@ function CreateReservationModal({ closeModal, treatmentId }) {
                 </button>
                 <button
                   onClick={() => {
+                    if (!visitCostId) {
+                      Eror("ابتدا هزینه ویزیت خود را ثبت کنید");
+                      return;
+                    }
                     setIsLoading(true);
                     if (isDateToDate) {
                       create_reservation_date_to_date(

@@ -1,6 +1,5 @@
 "use client";
 
-import { delete_specialties } from "../../../api/ApiCalling";
 import { IOSSwitch } from "../../../components/Buttons/Button";
 import DeletingModal from "../../../components/modals/DeletingModal";
 import { FormControlLabel, Pagination } from "@mui/material";

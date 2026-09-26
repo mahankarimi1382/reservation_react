@@ -1,17 +1,39 @@
 "use client";
-import { userSubmitedArrStore } from "../../../store/Store";
-import React, { useState } from "react";
+import { smeIdStorage, userSubmitedArrStore } from "../../../store/Store";
+import React, { useEffect, useState } from "react";
 import { CiEdit } from "react-icons/ci";
 import { GoPlusCircle } from "react-icons/go";
 import { TbTrash } from "react-icons/tb";
 import prof from "../../../assets/Pics/userPanelProfile.png";
 import ReservForAnother from "../../../container/reservStepsToPay/ReservForAnother";
+import DeletingModal from "../../../components/modals/DeletingModal";
+import {
+  delete_patient_simple,
+  read_smeprofile_patients,
+} from "../../../api/ApiCalling";
 
 function SubsetedusersSection() {
   const [isAddSubsted, setIsAddSubsted] = useState(false);
-  console.log(isAddSubsted);
-  const { patients } = userSubmitedArrStore();
-  console.log(patients);
+  const [editingPatient, setEditingPatient] = useState(null);
+  const [deletingPatient, setDeletingPatient] = useState(null);
+  const { patients, setPatients } = userSubmitedArrStore();
+  const { smeId } = smeIdStorage();
+
+  // لیست بستگان از سرور خوانده می‌شود تا بعد از رفرش صفحه هم در دسترس باشد
+  useEffect(() => {
+    if (!smeId) return;
+    read_smeprofile_patients(smeId).then((list) => {
+      if (list.length > 0) {
+        setPatients(list);
+      }
+    });
+  }, [smeId, isAddSubsted]);
+
+  const handleDelete = async (id) => {
+    await delete_patient_simple(id);
+    const refreshed = await read_smeprofile_patients(smeId);
+    setPatients(refreshed);
+  };
   return (
     <div className=" lg:w-[82%] w-[90%] mx-auto flex justify-center flex-col items-center gap-5">
       {isAddSubsted && (
@@ -21,7 +43,11 @@ function SubsetedusersSection() {
         >
           <ReservForAnother
             SubsetedusersSection
-            closeModal={() => setIsAddSubsted(false)}
+            editPatient={editingPatient}
+            closeModal={() => {
+              setEditingPatient(null);
+              setIsAddSubsted(false);
+            }}
           />
         </div>
       )}
@@ -55,21 +81,39 @@ function SubsetedusersSection() {
                   <span>{item.nationalId}</span>
                 </div>
                 <div className=" hidden  gap-2 lg:flex justify-center items-center">
-                  <button className=" p-1 px-2 flex justify-center items-center gap-2 rounded-md border border-[#005DAD] text-[#005DAD]">
+                  <button
+                    onClick={() => {
+                      setEditingPatient(item);
+                      setIsAddSubsted(true);
+                    }}
+                    className=" p-1 px-2 flex justify-center items-center gap-2 rounded-md border border-[#005DAD] text-[#005DAD]"
+                  >
                     <CiEdit className=" text-2xl" />
                     ویرایش
                   </button>
-                  <button className=" p-1 px-2 flex justify-center items-center gap-2 rounded-md border border-[#005DAD] text-[#005DAD]">
+                  <button
+                    onClick={() => setDeletingPatient(item)}
+                    className=" p-1 px-2 flex justify-center items-center gap-2 rounded-md border border-[#005DAD] text-[#005DAD]"
+                  >
                     <TbTrash className=" text-2xl" />
                     حذف
                   </button>
                 </div>
                 <div className=" lg:hidden left-2 top-2 absolute  gap-2 flex justify-center items-center">
-                  <button className=" p-1 lg:px-2 flex text-sm lg:text-base justify-center items-center gap-2 rounded-md border border-[#005DAD] text-[#005DAD]">
+                  <button
+                    onClick={() => {
+                      setEditingPatient(item);
+                      setIsAddSubsted(true);
+                    }}
+                    className=" p-1 lg:px-2 flex text-sm lg:text-base justify-center items-center gap-2 rounded-md border border-[#005DAD] text-[#005DAD]"
+                  >
                     <CiEdit className=" lg:text-2xl" />
                     ویرایش
                   </button>
-                  <button className=" p-1 px-2 text-sm lg:text-base flex justify-center items-center gap-2 rounded-md border border-[#005DAD] text-[#005DAD]">
+                  <button
+                    onClick={() => setDeletingPatient(item)}
+                    className=" p-1 px-2 text-sm lg:text-base flex justify-center items-center gap-2 rounded-md border border-[#005DAD] text-[#005DAD]"
+                  >
                     <TbTrash className=" lg:text-2xl" />
                     حذف
                   </button>
@@ -92,13 +136,26 @@ function SubsetedusersSection() {
             زیر مجموعه ای ثبت نشده است
           </h2>
           <button
-            onClick={() => setIsAddSubsted(true)}
+            onClick={() => {
+              setEditingPatient(null);
+              setIsAddSubsted(true);
+            }}
             className=" py-2 lg:py-0 flex justify-center items-center text-[#005DAD] text-sm lg:text-xl gap-2"
           >
             <GoPlusCircle />
             افزودن کاربر جدید
           </button>
         </div>
+      )}
+      {deletingPatient && (
+        <DeletingModal
+          DeletingFn={(id) => handleDelete(id)}
+          id={deletingPatient.id}
+          name={`${deletingPatient.patientName ?? ""} ${
+            deletingPatient.patientFamily ?? ""
+          }`}
+          closeModal={() => setDeletingPatient(null)}
+        />
       )}
     </div>
   );

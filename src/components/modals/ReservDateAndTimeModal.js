@@ -54,16 +54,9 @@ function ReservDateAndTimeModal({ setIsReservModal, name, treatmentId }) {
           onClick={() => {
             setDateAndTime(item.reservationDateFull);
             setSelectedDay(item.id);
-            let turns = item.visitCost.reservations[0].turns;
-            // const uniqueTurns = turns.filter((turn) => {
-            //   if (uniqueStimeSet.has(turn.stime)) {
-            //     return false;
-            //   } else {
-            //     uniqueStimeSet.add(turn.stime);
-            //     return true;
-            //   }
-            // });
-            setTurns(turns);
+            // ساختار visitCost ممکن است کامل نباشد؛ نباید کرش کند
+            const dayTurns = item?.visitCost?.reservations?.[0]?.turns ?? [];
+            setTurns(dayTurns);
           }}
           className={`${
             selectedDay == item.id &&

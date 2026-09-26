@@ -8,7 +8,19 @@ import {
 import LoadingComponent from "../LoadingComponent";
 import DeletingModal from "./DeletingModal";
 
-function SeeReservsModal({ closeModal, treatmentId, clinicId, doctorId }) {
+function SeeReservsModal({
+  closeModal,
+  treatmentId,
+  clinicId,
+  doctorId,
+  selectedMedical,
+}) {
+  // در پنل ادمین فقط selectedMedical پاس داده می‌شود؛ شناسه مرکز از آن استخراج می‌شود
+  const effectiveClinicId =
+    clinicId ??
+    selectedMedical?.clinicId ??
+    selectedMedical?.officeId ??
+    treatmentId;
   const [selectedDay, setSelectedDay] = useState("");
   console.log(selectedDay);
   const [turns, setTurns] = useState([]);
@@ -21,7 +33,10 @@ function SeeReservsModal({ closeModal, treatmentId, clinicId, doctorId }) {
 
   const getReservation = async () => {
     console.log("first");
-    const data = await get_doctor_treatment_reservation(doctorId, clinicId);
+    const data = await get_doctor_treatment_reservation(
+      doctorId,
+      effectiveClinicId
+    );
     if (data) {
       setReservationList(data);
       setIsLoading(false);
@@ -38,15 +53,8 @@ function SeeReservsModal({ closeModal, treatmentId, clinicId, doctorId }) {
         <button
           onClick={() => {
             setSelectedDay(item.id);
-            let turns = item.visitCost.reservations[0].turns;
-            // const uniqueTurns = turns.filter((turn) => {
-            //   if (uniqueStimeSet.has(turn.stime)) {
-            //     return false;
-            //   } else {
-            //     uniqueStimeSet.add(turn.stime);
-            //     return true;
-            //   }
-            // });
+            // ساختار visitCost ممکن است کامل نباشد؛ نباید کرش کند
+            const turns = item?.visitCost?.reservations?.[0]?.turns ?? [];
             setTurns(turns);
           }}
           className={`${
@@ -125,7 +133,8 @@ function SeeReservsModal({ closeModal, treatmentId, clinicId, doctorId }) {
       )}
       {isCreateReservModal && (
         <CreateReservationModal
-          treatmentId={treatmentId}
+          treatmentId={treatmentId ?? effectiveClinicId}
+          doctorId={doctorId}
           closeModal={() => setIsCreateReservModal(false)}
         />
       )}

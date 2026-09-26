@@ -5,11 +5,11 @@ import {
   Radio,
   RadioGroup,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import step1reservation from "../../assets/Pics/reservationStep1.png";
 import {
   add_patient_by_user,
-  create_sme_profile_for_user,
+  update_patient,
 } from "../../api/ApiCalling";
 import {
   CitySelectInput,
@@ -30,6 +30,7 @@ function ReservForAnother({
   forme,
   closeModal,
   SubsetedusersSection,
+  editPatient,
 }) {
   const [cities, setCities] = useState([]);
   const daysOfMonth = Array.from({ length: 32 }, (_, i) => i + 1);
@@ -64,6 +65,7 @@ function ReservForAnother({
   const [isAtba, setIsAtba] = useState(false);
   const [gender, setGender] = useState(null);
   const [cityId, setCityId] = useState(0);
+  const pad2 = (v) => String(v).padStart(2, "0");
   const data = {
     metadata: {
       userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -74,20 +76,49 @@ function ReservForAnother({
     patientFamily: familyName,
     nationalId: nationalCode,
     birthNumber: 0,
-    birthDate: `${yearOfBirth}/${monthOfBirth}/${dayOfBirth}`,
-    cityId: cityId.id,
+    birthDate: yearOfBirth
+      ? `${yearOfBirth}/${pad2(monthOfBirth)}/${pad2(dayOfBirth)}`
+      : "",
+    cityId: cityId?.id ?? cityId ?? 0,
     geolat: 0,
     geolon: 0,
     patientPhone: forme ? phoneNum : patientPhone,
     necessaryPhone: forme ? phoneNum : patientPhone,
     email: "",
-    gender,
+    gender: gender === null ? true : gender === "true" || gender === true,
     smeProfileId: smeId,
   };
 
   const { setSmeId } = smeIdStorage();
+
+  // در حالت ویرایش، فیلدها از بیمار انتخاب‌شده پر می‌شوند
+  useEffect(() => {
+    if (!editPatient) return;
+    setName(editPatient.patientName ?? "");
+    setFamilyName(editPatient.patientFamily ?? "");
+    setNationalCode(editPatient.nationalId ?? "");
+    setPatientPhone(editPatient.patientPhone ?? "");
+    if (editPatient.birthDate) {
+      const [y, m, d] = String(editPatient.birthDate).split("/");
+      if (y) setYearOfBirth(y);
+      if (m) setMonthOfBirth(Number(m));
+      if (d) setDayOfBirth(Number(d));
+    }
+    if (typeof editPatient.gender === "boolean") {
+      setGender(String(editPatient.gender));
+    }
+  }, [editPatient]);
+
   const handlCompleteStep1 = () => {
-    
+    if (editPatient) {
+      setIsLoading(true);
+      update_patient(
+        { ...data, id: editPatient.id },
+        setIsLoading,
+        closeModal
+      );
+      return;
+    }
     setIsLoading(true);
     add_patient_by_user(
       closeModal,
