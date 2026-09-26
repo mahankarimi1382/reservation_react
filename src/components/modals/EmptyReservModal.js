@@ -36,7 +36,11 @@ function EmptyReservModal({ setIsModalOpen, selectedDoctor }) {
   const navigate = useNavigate();
 
   const get4FirtsTurns = async () => {
-    const result = await get_4first_doctor_turns();
+    if (!selectedDoctor?.id) {
+      setIsLoading(false);
+      return;
+    }
+    const result = await get_4first_doctor_turns(selectedDoctor.id);
     if (result) {
       setFirstTurnsHozoori(
         result.filter((item) => item.reservationType === "حضوری")
@@ -129,7 +133,7 @@ function EmptyReservModal({ setIsModalOpen, selectedDoctor }) {
               onClick={() => {
                 setDoctorName(selectedDoctor.doctorName + " " + selectedDoctor.doctorFamily);
                 setDoctorId(selectedDoctor.id);
-                navigate("/doctors/doctor-profile");
+                navigate(`/doctors/${encodeURIComponent(selectedDoctor.doctorName + " " + selectedDoctor.doctorFamily)}`);
               }}
               className="text-[#005DAD] flex justify-center items-center"
             >
@@ -140,7 +144,7 @@ function EmptyReservModal({ setIsModalOpen, selectedDoctor }) {
 
           {/* First two turns */}
           <div className="w-[90%] justify-between flex flex-col lg:gap-0 gap-3 lg:flex-row">
-            {[0, 1].map((item) => (
+            {firstTurnsHozoori.slice(0, 2).map((item) => (
               <div
                 key={item.turnId}
                 className="lg:w-[508px] flex flex-col justify-center items-start lg:px-5 lg:gap-5 border p-2 lg:p-0 lg:h-[200px] rounded-2xl bg-white shadow-md"
@@ -151,12 +155,12 @@ function EmptyReservModal({ setIsModalOpen, selectedDoctor }) {
 
                 <h2 className="flex justify-center items-center">
                   <img width={24} src={callenderIcon} alt="callender-icon" />
-                  اولین نوبت خالی بیمارستان کسری: 5 شهریور 1403 ساعت 10:30
+                  اولین نوبت خالی {item.treatmentCenterName}: {item.reservationDateFull} ساعت {item.reservationTime}
                 </h2>
 
                 <h2 className="flex text-[#757575] justify-center items-center">
                   <IoLocationOutline className="text-[#757575] text-2xl" />
-                  آدرس بیمارستان کسری: بالاتر از میدان آرژانتین، خیابان الوند
+                  آدرس {item.treatmentCenterName}: {item.treatmentCenterAddress}
                 </h2>
 
                 <div className="w-full flex justify-center items-center">
@@ -187,7 +191,7 @@ function EmptyReservModal({ setIsModalOpen, selectedDoctor }) {
               onClick={() => {
                 setDoctorName(selectedDoctor.doctorName + " " + selectedDoctor.doctorFamily);
                 setDoctorId(selectedDoctor.id);
-                navigate("/doctors/doctor-profile");
+                navigate(`/doctors/${encodeURIComponent(selectedDoctor.doctorName + " " + selectedDoctor.doctorFamily)}`);
               }}
               className="text-[#005DAD] flex justify-center items-center"
             >

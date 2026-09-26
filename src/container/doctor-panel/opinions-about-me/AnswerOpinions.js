@@ -1,58 +1,56 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import person from "../../../assets/Pics/doctorPanel/fakeperson.png";
 import reply from "../../../assets/Pics/doctorPanel/reply.png";
 import { CiFaceSmile } from "react-icons/ci";
 import { RateCounter } from "../../../utils/RateCounter";
+import { read_doctor_Comment } from "../../../api/ApiCalling";
+import { userDoctorStorage } from "../../../store/Store";
+import { SyncLoader } from "react-spinners";
 
 function AnswerOpinions() {
   const [isAnswer, setIsAnswer] = useState(false);
   const [selectedCardId, setSelectedCardId] = useState(null);
-  const fakeData = [
-    {
-      id: 1,
-      name: "ایمان سالارکیا",
-      visit: "ویزیت شده در مطب ونک",
-      suggest: "این پزشک را پیشنهاد می‌کنم ",
-      time: " نظر داده شده در 1402/10/12",
-      caption:
-        "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است. چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد",
-      answer: {
-        date: " جواب داده شده در 1402/10/18",
-        caption:
-          "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است. چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد",
-      },
-    },
-    {
-      id: 2,
-      name: "ایمان سالارکیا",
-      visit: "ویزیت شده در مطب ونک",
-      suggest: "این پزشک را پیشنهاد می‌کنم ",
-      time: " نظر داده شده در 1402/10/12",
-      caption:
-        "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است. چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد",
-    },
-    {
-      id: 3,
-      name: "ایمان سالارکیا",
-      visit: "ویزیت شده در مطب ونک",
-      suggest: "این پزشک را پیشنهاد می‌کنم ",
-      time: " نظر داده شده در 1402/10/12",
-      caption:
-        "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است. چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد",
-    },
-    {
-      id: 4,
-      name: "ایمان سالارکیا",
-      visit: "ویزیت شده در مطب ونک",
-      suggest: "این پزشک را پیشنهاد می‌کنم ",
-      time: " نظر داده شده در 1402/10/12",
-      caption:
-        "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است. چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد",
-    },
-  ];
+  const { doctorid } = userDoctorStorage();
+  const [comments, setComments] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // نظرات ثبت‌شده درباره پزشک از بک‌اند خوانده می‌شود
+  useEffect(() => {
+    if (!doctorid) {
+      setIsLoading(false);
+      return;
+    }
+    read_doctor_Comment(doctorid)
+      .then((list) => {
+        setComments(list ?? []);
+        setIsLoading(false);
+      })
+      .catch(() => setIsLoading(false));
+  }, [doctorid]);
+
+  const fakeData = comments.map((item) => ({
+    id: item.id,
+    name: item.smeProfile?.smeName ?? "کاربر دکتر رزرو",
+    visit: item.isAccept ? "نظر تایید شده" : "در انتظار تایید",
+    suggest: item.isSuggest
+      ? "این پزشک را پیشنهاد می‌کنم "
+      : "این پزشک را پیشنهاد نمی‌کنم",
+    time: ` نظر داده شده در ${item.commentDate ?? ""}`,
+    caption: item.desc,
+  }));
   return (
     <div className=" w-full flex flex-col gap-5">
+      {isLoading && (
+        <div className=" flex justify-center items-center py-10">
+          <SyncLoader color="#005DAD" size={9} />
+        </div>
+      )}
+      {!isLoading && fakeData.length === 0 && (
+        <div className=" flex justify-center items-center py-10 text-[#757575] bg-white rounded-xl shadow border">
+          هنوز نظری برای شما ثبت نشده است
+        </div>
+      )}
       {fakeData.map((item) => {
         return (
           <div
@@ -81,7 +79,7 @@ function AnswerOpinions() {
               <div className=" flex-col flex items-end gap-4">
                 <RateCounter rate={5} width={20} />
                 <h5 className=" text-sm text-[#005DAD]">
-                  ویزیت شده در مطب ونک
+                  {item.visit}
                 </h5>
               </div>
             </div>

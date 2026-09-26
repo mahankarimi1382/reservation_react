@@ -534,7 +534,7 @@ export const get_ads = async (url) => {
     return null;
   }
 };
-export const delete_ads = async (id, setBanners, closeModal) => {
+export const delete_ads = async (id, setBanners, closeModal, setIsLoading, list) => {
   console.log(id);
   try {
     const response = await axiosConfig.delete("Ads/delete-ads", {
@@ -543,20 +543,20 @@ export const delete_ads = async (id, setBanners, closeModal) => {
           userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
           userName: "string",
         },
-        id: id,
+        id,
       },
     });
-    const url = "Ads/read-smeprofile-ads?SmeProfileId=6";
-
-    const data = await get_ads(url);
-    if (data) {
-      setBanners(data);
+    // به‌جای رفرش با SmeProfileId هاردکد، همان لیست فعلی فیلتر می‌شود
+    if (setBanners && list) {
+      setBanners(list.filter((item) => item.id !== id));
     }
-    closeModal();
+    closeModal && closeModal();
+    setIsLoading && setIsLoading(false);
     console.log(response);
     success("بنر با موفقیت حذف شد");
   } catch (error) {
     console.log(error);
+    setIsLoading && setIsLoading(false);
   }
 };
 
@@ -1006,10 +1006,10 @@ export const add_role_to_user = (data, setIsLoading, closeModal) => {
     });
 };
 
-export const get_4first_doctor_turns = async () => {
+export const get_4first_doctor_turns = async (doctorId) => {
   try {
     const response = await axiosConfig.get(
-      `Doctor/readfirstfreeturns?DoctorId=1239`
+      `Doctor/readfirstfreeturns?DoctorId=${doctorId}`
     );
     const turns = response.data.result.list;
     console.log(turns);
@@ -1865,6 +1865,19 @@ export const request_doctor_membership = async (data, setIsLoading) => {
     console.log(error);
     setIsLoading && setIsLoading(false);
     return null;
+  }
+};
+
+// لیست بیماران پزشک
+export const read_doctor_patients = async (doctorId) => {
+  try {
+    const response = await axiosConfig.get(
+      `Doctor/read-patients-doctor?DoctorId=${doctorId}`
+    );
+    return response?.data?.result?.list ?? [];
+  } catch (error) {
+    console.log(error);
+    return [];
   }
 };
 

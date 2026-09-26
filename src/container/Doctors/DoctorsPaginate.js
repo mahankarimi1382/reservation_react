@@ -171,7 +171,11 @@ const DoctorsPaginate = () => {
               onNavigate={(id, name) => {
                 setDoctorId(id);
                 setDoctorName(name);
-                navigate("/doctors/doctor-profile");
+                navigate(
+                  `/doctors/${encodeURIComponent(
+                    `${doctor.doctorName ?? ""} ${doctor.doctorFamily ?? ""}`.trim()
+                  )}`
+                );
               }}
             />
           ))

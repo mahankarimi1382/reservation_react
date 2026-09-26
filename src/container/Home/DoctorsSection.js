@@ -10,7 +10,7 @@ import { doctorProfileStore } from "../../store/Store";
 import { RateCounter } from "../../utils/RateCounter";
 
 function DoctorsSection() {
-  const { setDoctorId } = doctorProfileStore();
+  const { setDoctorId, setDoctorName } = doctorProfileStore();
   const navigate = useNavigate();
 
   const [doctors, setDoctors] = useState([]);
@@ -85,8 +85,16 @@ function DoctorsSection() {
 
             <button
               onClick={() => {
-                setDoctorId(item.doctorTreatmentCenter.doctor.id);
-                navigate("/doctors/doctor-profile");
+                const doctor = item.doctorTreatmentCenter?.doctor;
+                setDoctorId(doctor?.id);
+                setDoctorName(
+                  `${doctor?.doctorName ?? ""} ${doctor?.doctorFamily ?? ""}`.trim()
+                );
+                navigate(
+                  `/doctors/${encodeURIComponent(
+                    `${doctor?.doctorName ?? ""} ${doctor?.doctorFamily ?? ""}`.trim()
+                  )}`
+                );
               }}
               className="hover:bg-[#005DAD] hover:text-white transition-all flex justify-center items-center gap-2 text-sm lg:text-base lg:w-2/3 text-[#005DAD] rounded-lg p-1 lg:p-2 border-2 border-[#005DAD]"
             >

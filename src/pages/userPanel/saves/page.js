@@ -8,7 +8,20 @@ import MagezineSave from "../../../container/userPanel/saves/MagezineSave";
 import DoctorSave from "../../../container/userPanel/saves/DoctorSave";
 import MedicalCenterSave from "../../../container/userPanel/saves/MedicalCenterSave";
 import { UserPanel_PhoneTitle } from "../dashboard/page";
+import { useEffect, useState } from "react";
+import { read_followed_profile } from "../../../api/ApiCalling";
+import { smeIdStorage } from "../../../store/Store";
+
 function page() {
+  const { smeId } = smeIdStorage();
+  const [followed, setFollowed] = useState([]);
+
+  // پروفایل‌های نشان‌شده (فالو‌شده) از بک‌اند خوانده می‌شوند
+  useEffect(() => {
+    if (!smeId) return;
+    read_followed_profile(smeId).then((list) => setFollowed(list ?? []));
+  }, [smeId]);
+
   return (
     <div dir="rtl" className=" bg-[#F6FBFF] w-full">
       <Navbar />
@@ -36,11 +49,16 @@ function page() {
               </button>
             </div>
             <div className=" pb-20 lg:pb-0 flex flex-col gap-4">
+              {followed.map((item) => (
+                <SavedCardContainer key={item.id}>
+                  <DoctorSave
+                    name={item.followProfileName ?? "پزشک نشان‌شده"}
+                    logo={item.followProfileLogo || undefined}
+                  />
+                </SavedCardContainer>
+              ))}
               <SavedCardContainer>
                 <MagezineSave />
-              </SavedCardContainer>
-              <SavedCardContainer>
-                <DoctorSave />
               </SavedCardContainer>
               <SavedCardContainer>
                 <MedicalCenterSave />

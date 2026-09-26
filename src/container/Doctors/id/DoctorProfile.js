@@ -96,12 +96,13 @@ function DoctorProfile() {
       setDoctorDetails(result.data);
       setIsLoading(false);
       setDoctorId(result.data.id);
+      // زنجیره ممکن است کامل نباشد (پزشک بدون smeProfile/مرکز) — نباید کرش کند
       setDoctorTreatmentCenters(
-        result.data.smeProfile.doctors[0].doctorTreatmentCenters
+        result.data?.smeProfile?.doctors?.[0]?.doctorTreatmentCenters ?? []
       );
       const coments = await read_DoctorComents(result.data.id);
       if (coments) {
-        setComents(coments.list);
+        setComents(coments.list ?? []);
       }
       console.log(coments);
     }

@@ -6,7 +6,11 @@ import barezvijegi from "../../../assets/Pics/barezvijegi.png";
 import { AiFillLike } from "react-icons/ai";
 import star from "../../../assets/Pics/star.png";
 import { RateCounter } from "../../../utils/RateCounter";
-function DoctorSave() {
+function DoctorSave({
+  name = "دکتر حلما محمدی",
+  specialty = "متخصص مغز و اعصاب",
+  logo,
+}) {
   const charecter = [
     { id: 1, caption: "صبور" },
     { id: 2, caption: "دلسوز" },
@@ -16,7 +20,7 @@ function DoctorSave() {
     <div className=" flex flex-col">
       <div className=" flex lg:gap-5 items-start">
         <img
-          src={pesorasos}
+          src={logo || pesorasos}
           alt="img"
           className=" w-[110px] lg:w-[155px]"
           width={155}
@@ -24,10 +28,10 @@ function DoctorSave() {
         <div className=" flex justify-between items-start w-full  gap-2">
           <div className=" flex gap-2 flex-col">
             <h5 className=" text-sm lg:text-base font-semibold">
-              دکتر حلما محمدی
+              {name}
             </h5>
             <h5 className=" text-xs lg:text-base text-[#757575]">
-              متخصص مغز و اعصاب
+              {specialty}
             </h5>
             <div className=" inline-block  min-w-[100px] justify-center items-center gap-2">
               <span className=" text-xs lg:text-base">خدمات :</span>

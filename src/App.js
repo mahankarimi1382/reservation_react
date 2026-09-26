@@ -84,6 +84,7 @@ import AdminTransactions from "./pages/adminPanel/transactions/page";
 import AdminTurns from "./pages/adminPanel/turns/page";
 import AdminUserAccess from "./pages/adminPanel/useraccess/page";
 import { ToastContainer } from "react-toastify";
+import { RequireAdmin, RequireAuth } from "./components/RoleGuard";
 import GovernmentHospitals from "./pages/governmentHospital/GovernmentHospitals";
 import GovernmentDoctors from "./pages/governmentHospital/Doctors";
 import GovernmentAppointments from "./pages/governmentHospital/Appointments";
@@ -133,7 +134,8 @@ function App() {
         <Route path="/doctor-login" element={<DoctorLogin />} />
         <Route path="/doctor-login/signup-form" element={<DoctorSignup />} />
 
-        {/* پنل کاربر */}
+        {/* پنل کاربر — نیازمند ورود */}
+        <Route element={<RequireAuth />}>
         <Route path="/userPanel/acountInfo" element={<UserAccountInfo />} />
         <Route path="/userPanel/dashboard" element={<UserDashboard />} />
         <Route path="/userPanel/favorites" element={<UserFavorites />} />
@@ -148,8 +150,10 @@ function App() {
         />
         <Route path="/userPanel/transactions" element={<UserTransactions />} />
         <Route path="/userPanel/wallet" element={<UserWallet />} />
+        </Route>
 
-        {/* پنل دکتر */}
+        {/* پنل دکتر — نیازمند ورود */}
+        <Route element={<RequireAuth />}>
         <Route path="/doctor-panel/article" element={<DoctorPanelArticle />} />
         <Route
           path="/doctor-panel/dashboard"
@@ -211,8 +215,10 @@ function App() {
           path="/doctor-panel/reservation-managment/work-calendar"
           element={<WorkCalendar />}
         />
+        </Route>
 
-        {/* پنل ادمین */}
+        {/* پنل ادمین — فقط نقش‌های ادمینی */}
+        <Route element={<RequireAdmin />}>
         <Route path="/adminPanel/blacklist" element={<AdminBlacklist />} />
         <Route path="/adminPanel/dashboard" element={<AdminDashboard />} />
         <Route path="/adminPanel/doctors" element={<AdminDoctors />} />
@@ -282,6 +288,7 @@ function App() {
         />
         <Route path="/adminPanel/turns" element={<AdminTurns />} />
         <Route path="/adminPanel/useraccess" element={<AdminUserAccess />} />
+        </Route>
           
 
         {/* پنل بیمارستانهای دولتی */} 
