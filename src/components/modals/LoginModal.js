@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import PhoneNumModal from "./PhoneNumModal";
 import SignupModal from "./SignUpModal";
 
-function LoginModal({ setIsModal }) {
+function LoginModal({ setIsModal, loginPurpose }) {
   const [isPhoneNumModal, setIsPhoneNumModal] = useState(true);
   const [isSignupModal, setIsSignupModal] = useState(false);
   const [isValidateModal, setIsValidateModal] = useState(false);
@@ -44,6 +44,7 @@ function LoginModal({ setIsModal }) {
           closeModal={closeModal}
           setIsPhoneNumModal={setIsPhoneNumModal}
           setIsSignupModal={setIsSignupModal}
+          loginPurpose={loginPurpose}
         />
       )}
       {isSignupModal && (

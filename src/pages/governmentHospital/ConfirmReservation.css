@@ -1,0 +1,365 @@
+.confirm-reservation-page {
+  min-height: 100vh;
+  background: #f8fafc;
+  padding: 32px 16px 60px;
+  direction: rtl;
+}
+
+.confirm-container {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.confirm-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 28px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.confirm-breadcrumb a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.confirm-breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.confirm-page-header {
+  margin-bottom: 24px;
+}
+
+.confirm-page-header h2 {
+  margin: 0 0 10px;
+  color: #1e293b;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.confirm-page-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 15px;
+}
+
+.reservation-summary-card,
+.patient-form-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.summary-card-header,
+.form-card-header {
+  padding: 22px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.summary-card-header h3,
+.form-card-header h3 {
+  margin: 0 0 8px;
+  color: #1e293b;
+  font-size: 20px;
+}
+
+.form-card-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.summary-card-body {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px 24px;
+  border-left: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.summary-item:nth-child(3n) {
+  border-left: none;
+}
+
+.summary-item:nth-last-child(-n + 3) {
+  border-bottom: none;
+}
+
+.summary-label {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.summary-item strong {
+  color: #1e293b;
+  font-size: 16px;
+}
+
+.patient-form-card {
+  padding-bottom: 24px;
+}
+
+.patient-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+  padding: 26px 24px 8px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  color: #334155;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.form-group label span {
+  color: #dc2626;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #1e293b;
+  font-family: inherit;
+  font-size: 14px;
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.form-group input {
+  height: 46px;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.field-error {
+  color: #dc2626;
+  font-size: 12px;
+}
+
+.submit-error,
+.submit-success {
+  margin: 16px 24px 0;
+  border-radius: 10px;
+  padding: 13px 16px;
+  font-size: 14px;
+}
+
+.submit-error {
+  color: #991b1b;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.submit-success {
+  color: #166534;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 24px 0;
+}
+
+.back-button,
+.submit-reservation-button,
+.back-to-hospitals-button {
+  border: none;
+  border-radius: 10px;
+  padding: 13px 24px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.back-button {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.submit-reservation-button {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.back-button:hover,
+.submit-reservation-button:hover,
+.back-to-hospitals-button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.back-button:disabled,
+.submit-reservation-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+}
+
+.confirm-error-box {
+  max-width: 600px;
+  margin: 80px auto;
+  padding: 32px;
+  text-align: center;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+}
+
+.confirm-error-box h3 {
+  margin: 0 0 12px;
+  color: #1e293b;
+}
+
+.confirm-error-box p {
+  color: #64748b;
+  margin-bottom: 24px;
+}
+
+.back-to-hospitals-button {
+  display: inline-block;
+  background: #2563eb;
+  color: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .confirm-reservation-page {
+    padding: 20px 12px 40px;
+  }
+
+  .confirm-page-header h2 {
+    font-size: 23px;
+  }
+
+  .summary-card-body {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .summary-item:nth-child(3n) {
+    border-left: 1px solid #e2e8f0;
+  }
+
+  .summary-item:nth-child(2n) {
+    border-left: none;
+  }
+
+  .summary-item:nth-last-child(-n + 3) {
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .summary-item:nth-last-child(-n + 2) {
+    border-bottom: none;
+  }
+
+  .patient-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-group.full-width {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .summary-card-body {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-item,
+  .summary-item:nth-child(2n),
+  .summary-item:nth-child(3n) {
+    border-left: none;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .summary-item:last-child {
+    border-bottom: none;
+  }
+
+  .summary-card-header,
+  .form-card-header,
+  .patient-form-grid {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .back-button,
+  .submit-reservation-button {
+    width: 100%;
+  }
+
+  .reservation-alert {
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.reservation-alert-error {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.reservation-alert-success {
+  background-color: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+}

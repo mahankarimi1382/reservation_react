@@ -4,7 +4,7 @@ import { Eror } from "../components/ToastAlerts";
 import { myStore } from "../store/Store";
 
 export const axiosConfig = axios.create({
-  baseURL: "https://myapi.dadehavaran.com:8040/API/v1/",
+  baseURL: "https://myapi.dadehavaran.com:8040/api/v1/",
   headers: {
     "Content-Type": "application/json",
     // Authorization header will be set dynamically

@@ -1,7 +1,7 @@
 import logo from "../assets/Pics/logo-doctor.png";
 import { userDoctorStorage } from "../store/Store";
 
-import { BurgerMenuButt, LoginButton } from "./Buttons/Button";
+import { BurgerMenuButt, LoginButton, GovernmentHospitalButton } from "./Buttons/Button";
 import { NavLinks } from "./Links/Links";
 
 function Navbar() {
@@ -17,11 +17,15 @@ function Navbar() {
           width={150}
           src={logo}
         /> */}
-        <img
-          className=" xl:w-[150px] lg:w-[100px]"
-          alt="logo"
-          src={logo}
-        />
+        <div className="flex items-center gap-5 shrink-0">
+  <img
+    className="xl:w-[150px] lg:w-[100px]"
+    alt="logo"
+    src={logo}
+  />
+
+  <GovernmentHospitalButton />
+</div>
         <NavLinks title="خانه" href="/" />
         <NavLinks title="تخصص ها" href="/Specialties" />
         <NavLinks title="دکتر ها" href="/doctors" />

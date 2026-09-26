@@ -26,6 +26,7 @@ import Switch from "@mui/material/Switch";
 import Cookies from "js-cookie";
 import BurgerMenu from "../BurgerMenu";
 import { GoPlus } from "react-icons/go";
+import { MdLocalHospital } from "react-icons/md";
 
 import OpinionModal from "../modals/OpinionModal";
 import SuccessModal from "../modals/SuccessModal";
@@ -183,6 +184,38 @@ export const LoginButton = () => {
   );
 };
 
+export const GovernmentHospitalButton = () => {
+  const [isModal, setIsModal] = useState(false);
+
+  return (
+    <div className="flex flex-col items-center justify-center">
+      {isModal && (
+        <LoginModal
+        setIsModal={setIsModal}
+        loginPurpose="governmentHospital"
+        />
+        )}
+
+      <button
+        type="button"
+        onClick={() => setIsModal(true)}
+        className="group mt-1 flex flex-col items-center justify-center rounded-xl px-2 py-1 transition-all duration-300 hover:bg-[#EAF5FF]"
+      >
+        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#EAF5FF] transition-all duration-300 group-hover:bg-[#D7ECFF]">
+          <MdLocalHospital className="text-[27px] text-[#005DAD]" />
+        </span>
+
+        <span className="mt-1 whitespace-nowrap text-[11px] font-medium text-[#005DAD]">
+          گرفتن وقت از
+        </span>
+
+        <span className="whitespace-nowrap text-[11px] font-semibold text-[#005DAD]">
+          بیمارستان های  دولتی
+        </span>
+      </button>
+    </div>
+  );
+};
 export const NobatButton = (props) => {
   const [isVisitSelectModal, setIsVisitSelectModal] = useState("");
 

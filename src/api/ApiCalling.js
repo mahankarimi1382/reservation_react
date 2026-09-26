@@ -79,7 +79,8 @@ export const activating_registarion = (
   setToken,
   setFullName,
   setSmeId,
-  setPatients
+  setPatients,
+  onLoginSuccess
 ) => {
   console.log("first")
   setIsLoading(true);
@@ -123,6 +124,9 @@ export const activating_registarion = (
       if (res.data.result.userFullname != "string") {
         let name = res.data.result.userFullname;
         setSmeId(create_sme_profile(name, token));
+      }
+      if (onLoginSuccess) {
+        onLoginSuccess();
       }
     })
     .catch((err) => {
@@ -1658,4 +1662,12 @@ export const update_doctor_treatment = async (
     closeModal && closeModal();
     return null;
   }
+};
+
+export const get_specialists_by_clinic = async (clinicId) => {
+  const response = await axiosConfig.get(
+    `MinistryApiReserve/read-specialists-by-clinic/${clinicId}`
+  );
+
+  return response.data.result.list;
 };

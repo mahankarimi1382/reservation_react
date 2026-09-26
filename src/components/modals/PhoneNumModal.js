@@ -11,7 +11,7 @@ import {
 } from "../../store/Store";
 import { signin, signup } from "../../api/ApiCalling";
 import ValidateModal from "./ValidateModal";
-function PhoneNumModal({ closeModal, setIsPhoneNumModal, setIsSignupModal }) {
+function PhoneNumModal({ closeModal, setIsPhoneNumModal, setIsSignupModal, loginPurpose}) {
                   const { doctors,setDoctors,setDoctorId } = userDoctorStorage();
   
   const inputRef = useRef(null);
@@ -82,6 +82,7 @@ function PhoneNumModal({ closeModal, setIsPhoneNumModal, setIsSignupModal }) {
       phoneNumber={phoneNum}
       nationalCode={nationalCode}
       closeModal={closeModal}
+      loginPurpose={loginPurpose}
     />
   ) : (
     <div

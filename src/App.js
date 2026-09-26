@@ -84,6 +84,12 @@ import AdminTransactions from "./pages/adminPanel/transactions/page";
 import AdminTurns from "./pages/adminPanel/turns/page";
 import AdminUserAccess from "./pages/adminPanel/useraccess/page";
 import { ToastContainer } from "react-toastify";
+import GovernmentHospitals from "./pages/governmentHospital/GovernmentHospitals";
+import GovernmentDoctors from "./pages/governmentHospital/Doctors";
+import GovernmentAppointments from "./pages/governmentHospital/Appointments";
+import GovernmentConfirmAppointment from "./pages/governmentHospital/ConfirmAppointment";
+import Specialities from "./pages/governmentHospital/Specialities"
+import ConfirmReservation from "./pages/governmentHospital/ConfirmReservation";
 
 function App() {
   return (
@@ -276,7 +282,39 @@ function App() {
         />
         <Route path="/adminPanel/turns" element={<AdminTurns />} />
         <Route path="/adminPanel/useraccess" element={<AdminUserAccess />} />
+          
+
+        {/* پنل بیمارستانهای دولتی */} 
+        <Route
+          path="/government-hospitals"
+            element={<GovernmentHospitals />}
+            />
+           
+         <Route
+          path="/government-hospitals/:clinicId/specialties/:specialtyId/doctors"
+          element={<GovernmentDoctors />}
+          />
+          <Route
+           path="/government-hospitals/:clinicId/specialties/:specialtyId/doctors/:doctorId/appointments"
+           element={<GovernmentAppointments />}
+          />
+          <Route
+           path="/government-hospitals/:clinicId/specialties/:specialtyId/doctors/:doctorId/appointments/confirm"
+           element={<GovernmentConfirmAppointment />}
+          />
+
+         <Route
+         path="/government-hospitals/:clinicId/specialities"
+         element={<Specialities />}
+         />
+         <Route
+          path="/government-hospitals/confirm-reservation"
+          element={<ConfirmReservation />}
+          />
+
+
       </Routes>
+      
       <ToastContainer />
     </Router>
   );

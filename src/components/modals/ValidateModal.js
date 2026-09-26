@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ModalLogo from "../../assets/Pics/ModalLogo.png";
 import { RxCross2 } from "react-icons/rx";
 import Timer from "../Timer";
@@ -18,7 +19,9 @@ function ValidateModal({
   phoneNumber,
   nationalCode,
   setIsValidateModal,
+  loginPurpose,
 }) {
+   const navigate = useNavigate();
                     const { setDoctors,setDoctorId } = userDoctorStorage();
   
   const input1Ref = useRef();
@@ -77,7 +80,12 @@ function ValidateModal({
           setToken,
           setFullName,
           setSmeId,
-          setPatients
+          setPatients, 
+          () => {
+            if (loginPurpose === "governmentHospital") {
+              navigate("/government-hospitals");
+              }
+              }
         );
       }
     }
