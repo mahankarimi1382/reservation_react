@@ -17,7 +17,7 @@ import { Link } from "react-router-dom";
 
 function Footer() {
   return (
-    <div className=" mb-32  mt-36 max-w-screen lg:mb-0 lg:mt-28 h-[595px] gap-10 flex justify-center items-center flex-col lg:border-t-4 ">
+    <div className=" mb-32 mt-36 w-full lg:mb-0 lg:mt-28 h-[595px] gap-10 flex justify-center items-center flex-col lg:border-t-4 ">
       <FooterAcordion />
       <div className="  hidden xl:flex flex-col w-full h-1/2">
         <div className=" hidden text-[22px]  lg:flex px-32 p-10 text-[#414141]">

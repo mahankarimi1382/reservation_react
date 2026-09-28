@@ -573,18 +573,67 @@ export const read_files = async (url) => {
 };
 export const search_doctors = async (data) => {
   console.log(data);
-  const buildFallbackUrl = () => {
-    const params = new URLSearchParams();
-    if (data.name) params.append("DoctorName", data.name);
-    if (data.specialistId) params.append("specialist", data.specialistId);
-    params.append("pagesize", data.pagesize ?? 10);
-    params.append("pageNumber", data.currentPage ?? 1);
-    return `Doctor/search-list-doctors?${params.toString()}`;
+
+  // پارامترهای خالی ارسال نمی‌شوند؛ بایندر ASP.NET مقدار رشته‌ی خالی
+  // برای فیلدهای bool/int/date را 400 می‌کند
+  const buildUrl = (endpoint, nameKey, params) => {
+    const search = new URLSearchParams();
+    const append = (key, value) => {
+      if (value !== undefined && value !== null && String(value).trim() !== "") {
+        search.append(key, value);
+      }
+    };
+    append(nameKey, data.name);
+    append("pagesize", data.pagesize ?? 10);
+    append("pageNumber", data.currentPage ?? 1);
+    Object.entries(params).forEach(([key, value]) => append(key, value));
+    return `${endpoint}?${search.toString()}`;
   };
+
+  const advancedFilters = {
+    ProvinceId: data.provinceId,
+    CityId: data.cityId,
+    BimehTakmili: data.BimehTakmili,
+    BimeAsli: data.BimeAsli,
+    JustOnline: data.JustOnline,
+    HasTurn: data.HasTurn,
+    AcceptInsurance: data.AcceptInsurance,
+    Gender: data.Gender,
+    Sdate: data.Sdate,
+    Edate: data.Edate,
+    OnlineTypeId: data.OnlineTypeId,
+    OfficeOrClinicHozoori: data.OfficeOrClinicHozoori,
+  };
+  const hasAdvancedFilters = Object.values(advancedFilters).some(
+    (v) => v !== undefined && v !== null && String(v).trim() !== ""
+  );
+
+  // وقتی فیلتر پیشرفته‌ای نیست، مستقیم از search-list-doctors (سالم) می‌رویم
+  // تا درخواست محکوم‌به‌خطای search-doctors (باگ فعلی بک‌اند) زده نشود
+  if (!hasAdvancedFilters) {
+    try {
+      const response = await axiosConfig.get(
+        buildUrl("Doctor/search-list-doctors", "DoctorName", {
+          specialist: data.specialistId,
+        }),
+        { silent: true }
+      );
+      const doctors = response.data.result;
+      console.log(doctors);
+      return doctors;
+    } catch (fallbackError) {
+      console.error(fallbackError);
+      return null;
+    }
+  }
 
   try {
     const response = await axiosConfig.get(
-      `Doctor/search-doctors?DoctorName=${data.name}&pagesize=${data.pagesize}&pageNumber=${data.currentPage}&specialistIds=${data.specialistId}&ProvinceId=${data.provinceId}&CityId=${data.cityId}&BimehTakmili=${data.BimehTakmili}&BimeAsli=${data.BimeAsli}&JustOnline=${data.JustOnline}&HasTurn=${data.HasTurn}&AcceptInsurance=${data.AcceptInsurance}&Gender=${data.Gender}&Sdate=${data.Sdate}&Edate=${data.Edate}&OnlineTypeId=${data.OnlineTypeId}&OfficeOrClinicHozoori=${data.OfficeOrClinicHozoori}`
+      buildUrl("Doctor/search-doctors", "DoctorName", {
+        specialistIds: data.specialistId,
+        ...advancedFilters,
+      }),
+      { silent: true }
     );
     const result = response.data.result;
     console.log(result);
@@ -599,7 +648,12 @@ export const search_doctors = async (data) => {
   } catch (error) {
     console.error("search-doctors failed, falling back to search-list-doctors:", error);
     try {
-      const response = await axiosConfig.get(buildFallbackUrl());
+      const response = await axiosConfig.get(
+        buildUrl("Doctor/search-list-doctors", "DoctorName", {
+          specialist: data.specialistId,
+        }),
+        { silent: true }
+      );
       const doctors = response.data.result;
       console.log(doctors);
       return doctors;
@@ -1346,15 +1400,41 @@ export const remove_specialist_from_category = (
 };
 export const search_DoctorTreatmentCenters = async (data) => {
   console.log(data);
+
+  // پارامترهای خالی ارسال نمی‌شوند (بایندر بک‌اند مقدار خالی را 400 می‌کند)
+  const search = new URLSearchParams();
+  const append = (key, value) => {
+    if (value !== undefined && value !== null && String(value).trim() !== "") {
+      search.append(key, value);
+    }
+  };
+  append("DoctorTreatmentCenterName", data.name);
+  append("pagesize", data.pagesize ?? 10);
+  append("pageNumber", data.currentPage ?? 1);
+  append("specialistIds", data.specialistId);
+  append("ProvinceId", data.provinceId);
+  append("CityId", data.cityId);
+  append("BimehTakmili", data.BimehTakmili);
+  append("BimeAsli", data.BimeAsli);
+  append("JustOnline", data.JustOnline);
+  append("HasTurn", data.HasTurn);
+  append("AcceptInsurance", data.AcceptInsurance);
+  append("Gender", data.Gender);
+  append("Sdate", data.Sdate);
+  append("Edate", data.Edate);
+  append("OnlineTypeId", data.OnlineTypeId);
+  append("OfficeOrClinicHozoori", data.OfficeOrClinicHozoori);
+
   try {
     const response = await axiosConfig.get(
-      `DoctorTreatmentCenter/search-DoctorTreatmentCenters?DoctorTreatmentCenterName=${data.name}&pagesize=${data.pagesize}&pageNumber=${data.currentPage}&specialistIds=${data.specialistId}&ProvinceId=${data.provinceId}&CityId=${data.cityId}&BimehTakmili=${data.BimehTakmili}&BimeAsli=${data.BimeAsli}&JustOnline=${data.JustOnline}&HasTurn=${data.HasTurn}&AcceptInsurance=${data.AcceptInsurance}&Gender=${data.Gender}&Sdate=${data.Sdate}&Edate=${data.Edate}&OnlineTypeId=${data.OnlineTypeId}&OfficeOrClinicHozoori=${data.OfficeOrClinicHozoori}`
+      `DoctorTreatmentCenter/search-DoctorTreatmentCenters?${search.toString()}`,
+      { silent: true }
     );
     const doctors = response.data.result;
     console.log(doctors);
     return doctors;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    console.error("Error fetching treatment centers:", error);
     return null;
   }
 };
@@ -1365,9 +1445,76 @@ export const searchall = async (
   setDoctors,
   setMedicals,
   setSpecialist,
-  signal = null // اضافه کردن signal برای cancel کردن درخواست
+  signal = null
 ) => {
   console.log("Searching for:", data);
+
+  const applyResult = (result) => {
+    const suggestions = String(result?.suggest ?? "")
+      .split(",")
+      .filter((item) => item.trim());
+    setSuggestions(suggestions.slice(-6));
+    setDoctors(result?.doctors ?? []);
+    setMedicals(result?.treatMentcenters ?? []);
+    setSpecialist(result?.specialists ?? []);
+  };
+
+  // اگر بک‌اند خطا داد (باگ فعلی: جستجوی پزشک/تخصص ۵۰۰ می‌دهد)،
+  // همان نتیجه از سه Endpoint سالم دیگر ساخته می‌شود
+  const fallbackSearch = async () => {
+    const term = encodeURIComponent(data);
+    const [doctorsRes, centersRes, specialistsRes] = await Promise.allSettled([
+      axiosConfig.get(
+        `Doctor/search-list-doctors?DoctorName=${term}&pagesize=6&pageNumber=1`,
+        { silent: true }
+      ),
+      axiosConfig.get(
+        `DoctorTreatmentCenter/search-DoctorTreatmentCenters?DoctorTreatmentCenterName=${term}&pagesize=6&pageNumber=1`,
+        { silent: true }
+      ),
+      axiosConfig.get("Specialist/read-specialists", { silent: true }),
+    ]);
+
+    const doctors =
+      doctorsRes.status === "fulfilled"
+        ? (doctorsRes.value?.data?.result?.list ?? []).map((d) => {
+            const fullName = `${d.doctorName ?? ""} ${d.doctorFamily ?? ""}`.trim();
+            return {
+              id: d.id,
+              result: fullName,
+              shortDesc: d.desc ?? "",
+              link: fullName,
+            };
+          })
+        : [];
+
+    const centers =
+      centersRes.status === "fulfilled"
+        ? (centersRes.value?.data?.result?.list ?? []).map((c) => ({
+            id: c.id,
+            result: c.name ?? "",
+            shortDesc: c.address ?? c.desc ?? "",
+            link: c.name ?? "",
+          }))
+        : [];
+
+    const termRaw = data.trim();
+    const specialists =
+      specialistsRes.status === "fulfilled"
+        ? (specialistsRes.value?.data?.result?.list ?? [])
+            .filter((sp) => (sp.name ?? "").includes(termRaw))
+            .slice(0, 6)
+            .map((sp) => ({
+              id: sp.id,
+              result: sp.name,
+              name: sp.name,
+              shortDesc: sp.maxaName ?? "",
+              link: sp.name,
+            }))
+        : [];
+
+    return { suggest: "", doctors, treatMentcenters: centers, specialists };
+  };
 
   // اگر جستجو خالی است، نتایج را پاک کن
   if (!data || !data.trim()) {
@@ -1382,9 +1529,10 @@ export const searchall = async (
   try {
     setIsSearchLoading(true);
 
-    // اضافه کردن signal به axios config
     const config = {
-      signal: signal, // برای cancel کردن درخواست
+      signal: signal,
+      // خطای ۵۰۰ بک‌اند اینجا با fallback مدیریت می‌شود؛ توست خطا لازم نیست
+      silent: true,
     };
 
     const response = await axiosConfig.get(
@@ -1400,20 +1548,34 @@ export const searchall = async (
     const result = response.data.result;
     console.log("Search result:", result);
 
-    // پردازش suggestions
-    let suggestions = result.suggest || "";
-    let arr = suggestions.split(",").filter((item) => item.trim());
+    // بک‌اند ممکن است آرایه‌ها را null برگرداند
+    const normalized = {
+      suggest: result?.suggest ?? "",
+      doctors: result?.doctors ?? [],
+      treatMentcenters: result?.treatMentcenters ?? [],
+      specialists: (result?.specialists ?? []).map((sp) => ({
+        ...sp,
+        name: sp.name ?? sp.result,
+      })),
+    };
+
+    let finalResult = normalized;
+    const hasAnyResult =
+      normalized.doctors.length > 0 ||
+      normalized.treatMentcenters.length > 0 ||
+      normalized.specialists.length > 0;
+
+    if (!hasAnyResult) {
+      finalResult = await fallbackSearch();
+    }
 
     // بروزرسانی state ها فقط اگر درخواست cancel نشده باشد
     if (!signal || !signal.aborted) {
-      setSuggestions(arr.slice(-6));
-      setDoctors(result.doctors || []);
-      setMedicals(result.treatMentcenters || []);
-      setSpecialist(result.specialists || []);
+      applyResult(finalResult);
       setIsSearchLoading(false);
     }
 
-    return result;
+    return finalResult;
   } catch (error) {
     // اگر خطا به دلیل cancel کردن درخواست است، آن را نادیده بگیر
     if (error.name === "AbortError" || error.code === "ERR_CANCELED") {
@@ -1421,16 +1583,27 @@ export const searchall = async (
       return null;
     }
 
-    console.error("Error fetching search results:", error);
+    console.error("MainSearch failed, using fallback search:", error);
 
-    // بروزرسانی state ها فقط اگر درخواست cancel نشده باشد
     if (!signal || !signal.aborted) {
-      setIsSearchLoading(false);
-      // در صورت خطا، نتایج را پاک کن
-      setSuggestions([]);
-      setDoctors([]);
-      setMedicals([]);
-      setSpecialist([]);
+      try {
+        const fallbackResult = await fallbackSearch();
+        if (!signal || !signal.aborted) {
+          applyResult(fallbackResult);
+          setIsSearchLoading(false);
+        }
+        return fallbackResult;
+      } catch (fallbackError) {
+        console.error("Fallback search failed:", fallbackError);
+        if (!signal || !signal.aborted) {
+          setIsSearchLoading(false);
+          setSuggestions([]);
+          setDoctors([]);
+          setMedicals([]);
+          setSpecialist([]);
+        }
+        return null;
+      }
     }
 
     return null;

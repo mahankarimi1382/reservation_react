@@ -66,11 +66,12 @@ function ReservForAnother({
   const [gender, setGender] = useState(null);
   const [cityId, setCityId] = useState(0);
   const pad2 = (v) => String(v).padStart(2, "0");
+  const safeSmeId = Number(smeId) || 0;
   const data = {
     metadata: {
       userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
       userName: "string",
-      smeProfileId: smeId,
+      smeProfileId: safeSmeId,
     },
     patientName: name,
     patientFamily: familyName,
@@ -86,7 +87,7 @@ function ReservForAnother({
     necessaryPhone: forme ? phoneNum : patientPhone,
     email: "",
     gender: gender === null ? true : gender === "true" || gender === true,
-    smeProfileId: smeId,
+    smeProfileId: safeSmeId,
   };
 
   const { setSmeId } = smeIdStorage();

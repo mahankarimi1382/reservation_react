@@ -53,9 +53,16 @@ function SeeReservsModal({
         <button
           onClick={() => {
             setSelectedDay(item.id);
-            // ساختار visitCost ممکن است کامل نباشد؛ نباید کرش کند
-            const turns = item?.visitCost?.reservations?.[0]?.turns ?? [];
-            setTurns(turns);
+            // نوبت‌های همان روزِ انتخاب‌شده (تطبیق تاریخ داخل visitCost.reservations)
+            const dayReservations = item?.visitCost?.reservations ?? [];
+            const dateKey = Number(
+              String(item.reservationDate ?? "").replace(/\//g, "")
+            );
+            const matched =
+              dayReservations.find(
+                (r) => Number(r.reservationDate) === dateKey
+              ) ?? dayReservations[0];
+            setTurns(matched?.turns ?? []);
           }}
           className={`${
             selectedDay == item.id &&

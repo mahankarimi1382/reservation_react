@@ -110,15 +110,16 @@ export default function SpecialtiesSwipper({ Specialties, setSpecialties }) {
                 onClick={() => setSpecialties(item.specialists)}
                 className="lg:w-48 lg:min-w-[93px] gap-2 flex flex-col justify-center items-center"
               >
-                <img
-                  className="w-[40px] lg:w-[74px]"
-                  src={
-                    item.categoryLogoFile !== "string" && item.categoryLogoFile
-                  }
-                  alt="icon"
-                  width={74}
-                  height={74}
-                />
+                {item.categoryLogoFile &&
+                  item.categoryLogoFile !== "string" && (
+                    <img
+                      className="w-[40px] lg:w-[74px]"
+                      src={item.categoryLogoFile}
+                      alt="icon"
+                      width={74}
+                      height={74}
+                    />
+                  )}
                 <h5 className="text-[10px] lg:text-base">
                   {item.categoryName}
                 </h5>

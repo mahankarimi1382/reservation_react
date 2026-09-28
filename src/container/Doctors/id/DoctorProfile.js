@@ -53,6 +53,10 @@ function DoctorProfile() {
   const [doctorDesc, setDoctorDesc] = useState("");
   const [doctorTreatmentCenters, setDoctorTreatmentCenters] = useState([]);
   const { setDoctorSpecialties } = reservationStore();
+  // مودال نوبت‌گیری مقدار doctorId/doctorName را از استور می‌خواند؛
+  // پس از لود پروفایل باید استور هم پر شود وگرنه مودال تا ابد لودینگ می‌ماند
+  const { setDoctorId: setStoreDoctorId, setDoctorName: setStoreDoctorName } =
+    doctorProfileStore();
   const [isLoading, setIsLoading] = useState(true);
   const location = useLocation();
   const pathName = location.pathname;
@@ -96,6 +100,10 @@ function DoctorProfile() {
       setDoctorDetails(result.data);
       setIsLoading(false);
       setDoctorId(result.data.id);
+      setStoreDoctorId(result.data.id);
+      setStoreDoctorName(
+        `${result.data?.doctorName ?? ""} ${result.data?.doctorFamily ?? ""}`.trim()
+      );
       // زنجیره ممکن است کامل نباشد (پزشک بدون smeProfile/مرکز) — نباید کرش کند
       setDoctorTreatmentCenters(
         result.data?.smeProfile?.doctors?.[0]?.doctorTreatmentCenters ?? []

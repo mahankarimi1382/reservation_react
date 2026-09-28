@@ -240,3 +240,10 @@ swiper-slide {
     transform: rotate(360deg);
   }
 }
+
+/* جلوگیری سراسری از اسکرول افقی؛ هیچ عنصری نباید از عرض صفحه بیرون بزند */
+html,
+body {
+  overflow-x: hidden;
+  overflow-x: clip;
+}

@@ -37,13 +37,16 @@ function SpecialtiesMenu({ setSpecialties }) {
             } w-full cursor-pointer p-2  flex justify-between items-center border rounded-xl `}
           >
             <div className=" flex justify-center items-center lg:gap-3 lg:px-5 lg:p-3">
-              <img
-                className=" w-5 lg:w-[32px]"
-                src={item.categoryLogoFile != "string" && item.categoryLogoFile}
-                alt="icon"
-                width={32}
-                height={32}
-              />
+              {item.categoryLogoFile &&
+                item.categoryLogoFile !== "string" && (
+                  <img
+                    className=" w-5 lg:w-[32px]"
+                    src={item.categoryLogoFile}
+                    alt="icon"
+                    width={32}
+                    height={32}
+                  />
+                )}
               <h5 className=" text-sm lg:text-base">{item.categoryName}</h5>
             </div>
             <IoIosArrowBack className=" text-2xl text-[#005DAD]" />

@@ -7,7 +7,7 @@ export const NavLinks = (props) => {
   const pathName = location.pathname;
 
   return (
-    <div className="flex flex-col justify-center items-center whitespace-nowrap">
+    <div className="flex flex-col justify-center items-center whitespace-nowrap shrink-0">
       <Link
         to={props.href}
         className={

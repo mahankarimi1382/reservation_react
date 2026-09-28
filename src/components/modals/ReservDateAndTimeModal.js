@@ -54,9 +54,17 @@ function ReservDateAndTimeModal({ setIsReservModal, name, treatmentId }) {
           onClick={() => {
             setDateAndTime(item.reservationDateFull);
             setSelectedDay(item.id);
-            // ساختار visitCost ممکن است کامل نباشد؛ نباید کرش کند
-            const dayTurns = item?.visitCost?.reservations?.[0]?.turns ?? [];
-            setTurns(dayTurns);
+            // نوبت‌های همان روزِ انتخاب‌شده: تاریخ روز را با رزروهای داخل visitCost تطبیق می‌دهیم
+            // (چون visitCost.reservations شامل همه‌ی روزهای آن هزینه است)
+            const dayReservations = item?.visitCost?.reservations ?? [];
+            const dateKey = Number(
+              String(item.reservationDate ?? "").replace(/\//g, "")
+            );
+            const matched =
+              dayReservations.find(
+                (r) => Number(r.reservationDate) === dateKey
+              ) ?? dayReservations[0];
+            setTurns(matched?.turns ?? []);
           }}
           className={`${
             selectedDay == item.id &&
