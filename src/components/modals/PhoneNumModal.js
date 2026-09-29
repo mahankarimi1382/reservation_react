@@ -32,18 +32,22 @@ function PhoneNumModal({ closeModal, setIsPhoneNumModal, setIsSignupModal, login
   }, []);
 
   const handleSubmit = () => {
-    loginByPass
-      ? signin(
-          setIsLoading,
-          data2,
-          setFullName,
-          setToken,
-          closeModal,
-          setSmeId,
-          setDoctors,
-          setDoctorId
-        )
-      : signup(setIsLoading, data, setIsValidateModal);
+    if (loginByPass) {
+      // برای lookup نقش کاربر (پنل ادمین/پزشک) نام کاربریِ واردشده در استور ثبت می‌شود
+      setPhoneNum(nationalCode);
+      signin(
+        setIsLoading,
+        data2,
+        setFullName,
+        setToken,
+        closeModal,
+        setSmeId,
+        setDoctors,
+        setDoctorId
+      );
+    } else {
+      signup(setIsLoading, data, setIsValidateModal);
+    }
   };
   const handleKeyDown = (e) => {
     if (e.key == "Enter" && loginByPass && nationalCode && password) {

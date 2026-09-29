@@ -186,6 +186,8 @@ export const reservationStore = create(
       setDoctorNezamCode: (code) => set(() => ({ doctorNezamCode: code })),
       dateAndTime: "",
       setDateAndTime: (value) => set(() => ({ dateAndTime: value })),
+      visitPrice: "",
+      setVisitPrice: (value) => set(() => ({ visitPrice: value })),
       doctorSpecialties: "",
       setDoctorSpecialties: (value) =>
         set(() => ({ doctorSpecialties: value })),

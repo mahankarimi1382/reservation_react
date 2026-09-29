@@ -19,6 +19,7 @@ function ReservDateAndTimeModal({ setIsReservModal, name, treatmentId }) {
 
   const { reservationId, setReservationId, turnId, setTurnId } =
     reservationStore();
+  const { setVisitPrice } = reservationStore();
   console.log(reservationId, turnId);
   const [isLoading, setIsLoading] = useState(true);
   const [reservationList, setReservationList] = useState([]);
@@ -54,6 +55,8 @@ function ReservDateAndTimeModal({ setIsReservModal, name, treatmentId }) {
           onClick={() => {
             setDateAndTime(item.reservationDateFull);
             setSelectedDay(item.id);
+            // قیمت واقعی ویزیت برای نمایش در صفحه پرداخت ذخیره می‌شود
+            setVisitPrice(item?.visitCost?.price ?? "");
             // نوبت‌های همان روزِ انتخاب‌شده: تاریخ روز را با رزروهای داخل visitCost تطبیق می‌دهیم
             // (چون visitCost.reservations شامل همه‌ی روزهای آن هزینه است)
             const dayReservations = item?.visitCost?.reservations ?? [];
@@ -182,7 +185,12 @@ function ReservDateAndTimeModal({ setIsReservModal, name, treatmentId }) {
               <div className=" flex gap-5 flex-wrap">{mappedHours()}</div>
             </div>
             <div className=" w-full flex justify-end gap-4 items-center">
-              <button className=" border px-4 lg:px-10 text-sm lg:text-base rounded-lg p-2 text-[#005DAD] border-[#005DAD]">
+              <button
+                onClick={() => {
+                  setIsReservModal(false);
+                }}
+                className=" border px-4 lg:px-10 text-sm lg:text-base rounded-lg p-2 text-[#005DAD] border-[#005DAD]"
+              >
                 انصراف
               </button>
               <button

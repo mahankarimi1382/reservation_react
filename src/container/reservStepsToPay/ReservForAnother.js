@@ -24,6 +24,7 @@ import {
   userSubmitedArrStore,
 } from "../../store/Store";
 import { RxCross2 } from "react-icons/rx";
+import { Eror } from "../../components/ToastAlerts";
 
 function ReservForAnother({
   setSteps,
@@ -111,6 +112,11 @@ function ReservForAnother({
   }, [editPatient]);
 
   const handlCompleteStep1 = () => {
+    // شهر/استان اجباری است؛ ارسال cityId=0 در بک‌اند خطای FK مبهم می‌دهد
+    if (!cityId?.id && !cityId) {
+      Eror("لطفا استان و شهر را انتخاب کنید");
+      return;
+    }
     if (editPatient) {
       setIsLoading(true);
       update_patient(

@@ -25,9 +25,13 @@ function Pay({ setSteps, closeModal }) {
   const { smeId } = smeIdStorage();
   const { doctorName } = doctorProfileStore();
   const { patients } = userSubmitedArrStore();
-  const { patientId, reservationId, turnId } = reservationStore();
+  const { patientId, reservationId, turnId, visitPrice } = reservationStore();
 
   const [isLoading, setIsLoading] = useState(false);
+
+  const formattedPrice = visitPrice
+    ? Number(visitPrice).toLocaleString("en-US")
+    : "—";
 
   const data = {
     metadata: {
@@ -65,12 +69,12 @@ function Pay({ setSteps, closeModal }) {
         />
       </div>
 
-      <PayDetails />
+      <PayDetails price={visitPrice} />
 
       <div className=" bg-[rgba(206,14,30,0.1)] rounded-xl flex h-[117px] px-5 items-center text-[#CE0E1EF2] w-[90%]">
         <h2 className=" text-sm lg:text-2xl ">
-          مبلغ بیعانه : مبلغ بیعانه دکتر {doctorName} 250,000 تومان است که مابقی
-          مبلغ در مطب دریافت می‌شود.
+          هزینه ویزیت دکتر {doctorName} {formattedPrice} تومان است که در محل
+          مطب تسویه می‌شود.
         </h2>
       </div>
 
@@ -138,12 +142,12 @@ function Pay({ setSteps, closeModal }) {
         <div className=" border-[#005DAD] flex gap-10 flex-col justify-center items-center p-4 rounded-xl border lg:w-[45%]">
           <div className=" pb-5 border-b w-full flex items-center justify-between">
             <h2 className=" lg:text-xl">هزینه رزرو دکتر {doctorName}</h2>
-            <h5 className=" text-[#757575]">250,000 تومان</h5>
+            <h5 className=" text-[#757575]">{formattedPrice} تومان</h5>
           </div>
 
           <div className=" w-full flex items-center justify-between">
             <h2 className=" lg:text-xl text-[#005DAD]">مبلغ قابل پرداخت</h2>
-            <h5 className=" text-[#005DAD]">250,000 تومان</h5>
+            <h5 className=" text-[#005DAD]">{formattedPrice} تومان</h5>
           </div>
 
           <button

@@ -154,24 +154,24 @@ function MainSearchBar() {
         <img
           alt="icon"
           width={191}
-          className="hidden lg:flex w-[191px] absolute -right-20 top-10"
+          className="hidden lg:flex w-[191px] absolute -right-20 top-10 pointer-events-none"
           src={heroArrow}
         />
         <img
           alt="icon"
           width={50}
-          className="lg:hidden absolute right-2"
+          className="lg:hidden absolute right-2 pointer-events-none"
           src={heroArrow}
         />
         <img
           width={59}
-          className="hidden lg:flex absolute -right-36 top-24"
+          className="hidden lg:flex absolute -right-36 top-24 pointer-events-none"
           src={heroPerson}
           alt="icon"
         />
         <img
-          width={30}
-          className="lg:hidden flex absolute -right-2 xs:-right-5 w-[20px] xs:w-[30px] top-10"
+          width={20}
+          className="lg:hidden flex absolute -right-2 xs:-right-5 w-[20px] xs:w-[30px] top-10 pointer-events-none"
           src={heroPerson}
           alt="icon"
         />
@@ -179,13 +179,13 @@ function MainSearchBar() {
           width={60}
           src={heroLines}
           alt="icon"
-          className="hidden lg:flex absolute left-10 -top-10"
+          className="hidden lg:flex absolute left-10 -top-10 pointer-events-none"
         />
         <img
           width={20}
           src={heroLines}
           alt="icon"
-          className="lg:hidden flex absolute left-6 -top-4"
+          className="lg:hidden flex absolute left-6 -top-4 pointer-events-none"
         />
         <h2 className="font-semibold lg:font-medium text-[18px] flex gap-1 lg:gap-3 lg:text-[38px]">
           با

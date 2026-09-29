@@ -233,7 +233,10 @@ function CreateReservationModal({ closeModal, treatmentId, doctorId }) {
               <hr className="border-2 rounded-xl" />
 
               <div className=" w-full flex justify-center gap-10 items-center">
-                <button className=" bg-[rgba(230,35,51,0.15)] text-[#E62333F2] border border-[#E62333F2] p-3 w-1/3 rounded-lg">
+                <button
+                  onClick={closeModal}
+                  className=" bg-[rgba(230,35,51,0.15)] text-[#E62333F2] border border-[#E62333F2] p-3 w-1/3 rounded-lg"
+                >
                   انصراف
                 </button>
                 <button
