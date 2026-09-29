@@ -83,8 +83,10 @@ function ReservForAnother({
     cityId: cityId?.id ?? cityId ?? 0,
     geolat: 0,
     geolon: 0,
-    patientPhone: forme ? phoneNum : patientPhone,
-    necessaryPhone: forme ? phoneNum : patientPhone,
+    // در حالت «برای خودم» اگر شماره موبایل کاربر لاگین‌شده خالی باشد (ورود با رمز عبور)،
+    // باید همان شماره‌ای که کاربر در فرم وارد کرده استفاده شود نه مقدار خالی
+    patientPhone: phoneNum || patientPhone,
+    necessaryPhone: phoneNum || patientPhone,
     email: "",
     gender: gender === null ? true : gender === "true" || gender === true,
     smeProfileId: safeSmeId,

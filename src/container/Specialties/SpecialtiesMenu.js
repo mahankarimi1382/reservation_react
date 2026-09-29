@@ -3,6 +3,9 @@ import { get_specialties_category } from "../../api/ApiCalling";
 import React, { useEffect, useState } from "react";
 import { IoIosArrowBack } from "react-icons/io";
 
+import { fixSvgDataUri, handleImgError } from "../../utils/SvgFix";
+import fallbackIcon from "../../assets/Pics/Specialties/kollie-icon.png";
+
 function SpecialtiesMenu({ setSpecialties }) {
   const [categorys, setCategorys] = useState([]);
   console.log(categorys);
@@ -41,10 +44,11 @@ function SpecialtiesMenu({ setSpecialties }) {
                 item.categoryLogoFile !== "string" && (
                   <img
                     className=" w-5 lg:w-[32px]"
-                    src={item.categoryLogoFile}
+                    src={fixSvgDataUri(item.categoryLogoFile)}
                     alt="icon"
                     width={32}
                     height={32}
+                    onError={(e) => handleImgError(e, fallbackIcon)}
                   />
                 )}
               <h5 className=" text-sm lg:text-base">{item.categoryName}</h5>

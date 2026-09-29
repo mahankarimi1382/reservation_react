@@ -10,6 +10,9 @@ import LoadingComponent from "../../components/LoadingComponent";
 import { myStore } from "../../store/Store";
 import { useNavigate } from "react-router-dom";
 
+import { fixSvgDataUri, handleImgError } from "../../utils/SvgFix";
+import fallbackIcon from "../../assets/Pics/Specialties/kollie-icon.png";
+
 export default function SpecialtiesSwipper({ Specialties, setSpecialties }) {
   const {
     setSpecialistSearch,
@@ -114,7 +117,8 @@ export default function SpecialtiesSwipper({ Specialties, setSpecialties }) {
                   item.categoryLogoFile !== "string" && (
                     <img
                       className="w-[40px] lg:w-[74px]"
-                      src={item.categoryLogoFile}
+                      src={fixSvgDataUri(item.categoryLogoFile)}
+                      onError={(e) => handleImgError(e, fallbackIcon)}
                       alt="icon"
                       width={74}
                       height={74}

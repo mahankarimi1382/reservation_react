@@ -6,6 +6,10 @@ import { HiOutlineTrash } from "react-icons/hi2";
 
 import { Link, useNavigate } from "react-router-dom";
 
+import excelIcon from "../../../assets/Pics/excelIcon.png";
+import printerIcon from "../../../assets/Pics/printer.png";
+import folderIcon from "../../../assets/Pics/folder.png";
+
 import { SelectFilter } from "../../../components/Inputs/Input";
 import { delete_ads, get_ads } from "../../../api/ApiCalling";
 import DeletingModal from "../../../components/modals/DeletingModal";
@@ -71,12 +75,12 @@ function BnnerAdminSection() {
 
       <div className="gap-2 flex justify-end w-[80%] items-center">
         <button className="border rounded-lg px-3 p-1 gap-2 text-[#185B37] border-[#185B37] flex">
-          <img src="/Pics/excelIcon.png" alt="excel icon" width={24} />
+          <img src={excelIcon} alt="excel icon" width={24} />
           خروجی اکسل
         </button>
 
         <button className="border rounded-lg px-3 p-1 gap-2 text-[#3F444D] border-[#3F444D] flex">
-          <img src="/Pics/printer.png" alt="printer icon" width={24} />
+          <img src={printerIcon} alt="printer icon" width={24} />
           چاپ اطلاعات
         </button>
       </div>
@@ -107,7 +111,7 @@ function BnnerAdminSection() {
               key={item.id}
             >
               <div className="w-[16%] flex justify-center items-center text-[#3F444D]">
-                <img src="/Pics/folder.png" alt="folder icon" width={56} />
+                <img src={folderIcon} alt="folder icon" width={56} />
               </div>
 
               <h4 className="w-[16%] flex justify-center items-center text-[#3F444D]">

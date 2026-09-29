@@ -5,6 +5,7 @@ import { RxCross2 } from "react-icons/rx";
 import LoadingComponent from "../LoadingComponent";
 import { useNavigate } from "react-router-dom";
 import { myStore } from "../../store/Store";
+import fallbackSpecialtyIcon from "../../assets/Pics/Specialties/kollie-icon.png";
 
 function SpecialtiesListModal({ setIsSpecialtiesModal }) {
   const navigate = useNavigate();
@@ -91,7 +92,11 @@ function SpecialtiesListModal({ setIsSpecialtiesModal }) {
                     alt="icon"
                     width={42}
                     height={42}
-                    src={item.logoFile}
+                    // بعضی تخصص‌ها لوگو ندارند (logoFile=null) — آیکون پیش‌فرض نشان بده
+                    src={item.logoFile || fallbackSpecialtyIcon}
+                    onError={(e) => {
+                      e.currentTarget.src = fallbackSpecialtyIcon;
+                    }}
                   />
                 </div>
 

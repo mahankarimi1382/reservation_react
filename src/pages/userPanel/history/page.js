@@ -284,6 +284,7 @@ function page() {
         <DeletingModal
           DeletingFn={delete_patient_reservation}
           id={selectedTurn.id}
+          title="کنسل نوبت"
           name={`نوبت ${selectedTurn.name}`}
           setList={(newList) => setTurns(newList)}
           list={turns}

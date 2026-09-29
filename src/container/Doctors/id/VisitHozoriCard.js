@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import ReservDateAndTimeModal from "../../../components/modals/ReservDateAndTimeModal";
 import EmptyReservDoctorModal from "../../../components/modals/EmptyReservModal";
 
+import calendarIcon from "../../../assets/Pics/callenderIcon.png";
+
 import { reservationStore } from "../../../store/Store";
 
 // توجه: در CRA باید تصاویر public را با src="/Pics/..." استفاده کنید
@@ -77,7 +79,7 @@ function VisitHozoriCard({ item, topic }) {
       </div>
 
       <h2 className="flex text-sm lg:text-[16px] items-center gap-1 lg:gap-2 text-[#757575]">
-        <img width={24} src="/Pics/calendar.png" alt="calendar" />
+        <img width={24} src={calendarIcon} alt="calendar" />
         اولین نوبت خالی: {item.nearestDate}
       </h2>
 

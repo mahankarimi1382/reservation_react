@@ -2,6 +2,7 @@ import { Eror, success } from "../components/ToastAlerts";
 import { axiosConfig } from "./axiosConfig";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { userProfileStore } from "../store/Store";
 
 export const signup = (setIsLoading, data, setIsValidateModal) => {
   setIsLoading(true);
@@ -50,7 +51,9 @@ export const signin = (
       Cookies.set("token", token);
       setFullName(name);
 
-      // پزشکان ممکن است مستقیم یا زیر smeprofile بیایند
+      // شماره موبایل کاربر (userName) باید در استور ذخیره شود تا گاردهای نقش و
+      // فرم‌های بعدی (مثل شماره موبایل بیمار) به آن دسترسی داشته باشند
+      userProfileStore.getState().setPhoneNum(data2?.userName ?? "");
       const doctorsList = result.smeprofile?.doctors ?? result.doctors ?? [];
       setDoctors && setDoctors(doctorsList);
 
@@ -102,6 +105,10 @@ export const activating_registarion = (
       }
       setToken(result.token);
       Cookies.set("token", result.token);
+      // ذخیره شماره موبایل کاربر برای استفاده‌های بعدی (گارد نقش‌ها، فرم بیمار و...)
+      if (phoneNumber) {
+        userProfileStore.getState().setPhoneNum(phoneNumber);
+      }
       if (result.patients) {
         setPatients(result.patients);
       }

@@ -14,6 +14,7 @@ import {
 } from "../../store/Store";
 
 import { patinet_reservation } from "../../api/ApiCalling";
+import { Eror } from "../../components/ToastAlerts";
 import { SyncLoader } from "react-spinners";
 
 import { useNavigate } from "react-router-dom";
@@ -42,6 +43,12 @@ function Pay({ setSteps, closeModal }) {
   };
 
   const handleCompleteStep2 = () => {
+    // اگر کاربر بدون انتخاب ساعت نوبت به این مرحله برسد، درخواست با turnId خالی
+    // ارسال می‌شود و رزرو خراب می‌شود — قبل از ارسال گارد می‌گذاریم
+    if (!turnId || !reservationId) {
+      Eror("لطفا ابتدا روز و ساعت نوبت را انتخاب کنید");
+      return;
+    }
     setIsLoading(true);
     // بعد از ثبت موفق نوبت، به مرحله‌ی رسید می‌رویم
     patinet_reservation(data, setIsLoading, () => {

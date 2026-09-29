@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 
 import { myStore, TotalLoadingStore } from "../store/Store";
 import LoadingComponent from "./LoadingComponent";
+import fallbackSpecialtyIcon from "../assets/Pics/Specialties/kollie-icon.png";
 
 function SwipperSection() {
   const {
@@ -79,7 +80,11 @@ function SwipperSection() {
                     alt="icon"
                     width={51}
                     height={51}
-                    src={item.logoFile}
+                    // بعضی تخصص‌ها لوگو ندارند (logoFile=null) — آیکون پیش‌فرض نشان بده
+                    src={item.logoFile || fallbackSpecialtyIcon}
+                    onError={(e) => {
+                      e.currentTarget.src = fallbackSpecialtyIcon;
+                    }}
                   />
                 </div>
 

@@ -26,7 +26,8 @@ function Navbar() {
         <NavLinks title="تخصص ها" href="/Specialties" />
         <NavLinks title="دکتر ها" href="/doctors" />
         <NavLinks title="مراکز درمانی" href="/medical-centers" />
-        <div className="hidden xl:contents">
+        {/* نمایش لینک‌های ثانویه فقط از 2xl به بالا تا هدر در عرض 1280 سرریز نکند */}
+        <div className="hidden 2xl:contents">
           <NavLinks title="دندان پزشکی" href="/dentistry" />
           <NavLinks title="روانپزشک" href="/psychiatry" />
           <NavLinks title="مجله درمانی" href="/healthMagezine" />

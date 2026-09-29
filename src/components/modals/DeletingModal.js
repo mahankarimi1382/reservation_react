@@ -8,7 +8,9 @@ function DeletingModal({
   id,
   name,
   closeModal,
-  list
+  list,
+  // عنوان مودال بر اساس زمینه استفاده فرق می‌کند (حذف دسته‌بندی، کنسل نوبت و...)
+  title = "حذف دسته‌بندی"
 }) {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -31,7 +33,7 @@ function DeletingModal({
             <span className="text-4xl">🗑️</span>
           </div>
 
-          <h3 className="text-xl font-bold text-gray-800 mb-3">حذف دسته‌بندی</h3>
+          <h3 className="text-xl font-bold text-gray-800 mb-3">{title}</h3>
           
           <p className="text-gray-600 mb-8">
             آیا از حذف <span className="font-semibold text-[#005DAD]">{name}</span> مطمئن هستید؟<br />
