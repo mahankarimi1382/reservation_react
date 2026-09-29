@@ -5,6 +5,7 @@ import { RxCross2 } from "react-icons/rx";
 import { SyncLoader } from "react-spinners";
 import {
   add_role_to_user,
+  delete_user_role,
   get_roles,
   get_user_role_by_username,
 } from "../../api/ApiCalling";
@@ -42,6 +43,17 @@ function EditUserRoleModal({ userName, closeModal }) {
     getUsers();
   }, []);
   const [userRoles, setUserRoles] = useState([]);
+  // حذف دسترسی واقعی کاربر از طریق UserManager/delete-user-role
+  const handleRoleDelete = (id, setList, closeModal, setIsLoading) => {
+    if (!selectedItem?.roleName) return;
+    delete_user_role(
+      userName,
+      selectedItem.roleName,
+      setList,
+      closeModal,
+      setIsLoading
+    );
+  };
   console.log(userRoles);
   const fetchData = async () => {
     const data = await get_user_role_by_username(userName);
@@ -71,12 +83,11 @@ function EditUserRoleModal({ userName, closeModal }) {
     <div className=" w-screen z-10 h-screen top-0 justify-center items-center flex right-0 fixed bg-[rgba(0,0,0,0.6)]">
       {isDeletingModal && (
         <DeletingModal
-          DeletingFn={delete_specialties}
+          DeletingFn={handleRoleDelete}
           setList={setUserRoles}
-          id={selectedItem.id}
-          name={selectedItem.name}
+          name={RoleNameFn(selectedItem?.roleName)}
+          title="حذف دسترسی کاربر"
           closeModal={() => setIsDeletingModal(false)}
-          list={specialist}
         />
       )}
       <div className=" relative w-1/4 h-1/2 bg-white flex flex-col py-2 px-2 pb-5 rounded-2xl">
@@ -103,7 +114,8 @@ function EditUserRoleModal({ userName, closeModal }) {
                   <h5 className=" text-sm">{RoleNameFn(item.roleName)}</h5>
                   <MdDeleteForever
                     onClick={() => {
-                      console.log(item);
+                      setSelectedItem(item);
+                      setIsDeletingModal(true);
                     }}
                     className=" text-lg text-[#3F444D]  transition-all cursor-pointer hover:text-red-600"
                   />

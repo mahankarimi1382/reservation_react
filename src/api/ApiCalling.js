@@ -45,6 +45,9 @@ export const signin = (
       const result = res?.data?.result ?? {};
       let token = result.token;
       let name = result.userFullname;
+      // بک‌اند گاهی مقدار پیش‌فرض "string" برمی‌گرداند؛ آن را ذخیره نکن
+      // (مقدار خراب باعث می‌شود دکمه ورود برای همیشه غیرفعال بماند)
+      if (!name || name === "string") name = "";
       let smeId = result.smeprofileId;
       setSmeId(smeId);
       setToken(token);
@@ -725,21 +728,10 @@ export const get_doctor_treatmentCenter = async (id) => {
 };
 
 // پزشکانِ تخصیص‌داده‌شده به یک مرکز (مطب/مرکز درمانی) را برمی‌گرداند.
-// بک‌اند اندپوینت مستند مشخصی برای این کار ندارد، پس چند مسیر محتمل را با
-// { silent: true } امتحان می‌کنیم و در نهایت روی خواندن همه‌ی تخصیص‌ها و
-// فیلتر سمت کلاینت fallback می‌کنیم.
+// بک‌اند فقط read-DoctorTreatmentCenters را مستند کرده، پس همان را می‌خوانیم
+// و سمت کلاینت بر اساس clinicId/officeId فیلتر می‌کنیم.
 export const read_DoctorTreatmentCenterByCenter = async (centerId, type) => {
   const isOffice = type === "office";
-
-  const candidates = isOffice
-    ? [
-        `DoctorTreatmentCenter/read-DoctorTreatmentCenterByOfficeId?Id=${centerId}`,
-        `DoctorTreatmentCenter/read-DoctorTreatmentCenterByOfficeId?OfficeId=${centerId}`,
-      ]
-    : [
-        `DoctorTreatmentCenter/read-DoctorTreatmentCenterByClinicId?Id=${centerId}`,
-        `DoctorTreatmentCenter/read-DoctorTreatmentCenterByClinicId?ClinicId=${centerId}`,
-      ];
 
   const pickList = (result) => {
     if (Array.isArray(result)) return result;
@@ -748,20 +740,7 @@ export const read_DoctorTreatmentCenterByCenter = async (centerId, type) => {
     return null;
   };
 
-  for (const url of candidates) {
-    try {
-      const response = await axiosConfig.get(url, { silent: true });
-      const list = pickList(response?.data?.result);
-      if (Array.isArray(list)) return list;
-    } catch (error) {
-      console.log(
-        `[read_DoctorTreatmentCenterByCenter] مسیر یافت نشد: ${url}`,
-        error?.message
-      );
-    }
-  }
-
-  // fallback: خواندن همه‌ی تخصیص‌ها و فیلتر سمت کلاینت
+  // فقط endpoint مستند در Swagger: read-DoctorTreatmentCenters + فیلتر سمت کلاینت
   try {
     const response = await axiosConfig.get(
       "DoctorTreatmentCenter/read-DoctorTreatmentCenters",
@@ -777,7 +756,7 @@ export const read_DoctorTreatmentCenterByCenter = async (centerId, type) => {
     }
   } catch (error) {
     console.log(
-      "[read_DoctorTreatmentCenterByCenter] خواندن همه‌ی تخصیص‌ها ناموفق بود",
+      "[read_DoctorTreatmentCenterByCenter] خواندن تخصیص‌ها ناموفق بود",
       error?.message
     );
   }
@@ -1065,6 +1044,36 @@ export const add_role_to_user = (data, setIsLoading, closeModal) => {
       console.log(err);
       setIsLoading(false);
     });
+};
+
+export const delete_user_role = async (
+  userName,
+  roleName,
+  setList,
+  closeModal,
+  setIsLoading
+) => {
+  try {
+    await axiosConfig.delete("UserManager/delete-user-role", {
+      data: {
+        metadata: {
+          userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          userName: "string",
+        },
+        userName: userName,
+        roleName: roleName,
+      },
+    });
+    success("دسترسی با موفقیت حذف شد");
+    // به‌روزرسانی لیست دسترسی‌های کاربر پس از حذف
+    const fresh = await get_user_role_by_username(userName);
+    if (fresh) setList(fresh);
+    if (typeof setIsLoading === "function") setIsLoading(false);
+    if (typeof closeModal === "function") closeModal();
+  } catch (err) {
+    console.log(err);
+    if (typeof setIsLoading === "function") setIsLoading(false);
+  }
 };
 
 export const get_4first_doctor_turns = async (doctorId) => {

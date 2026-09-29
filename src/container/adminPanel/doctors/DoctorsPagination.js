@@ -199,7 +199,12 @@ const DoctorsPagination = ({
         <DeletingModal
           DeletingFn={delete_doctor}
           id={selectedItem.id}
-          name={selectedItem.doctorName + " " + selectedItem.doctorFamily}
+          name={
+            ((selectedItem.doctorName ?? selectedItem?.smeProfile?.doctors?.[0]?.doctorName ?? "") +
+              " " +
+              (selectedItem.doctorFamily ?? selectedItem?.smeProfile?.doctors?.[0]?.doctorFamily ?? ""))
+              .trim() || "این پزشک"
+          }
           setList={setDoctors}
           list={doctors}
           closeModal={() => setIsDeletingModal(false)}
@@ -228,10 +233,24 @@ const DoctorsPagination = ({
       ) : (
         doctors.map((item) => {
 
-          const fullName =
-            (item?.smeProfile?.doctors?.[0]?.doctorName || item?.doctorName || "") +
-            " " +
-            (item?.smeProfile?.doctors?.[0]?.doctorFamily || item?.doctorFamily || "");
+          const nestedDoc = item?.smeProfile?.doctors?.[0];
+          const flatName = item?.doctorName ?? nestedDoc?.doctorName ?? "";
+          const flatFamily = item?.doctorFamily ?? nestedDoc?.doctorFamily ?? "";
+          const fullName = flatName + " " + flatFamily;
+          const centers = Array.isArray(item?.doctorTreatmentCenters)
+            ? item.doctorTreatmentCenters
+            : null;
+          const centerName =
+            centers && centers.length
+              ? centers
+                  .map((c) => c?.clinicName || c?.officeName || c?.desc)
+                  .filter(Boolean)
+                  .join("، ")
+              : "";
+          const rawNationalId =
+            item?.nationalId ?? nestedDoc?.nationalId ?? item?.smeProfile?.nationalCode ?? "";
+          const nationalId =
+            rawNationalId && rawNationalId !== "string" ? rawNationalId : "—";
 
           return (
             <div key={item.id} className="border flex py-3 items-center rounded-lg bg-white shadow-md">
@@ -254,20 +273,19 @@ const DoctorsPagination = ({
               </div>
 
               <h4 className="w-[14%] flex justify-center items-center text-lg">
-                {item?.smeProfile?.doctors?.[0]?.doctorName}{" "}
-                {item?.smeProfile?.doctors?.[0]?.doctorFamily}
+                {fullName.trim() || "—"}
               </h4>
 
               <h4 className="w-[14%] flex justify-center items-center text-lg">
-                مطب
+                {centerName || "—"}
               </h4>
 
               <h4 className="w-[14%] flex justify-center items-center text-lg">
-                {item?.smeProfile?.doctors?.[0]?.codeNezam}
+                {item?.codeNezam ?? nestedDoc?.codeNezam ?? "—"}
               </h4>
 
               <h4 className="w-[14%] flex justify-center items-center text-lg">
-                {item?.smeProfile?.doctors?.[0]?.nationalId}
+                {nationalId}
               </h4>
 
               {/* ✅ اصلاح شده */}
@@ -293,7 +311,7 @@ const DoctorsPagination = ({
                   onClick={() => {
                     setSelectedItem({
                       id: item.id,
-                      name: item.doctorName + " " + item.doctorFamily,
+                      name: fullName.trim(),
                     });
                     setIsDoctorCostModal(true);
                   }}
@@ -304,7 +322,7 @@ const DoctorsPagination = ({
 
                 <div className="whitespace-nowrap">
                   <TreatMentCenterButt
-                    name={item.doctorName + " " + item.doctorFamily}
+                    name={fullName.trim()}
                     id={item.id}
                   />
                 </div>

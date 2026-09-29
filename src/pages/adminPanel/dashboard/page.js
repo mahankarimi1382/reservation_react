@@ -18,9 +18,31 @@ import {
   smeIdStorage,
   userProfileStore,
 } from "../../../store/Store";
+import { axiosConfig } from "../../../api/axiosConfig";
 
 import Cookies from "js-cookie";
 import { IoIosArrowDown, IoIosLogOut } from "react-icons/io";
+
+const pickList = (result) => {
+  if (Array.isArray(result)) return result;
+  if (result && Array.isArray(result.list)) return result.list;
+  return [];
+};
+
+// گروه‌بندی نوبت‌ها بر اساس ماه شمسی (کلید: 1405/06)
+const groupByJalaliMonth = (reservations, priceMap) => {
+  const counts = {};
+  const incomes = {};
+  (reservations || []).forEach((r) => {
+    const d = String(r?.reservation?.reservationDate ?? "");
+    if (d.length !== 8) return;
+    const key = `${d.slice(0, 4)}/${d.slice(4, 6)}`;
+    counts[key] = (counts[key] || 0) + 1;
+    const price = Number(priceMap?.[r?.reservation?.visitCostId] ?? 0);
+    incomes[key] = (incomes[key] || 0) + price;
+  });
+  return { counts, incomes };
+};
 
 function Page() {
   const navigate = useNavigate();
@@ -29,31 +51,84 @@ function Page() {
   const { setPhoneNum } = userProfileStore();
   const { removeSmeId } = smeIdStorage();
 
-  const HandleCaptionColor = (id) => {
-    switch (id) {
-      case 1:
-        return "text-[#8A8A8A]";
-      case 2:
-        return "text-[#36B7FF]";
-      case 3:
-        return "text-[#FFCB5A]";
-      case 4:
-        return "text-[#66C6B9]";
-      default:
-        return "text-[#8A8A8A]";
-    }
-  };
+  // ── داده‌های واقعی داشبورد ──────────────────────────────
+  const [stats, setStats] = useState({
+    doctors: null,
+    patients: null,
+    turns: null,
+    centers: null,
+  });
+  const [chartData, setChartData] = useState({ counts: {}, incomes: {} });
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchData = async () => {
+      try {
+        const [doctorsRes, patientsRes, turnsRes, centersRes, costsRes] =
+          await Promise.allSettled([
+            axiosConfig.get("Doctor/search-list-doctors?pagesize=1&pageNumber=1", { silent: true }),
+            axiosConfig.get("Patient/read-all-patients", { silent: true }),
+            axiosConfig.get("PatientReservation/read-all-patientreservations", { silent: true }),
+            axiosConfig.get("Clinic/read-Clinics", { silent: true }),
+            axiosConfig.get("Reservation/read-all-visitcosts", { silent: true }),
+          ]);
+
+        if (!isMounted) return;
+
+        const doctorsTotal =
+          doctorsRes.status === "fulfilled"
+            ? doctorsRes.value?.data?.result?.totalRecords ?? null
+            : null;
+        const patientsList =
+          patientsRes.status === "fulfilled"
+            ? pickList(patientsRes.value?.data?.result)
+            : [];
+        const turnsList =
+          turnsRes.status === "fulfilled"
+            ? pickList(turnsRes.value?.data?.result)
+            : [];
+        const centersList =
+          centersRes.status === "fulfilled"
+            ? pickList(centersRes.value?.data?.result)
+            : [];
+        const costsList =
+          costsRes.status === "fulfilled"
+            ? pickList(costsRes.value?.data?.result)
+            : [];
+
+        // نقشه‌ی قیمت ویزیت برای محاسبه‌ی درآمد واقعی نوبت‌های ثبت‌شده
+        const priceMap = {};
+        (costsList || []).forEach((c) => {
+          if (c?.id != null) priceMap[c.id] = Number(c.price) || 0;
+        });
+
+        setStats({
+          doctors: doctorsTotal,
+          patients: patientsList.length,
+          turns: turnsList.length,
+          centers: centersList.length,
+        });
+        setChartData(groupByJalaliMonth(turnsList, priceMap));
+      } catch (err) {
+        console.log("dashboard data error:", err?.message);
+      }
+    };
+
+    fetchData();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const faNum = (n) =>
+    n === null || n === undefined ? "..." : Number(n).toLocaleString("fa-IR");
 
   const cards = [
-    {
-      id: 1,
-      title: "تعداد مراجعین",
-      caption: "500 مراجعه کننده",
-      icon: people,
-    },
-    { id: 2, title: "تعداد پزشکان", caption: "320 پزشک", icon: Doctor },
-    { id: 3, title: "تعداد بیماران", caption: "320 بیمار", icon: patient },
-    { id: 4, title: "آمار", caption: "350,000,000 تومان", icon: select },
+    { id: 1, title: "تعداد پزشکان", caption: `${faNum(stats.doctors)} پزشک`, icon: Doctor },
+    { id: 2, title: "تعداد بیماران", caption: `${faNum(stats.patients)} بیمار`, icon: patient },
+    { id: 3, title: "نوبت‌های ثبت‌شده", caption: `${faNum(stats.turns)} نوبت`, icon: people },
+    { id: 4, title: "مراکز درمانی", caption: `${faNum(stats.centers)} مرکز`, icon: select },
   ];
 
   // Dropdown state
@@ -121,7 +196,7 @@ function Page() {
               className="flex justify-center items-center p-2 border text-[#005DAD] gap-2 border-[#005DAD] rounded-xl bg-white hover:bg-[#F3F8FE] transition"
             >
               <img src={DoctorProfIcon} width={24} alt="profile icon" />
-              {fullName}
+              {fullName || "ادمین"}
               <IoIosArrowDown
                 className={`text-xl transition ${
                   open ? "rotate-180" : "rotate-0"
@@ -147,7 +222,7 @@ function Page() {
           </div>
         </div>
 
-        {/* KPI Cards */}
+        {/* KPI Cards — داده‌های واقعی از API */}
         <div className="w-[80%] flex items-center justify-between flex-wrap gap-4">
           {cards.map((item) => (
             <div
@@ -161,32 +236,26 @@ function Page() {
               />
               <div className="items-start flex flex-col justify-center gap-10">
                 <h5 className="font-semibold">{item.title}</h5>
-                <p className={HandleCaptionColor(item.id)}>{item.caption}</p>
+                <p className="text-[#005DAD] font-medium">{item.caption}</p>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Income chart */}
-        <div className="w-[80%] p-4 bg-white items-center rounded-lg shadow-md flex flex-col">
+        {/* Income chart — درآمد واقعی محاسبه‌شده از نوبت‌ها و تعرفه‌ها */}
+        <div className="w-[80%] p-4 bg-white items-center rounded-lg shadow-md flex flex-col overflow-x-auto">
           <div className="w-full h-14 bg-[#E5E7E8] px-5 rounded-2xl flex items-center justify-between">
-            <h5>درآمد</h5>
-            <select className="bg-[#E5E7E8] p-2 px-4 rounded-lg border border-[#818181]">
-              <option>این ماه</option>
-            </select>
+            <h5>درآمد (بر اساس نوبت‌های ثبت‌شده)</h5>
           </div>
-          <IncomeAdminChart />
+          <IncomeAdminChart monthlyIncomes={chartData.incomes} />
         </div>
 
-        {/* Turn status chart */}
-        <div className="mb-5 w-[80%] p-4 bg-white items-center rounded-lg shadow-md flex flex-col">
+        {/* Turn status chart — توزیع واقعی نوبت‌ها بر اساس ماه */}
+        <div className="mb-5 w-[80%] p-4 bg-white items-center rounded-lg shadow-md flex flex-col overflow-x-auto">
           <div className="w-full h-14 bg-[#E5E7E8] px-5 rounded-2xl flex items-center justify-between">
-            <h5>وضعیت نوبت</h5>
-            <select className="bg-[#E5E7E8] p-2 px-4 rounded-lg border border-[#818181]">
-              <option>1403</option>
-            </select>
+            <h5>وضعیت نوبت (تعداد نوبت در ماه)</h5>
           </div>
-          <TurnStatusChart />
+          <TurnStatusChart monthlyCounts={chartData.counts} />
         </div>
       </div>
     </div>

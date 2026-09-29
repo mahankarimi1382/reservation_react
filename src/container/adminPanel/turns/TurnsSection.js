@@ -91,50 +91,58 @@ function TurnsSection() {
           <h4 className=" w-[15%] flex justify-center items-center text-[#3F444D] "></h4>
         </div>
 
+        {turns.length === 0 && !isLoading && (
+          <div className=" w-full py-8 text-center text-slate-500 text-sm">
+            نوبتی برای نمایش وجود ندارد
+          </div>
+        )}
         {turns.map((item) => {
+          const docName =
+            item?.doctor?.doctorName || item?.doctor?.doctorFamily
+              ? `${item?.doctor?.doctorName ?? ""} ${item?.doctor?.doctorFamily ?? ""}`.trim()
+              : "-";
+          const patName =
+            item?.patient?.patientName || item?.patient?.patientFamily
+              ? `${item?.patient?.patientName ?? ""} ${item?.patient?.patientFamily ?? ""}`.trim()
+              : "-";
+          const visitDate = item?.reservation?.reservationDate
+            ? `${convertDate(item.reservation.reservationDate) ?? "-"} ساعت ${item.reservation.reservationTime ?? ""}`
+            : "-";
+          const address =
+            item?.doctorTreatmentCenter?.clinic?.address ||
+            item?.doctorTreatmentCenter?.office?.address ||
+            "-";
           return (
             <div
               className=" border flex items-center justify-center py-3 rounded-lg bg-white shadow-md"
               key={item.id}
             >
               <h4 className=" w-[18%] flex justify-center items-center text-[#3F444D] ">
-                {item.doctor.doctorName} {item.doctor.doctorFamily}
+                {docName}
               </h4>
               <h4 className=" w-[18%] flex justify-center items-center text-[#3F444D] ">
-                {item.patient.patientName} {item.patient.patientFamily}
+                {patName}
               </h4>
               <h4 className=" w-[18%] flex justify-center items-center text-[#3F444D] ">
-                {convertDate(item.reservation.reservationDate)} ساعت{" "}
-                {item.reservation.reservationTime}
+                {visitDate}
               </h4>
               <h4 className=" w-[18%] flex justify-center items-center text-[#3F444D] ">
-                {item.patient.nationalId}
+                {item?.patient?.nationalId || "-"}
               </h4>
               <h4 className=" w-[18%] flex justify-center items-center text-[#3F444D] ">
-                {item.patient.patientPhone}
+                {item?.patient?.patientPhone || "-"}
               </h4>
               <div className=" w-[15%] flex justify-center items-center ">
                 <button
                   onClick={() => {
-                    console.log(item);
                     setSelectedItem({
-                      name:
-                        item.doctor.doctorName + " " + item.doctor.doctorFamily,
-                      pName:
-                        item.patient.patientName +
-                        " " +
-                        item.patient.patientFamily,
-                      date:
-                        convertDate(item.reservation.reservationDate) +
-                        "ساعت" +
-                        item.reservation.reservationTime,
-                      address:
-                        (item.doctorTreatmentCenter.clinic &&
-                          item.doctorTreatmentCenter.clinic.address) ||
-                        item.doctorTreatmentCenter.office.address,
+                      name: docName === "-" ? "" : docName,
+                      pName: patName === "-" ? "" : patName,
+                      date: visitDate,
+                      address: address,
                       type: "حضوری",
-                      nationalId: item.patient.nationalId,
-                      phone: item.patient.patientPhone,
+                      nationalId: item?.patient?.nationalId || "",
+                      phone: item?.patient?.patientPhone || "",
                     });
                     setIsSeeTurnDetails(true);
                   }}

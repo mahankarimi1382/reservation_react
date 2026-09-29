@@ -7,82 +7,12 @@ import printer from "../../../../assets/Pics/printer.png";
 import { TiArrowSortedDown } from "react-icons/ti";
 import { HiOutlineTrash } from "react-icons/hi2";
 import { IoEyeOutline } from "react-icons/io5";
+import { fullNameStorage } from "../../../../store/Store";
 
 function page() {
         const { fullName } = fullNameStorage();
   
-  const fakeData = [
-    {
-      id: 1,
-      name: "ایمان سالارکیا",
-      time: "1403/0402 ساعت 10:30",
-      code: "0024567980",
-      phone: "09129804556",
-    },
-    {
-      id: 1,
-      name: "ایمان سالارکیا",
-      time: "1403/0402 ساعت 10:30",
-      code: "0024567980",
-      phone: "09129804556",
-    },
-    {
-      id: 1,
-      name: "ایمان سالارکیا",
-      time: "1403/0402 ساعت 10:30",
-      code: "0024567980",
-      phone: "09129804556",
-    },
-    {
-      id: 1,
-      name: "ایمان سالارکیا",
-      time: "1403/0402 ساعت 10:30",
-      code: "0024567980",
-      phone: "09129804556",
-    },
-    {
-      id: 1,
-      name: "ایمان سالارکیا",
-      time: "1403/0402 ساعت 10:30",
-      code: "0024567980",
-      phone: "09129804556",
-    },
-    {
-      id: 1,
-      name: "ایمان سالارکیا",
-      time: "1403/0402 ساعت 10:30",
-      code: "0024567980",
-      phone: "09129804556",
-    },
-    {
-      id: 1,
-      name: "ایمان سالارکیا",
-      time: "1403/0402 ساعت 10:30",
-      code: "0024567980",
-      phone: "09129804556",
-    },
-    {
-      id: 1,
-      name: "ایمان سالارکیا",
-      time: "1403/0402 ساعت 10:30",
-      code: "0024567980",
-      phone: "09129804556",
-    },
-    {
-      id: 1,
-      name: "ایمان سالارکیا",
-      time: "1403/0402 ساعت 10:30",
-      code: "0024567980",
-      phone: "09129804556",
-    },
-    {
-      id: 1,
-      name: "ایمان سالارکیا",
-      time: "1403/0402 ساعت 10:30",
-      code: "0024567980",
-      phone: "09129804556",
-    },
-  ];
+  const fakeData = [];
   return (
     <div dir="rtl" className="flex bg-[#F6FBFF] justify-start">
       <AdminPanelMenu />
@@ -127,6 +57,11 @@ function page() {
               وضعیت <TiArrowSortedDown />
             </h4>
           </div>
+          {fakeData.length === 0 && (
+            <div className=" w-full py-8 text-center text-slate-500 text-sm">
+              پیامی برای پاسخ وجود ندارد — این بخش پس از تکمیل API فعال می‌شود
+            </div>
+          )}
           {fakeData.map((item) => {
             return (
               <div

@@ -1,16 +1,37 @@
 import React from "react";
 import { LineChart } from "@mui/x-charts/LineChart";
 
-function IncomeAdminChart() {
-  const uData = [4000, 3000, 2000, 2780, 1890];
-  const xLabels = ["فروردین", "اردیبهشت", "خراد", "تیر", "مرداد"];
+// نمودار درآمد — داده‌ی واقعی: جمع تعرفه‌ی ویزیت نوبت‌های ثبت‌شده در هر ماه شمسی
+// prop دریافتی: monthlyIncomes = { "1405/06": 2301000, ... }
+function IncomeAdminChart({ monthlyIncomes }) {
+  const entries = Object.entries(monthlyIncomes || {}).sort(([a], [b]) =>
+    a.localeCompare(b)
+  );
+
+  if (!entries.length) {
+    return (
+      <div className="w-full py-12 text-center text-slate-500 text-sm">
+        درآمدی برای نمایش وجود ندارد
+      </div>
+    );
+  }
+
+  const xLabels = entries.map(([k]) => k);
+  const data = entries.map(([, v]) => v);
+
   return (
     <div className="" dir="ltr">
-      {" "}
       <LineChart
-        width={1000}
+        width={900}
         height={336}
-        series={[{ data: uData, color: "#0E5FD9", showMark: false }]}
+        series={[
+          {
+            data: data,
+            color: "#0E5FD9",
+            showMark: true,
+            label: "درآمد (تومان)",
+          },
+        ]}
         xAxis={[{ scaleType: "point", data: xLabels }]}
       />
     </div>

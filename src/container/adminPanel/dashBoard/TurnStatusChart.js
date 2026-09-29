@@ -4,30 +4,47 @@ import {
   lineElementClasses,
   markElementClasses,
 } from "@mui/x-charts/LineChart";
-function TurnStatusChart() {
-  const uData1 = [200, 450, 300, 100, 150, 200, 250];
-  const uData2 = [800, 310, 500, 50, 180, 100, 300];
-  const xLabels = [1397, 1398, 1399, 1400, 1401, 1402, 1403];
+
+// نمودار وضعیت نوبت — داده‌ی واقعی: تعداد نوبت‌های ثبت‌شده در هر ماه شمسی
+// prop دریافتی: monthlyCounts = { "1405/06": 3, ... }
+function TurnStatusChart({ monthlyCounts }) {
+  const entries = Object.entries(monthlyCounts || {}).sort(([a], [b]) =>
+    a.localeCompare(b)
+  );
+
+  if (!entries.length) {
+    return (
+      <div className="w-full py-12 text-center text-slate-500 text-sm">
+        نوبتی ثبت نشده است
+      </div>
+    );
+  }
+
+  const xLabels = entries.map(([k]) => k);
+  const data = entries.map(([, v]) => v);
+  const maxY = Math.max(...data, 1);
+
   return (
-    <div className=" " dir="ltr">
-      {" "}
+    <div className=" w-full" dir="ltr">
       <LineChart
-        width={1000}
+        width={900}
         height={300}
         series={[
-          { data: uData1, color: "#845ED7", showMark: false, id: "UD1" },
-          { data: uData2, color: "#498953", showMark: false, id: "UD2" },
+          {
+            data: data,
+            color: "#845ED7",
+            showMark: true,
+            id: "turns",
+            label: "تعداد نوبت",
+          },
         ]}
         sx={{
           [`.${lineElementClasses.root}, .${markElementClasses.root}`]: {
             strokeWidth: 3,
           },
-          ".MuiLineElement-series-UD2": {
-            strokeDasharray: "6 4",
-          },
         }}
         xAxis={[{ scaleType: "point", data: xLabels }]}
-        yAxis={[{ min: 0, max: 1000 }]}
+        yAxis={[{ min: 0, max: maxY + 1 }]}
       />
     </div>
   );

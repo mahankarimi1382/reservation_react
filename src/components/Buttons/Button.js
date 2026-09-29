@@ -60,6 +60,10 @@ export const LoginButton = () => {
   const { removeSmeId } = smeIdStorage();
   const { doctors, doctorid, setDoctors, setDoctorId } = userDoctorStorage();
 
+  // مقدار "string" که بک‌اند گاهی برای userFullname برمی‌گرداند باید مهمان تلقی شود
+  // وگرنه دکمه ورود برای کاربران دارای مقدار ذخیره‌شده‌ی خراب هرگز باز نمی‌شود
+  const isGuest = !fullName || fullName === "string";
+
   const [isHover, setIsHover] = useState(false);
   const [isModal, setIsModal] = useState(false);
 
@@ -127,17 +131,17 @@ export const LoginButton = () => {
 
       {/* باکس پروفایل یا ورود */}
       <div
-        onClick={fullName ? () => {} : openModal}
+        onClick={isGuest ? openModal : () => {}}
         className="relative cursor-pointer whitespace-nowrap bg-white shadow-xl px-2 text-[12px] lg:text-[14px] lg:p-2 p-1 lg:px-2 flex justify-center items-center gap-1 text-[#004D8F] rounded-lg border border-[#004D8F]"
       >
-        {fullName ? (
+        {!isGuest ? (
           <h5
             onMouseEnter={() => setIsHover(true)}
             onClick={() => setIsHover((prev) => !prev)}
             className="w-full justify-center items-center gap-2 flex"
           >
             <IoPersonCircleSharp className="text-xl" />
-            {fullName !== "string" ? fullName : "کاربر مهمان"}
+            {fullName}
           </h5>
         ) : (
           <h5 className="w-full flex justify-center gap-1">
