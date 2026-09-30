@@ -1,6 +1,6 @@
 # HANDOFF — دکتر رزرو ( reservation_react )
 
-> این سند برای هر ایجنت/توسعه‌دهنده‌ای است که کار را ادامه می‌دهد. آخرین به‌روزرسانی: بعد از دور دوم QC کامل (تست مرورگری انتها-به-انتها).
+> این سند برای هر ایجنت/توسعه‌دهنده‌ای است که کار را ادامه می‌دهد. آخرین به‌روزرسانی: پس از دو دور اتصال کامل فرانت به بک‌اند + دو دور QC (شامل تست مرورگری انتها-به-انتها با تأیید سمت سرور). بخش ۱۰ گزارش کامل کارها، بخش ۱۱ خلاها، بخش ۱۲ اولویت‌های بررسی، بخش ۱۳ نقشه فایل‌هاست.
 
 ---
 
@@ -82,3 +82,103 @@ npm start        # http://localhost:3000
 - **دو ایجنت همزمان روی این ریپو کار می‌کنند** — قبل از push حتماً `git pull --rebase` و قبل از ویرایش فایل را تازه بخوان.
 - اسکرین‌شات‌های تست در `gui-test-screenshots/` هستند (untracked؛ کامیت نشده — می‌توانی حذف کنی).
 - `admin_login.json`/`admin_token.txt` و اسکریپت‌های seed در `C:\Users\Lenovo\Downloads\` هستند (خارج از ریپو).
+
+---
+
+# ۱۰) گزارش کارهای انجام‌شده (Work Log — به ترتیب زمانی)
+
+### دور ۱ — اتصال فرانت به بک‌اند (کامیت `345e9d3`)
+- کرش لاگین OTP رفع شد: در `ApiCalling.js` تابع تعریف‌نشده‌ی `create_sme_profile` صدا زده می‌شد و هر لاگین موفق OTP بعد از ورود کد می‌سوخت (پیام قرمز «کد اشتباه»).
+- کنسل نوبت بیمار از صفر ساخته شد: API `delete-patientreservation` + دکمه «کنسل نوبت» در `/userPanel/history` (قبلاً ۴ کارت فیک بود).
+- تقویم کاری پزشک (`/doctor-panel/reservation-managment/work-calendar`) از static-crash به کاملاً functional: انتخاب محل ویزیت از سرور، اتصال ورودی‌ها به `create-reservation`، حذف `visitCostId=2` هاردکد.
+- صفحه «کنسل نوبت» پزشک: از fakeData به نوبت‌های واقعی + کنسل گروهی با چک‌باکس.
+- فرم ثبت‌نام پزشک (`DoctorForm.js`) که submit نداشت → وصل به `create-doctor` / `create-Clinic` (فرم پر از باگ کپی-پیست بود: چند فیلد به یک state وصل بودند).
+- صفحه پیغام‌ها به `SiteMessage/read-recived-message` وصل شد (userId از decode توکن JWT).
+- «کاربران تحت پوشش» به `read-smeprofile-patients` وصل شد + ویرایش/حذف واقعی بیمار (`update-patient`/`delete-patient`).
+- رسید (`Receipt.js`) از فیک به داده‌ی استور؛ بعد از رزرو، step 3 نشان داده می‌شود.
+- تاریخچه (`/userPanel/history`) از ۴ کارت فیک به `read-all-patientreservations` واقعی.
+- گارد نقش ساخته شد (`RoleGuard.js`): ۲۲ مسیر ادمین فقط با نقش ادمینی؛ پنل کاربر/پزشک نیاز به توکن.
+
+### دور ۲ — ناوبری، پنل‌ها، مجله/دندان (کامیت `17d961c`)
+- سه نقطه ناوبری که به مسیر بی‌مقصد `/doctors/doctor-profile` می‌رفتند → پروفایل واقعی پزشک (فرمت تأییدشده: `/doctors/نام فامیل` با فاصله).
+- مودال «اولین نوبت خالی» (`EmptyReservModal`) که برای همه پزشکان نوبت‌های `DoctorId=1239` هاردکد را نشان می‌داد → نوبت واقعی همان پزشک.
+- لیست بیماران پزشک → `Doctor/read-patients-doctor`. نظرات پزشک → `Comment/read-doctor-Comment`.
+- نشان‌شده‌ها → `FollowProfile/read-FollowProfile` (قبلاً متن «bhh» بود!).
+- حذف `SmeProfileId=6` هاردکد در حذف بنر.
+- پیام‌های کاربر، مجله سلامت (`Article/read-all-articles` با fallback)، دندان‌پزشکی (پزشکانِ تخصص دندان با fallback) وصل شدند.
+
+### دور ۳ — جستجو، استایل، داده‌های تست (کامیت‌های بعدی تا `d394452`)
+- `searchall` بازنویسی شد: اگر `MainSearch/searchall` خطا داد (بک‌اند ۵۰۰ می‌دهد)، نتیجه از سه API سالم ساخته می‌شود (`search-list-doctors` + `search-DoctorTreatmentCenters` + `read-specialists`). همه‌ی درخواست‌های جستجو `silent`.
+- `search_doctors` بازنویسی شد: پارامترهای خالی حذف (بایندر 400 می‌داد)، بی‌صدا، و وقتی فیلتر پیشرفته نیست مستقیم `search-list-doctors`.
+- اسکرول افقی سراسری: Footer `max-w-screen`→`w-full` + `html,body{overflow-x:clip}` در globals.css.
+- نوبار: `flex-nowrap`، سایز فونت صریح، لینک‌های فرعی فقط از breakpoint `xl`، `shrink-0` گروه‌ها؛ فایل خالی `Navbar.jsx` حذف شد.
+- داشبورد کاربر: هر ۶ سکشن از فیک به واقعی/حالت‌خالی (سوابق، پیغام‌ها، نشان‌شده‌ها واقعی؛ امتیاز/کیف‌پول/نظرات چون بک‌اند ندارد «صفر/خالی» صادقانه).
+- صفحه `/Specialties`: مشکل code نبود — دیتا بود؛ ۱۲ دسته واقعی با آیکون seed شد و ۲۸۱ تخصص وصل شدند (دسته تستی «tesetdelete» حذف شد). گارد لوگوی placeholder.
+- دیتای تست دکتر ۱: تخصص وصل شد، ۳ روز تقویم × ۱۲ نوبت ساخته شد (اسکریپت‌های seed در Downloads).
+
+### دور ۴ — QC مرورگری + فیکس‌های نهایی (کامیت `5b290a7`)
+- رفع لودینگ بی‌نهایت مودال نوبت: `DoctorProfile` حالا `doctorProfileStore` را هم پر می‌کند (قبلاً فقط local state بود و مودال هرگز درخواست نمی‌زد).
+- تطبیق روز→turns در مودال نوبت (قبلاً همیشه `reservations[0]` یعنی روز اول را نشان می‌داد).
+- مسیر کامل رزرو با مرورگر تست و **سمت سرور تأیید شد**: بیمار ساخته شد (id=16)، نوبت ثبت شد (اولین وقت آزاد روز ۱۰ مهر از ۰۹:۰۰ به ۰۹:۴۰ تغییر کرد)، تاریخچه نشان داد.
+- جستجو: پارامترهای خالی حذف (بایندر 400 می‌داد) + silent + fallback مرکب.
+- فیکس‌های UI: `pointer-events-none` روی تصاویر تزئینی (کلیک‌دزدی نوبار)، دکمه‌های «انصراف» مرده، قیمت واقعی در صفحه پرداخت (`reservationStore.visitPrice`)، اعتبارسنجی استان/شهر فرم بیمار، ثبت `phoneNum` در لاگین رمزی (رفع بلاک شدن ادمین از پنل)، global `overflow-x: clip`، Footer `w-full`، ریسپانسیو نوبار.
+- `RoleGuard.js` اضافه شد (RequireAdmin / RequireAuth).
+
+---
+
+# ۱۱) خلاهای پروژه (چیزی که اصلاً وجود ندارد)
+
+**سمت بک‌اند (تا ساخته نشود، فرانت قابل اتصال نیست):**
+- درگاه پرداخت واقعی (صفحه پرداخت فقط UI است و ثبت نوبت بدون پرداخت انجام می‌شود)
+- ویزیت آنلاین (room متنی/صوتی/تصویری، ارسال مدارک) — هیچ مدل/Endpointی نیست
+- یادآور و اطلاع‌رسانی خودکار نوبت (زمان‌بند/سرویس پس‌زمینه نیست؛ SMS فقط برای OTP)
+- داشبورد و گزارشات (هیچ Endpoint آماری؛ صفحه‌ها اعداد قلابی نشان می‌دهند)
+- کیف پول و تراکنش‌ها؛ امتیاز و جایزه‌ها؛ فروشگاه
+- «نظراتِ ثبت‌شده توسط خود بیمار» (فقط نظراتِ یک پزشک خوانده می‌شود)
+- Endpoint خواندن Turns یک روزِ مشخص (گرید ساعت‌ها فقط از داخل `visitCost.reservations` در می‌آید)
+- فرایند تایید/رد پزشک توسط ادمین (state machine وجود ندارد؛ پزشک مستقیم ثبت می‌شود)
+- Endpoint آماری لازم برای `/adminPanel/doctors` ری‌دایرکت عجیب — قبل از هر کاری re-verify شود (احتمال تغییرات نیمه‌کاره)
+
+**سمت فرانت (شخصی‌سازی/پرداخت نهایی):**
+- پاک‌سازی ~۳۴۳ `console.log`
+- دراپ‌داون جستجو گاهی کلیک نتایج را رد می‌کند (re-render روی focus)
+- صفحات یتیم: `/Reservation/:id`، `ConfirmAppointment.js`، `/map-test`، `/test` — حذف یا اتصال
+- چند صفحه پنل ادمین هنوز static (opinions, blacklist, transactions, reports, support, image-setting های غیر بنر)
+- `Receipt.js` کد رهگیری ندارد (بک‌اند id برنمی‌گرداند)؛ ردیف‌های قدیمی تاریخچه «محل ویزیت: —» دارند (داده قدیمی)
+
+---
+
+# ۱۲) نقشه‌ی اولویت برای ایجنت بعدی (کجا بیشتر / کجا کمتر)
+
+**🔥 بیشتر چک کن (پرترافیک‌ترین و شکننده‌ترین):**
+1. **زنجیره رزرو**: `ReservDateAndTimeModal.js` + `ReserveStepsModal.js` + `ReservForAnother.js` + `pay.js` — هر تغییری در استورها (`Store.js`: reservationStore/doctorProfileStore) مستقیم این زنجیره را می‌شکند. قبل از تغییر، تست طلایی بخش ۸ را بزن.
+2. **`ApiCalling.js`** (قلب همه‌چیز، ~۱۷۰۰ خط): توابع search، auth، و fallback ها را دست نزن مگر با تست کامل. قرارداد `result`/`silent` را حفظ کن.
+3. **Auth**: `PhoneNumModal` → `ValidateModal` → `activating_registarion` — وابسته به رفتار OTP سرور؛ بدون گوشی واقعی تستش سخت است، پس تغییرش را فقط با log واقعی SMS.
+4. **`RoleGuard.js`**: اگر نقش‌گذاری سمت سرور تغییر کند، ادمین قفل می‌شود — fail-open طراحی شده ولی خطای شبکه را چک کن.
+
+**✅ کمتر چک کن (پایدار/تست‌شده):**
+- Footer/Navbar/global css (تازه فیکس و تست شده) — جز ریسپانسیو ریزه‌کاری
+- صفحات static (about-us، contact-us، RulesPage)
+- بخش دولتی (کامل و مستقل کار می‌کند؛ فقط صفحه یتیم ConfirmAppointment بلاتکلیف است)
+- drop-down های تخصص/استان/شهر (`Inputs/Input.js`) — پایدار
+
+**⚠️ با احتیاط (زمین لغزنده):**
+- هر چیزی که به `metadata` یا `smeProfileId` ربط دارد: کاربرِ بدون SmeProfile تقریباً هیچ عملیات نوشتنی نمی‌تواند بکند (FK اجباری Patient و …) تا باگ B1/B5 بک‌اند رفع شود.
+- ادیت همزمان با ایجنت دیگر: قبل از هر Edit، فایل را دوباره Read کن؛ قبل از push حتماً `git pull --rebase origin main` بعد از commit (یا stash).
+
+---
+
+# ۱۳) نقشه‌ی سریع فایل‌های کلیدی
+
+| فایل | نقش |
+|---|---|
+| `src/api/ApiCalling.js` | تک‌لایه API (~۹۰ تابع). همه endpointها اینجا. fallback جستجو و silent ها |
+| `src/api/axiosConfig.js` | baseURL + interceptor ها (توست خطا؛ `silent: true` = بی‌صدا) |
+| `src/store/Store.js` | همه zustand store ها (sessionStorage). مهم: `reservationStore` (turnId/visitPrice/…)، `userDoctorStorage` (doctorid)، `smeIdStorage`، `myStore` (فیلترها) |
+| `src/components/RoleGuard.js` | RequireAdmin / RequireAuth — گارد مسیرها |
+| `src/components/modals/ReservDateAndTimeModal.js` | انتخاب روز/ساعت واقعی نوبت (قلب رزرو) |
+| `src/components/modals/SelfOrAnotherModal.js` → `ReserveStepsModal.js` | زنجیره «برای خودم/دیگری» → step1/2/3 |
+| `src/container/Doctors/id/DoctorProfile.js` | پروفایل پزشک؛ استور را برای مودال نوبت پر می‌کند |
+| `src/container/doctor-panel/reservation-managment/` | تقویم کاری و کنسل پزشک |
+| `src/pages/governmentHospital/` | بخش وزارت بهداشت (مستقل با axios خودش) |
+| `gui-test-screenshots/` | شواهد تست مرورگری (untracked) |
