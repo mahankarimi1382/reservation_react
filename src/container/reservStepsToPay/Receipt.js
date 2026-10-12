@@ -1,6 +1,7 @@
 import React from "react";
 import LastStep from "../../assets/Pics/LastStepFrame.png";
 import { FaCircleCheck } from "react-icons/fa6";
+import { RxCross2 } from "react-icons/rx";
 import {
   doctorProfileStore,
   fullNameStorage,
@@ -8,21 +9,30 @@ import {
   userProfileStore,
 } from "../../store/Store";
 
-function Receipt() {
+function Receipt({ closeModal }) {
   const { fullName } = fullNameStorage();
   const { phoneNum } = userProfileStore();
   const { doctorName, doctorSpecialties, doctorNezamCode } =
     doctorProfileStore();
-  const { selectedPtientName, dateAndTime, adress } = reservationStore();
+  const { selectedPtientName, dateAndTime, adress, turnId, reservationId } = reservationStore();
 
   const patientName =
     selectedPtientName && selectedPtientName !== "" ? selectedPtientName : fullName;
 
   return (
     <div
-      className=" flex flex-col justify-center gap-10 items-center"
+      className=" relative flex flex-col justify-center gap-10 items-center w-full max-h-[90vh] overflow-y-auto bg-white p-6 rounded-2xl"
       dir="rtl"
     >
+      {closeModal && (
+        <button
+          onClick={closeModal}
+          className="absolute top-5 left-5 text-gray-500 hover:text-black transition-colors"
+          title="بستن"
+        >
+          <RxCross2 className="text-2xl" />
+        </button>
+      )}
       <div className=" flex justify-center items-center w-[90%] h-[124px] bg-[rgba(196,226,255,0.37)] rounded-2xl">
         <img src={LastStep} width={915} alt="step-picture" />
       </div>
@@ -48,9 +58,9 @@ function Receipt() {
               <h5 className=" text-lg text-[#858585] " dir="ltr">{phoneNum}</h5>
             </div>
             <div className=" border-b-2 py-5 flex w-full justify-between">
-              <h5 className=" text-lg">کد رهگیری</h5>
-              <h5 className=" text-lg text-[#858585] " dir="ltr">
-                {dateAndTime ? "——" : "——"}
+              <h5 className=" text-lg">کد رهگیری نوبت</h5>
+              <h5 className=" text-lg font-mono font-bold text-[#005DAD] " dir="ltr">
+                {turnId ? `TRN-${turnId}` : (reservationId ? `RES-${reservationId}` : "—")}
               </h5>
             </div>
             <div className=" py-5 flex w-full justify-between">
@@ -87,13 +97,21 @@ function Receipt() {
             <h5 className=" text-xl text-[#858585]"> {dateAndTime}</h5>
           </div>
         </div>
-        <div className=" w-full flex items-center gap-10 justify-end">
-          <button className=" border border-[#005DAD] text-[#005DAD] px-20 p-1 rounded-lg">
-            نمایش رویه نقشه
-          </button>
-          <button className=" border bg-[#005DAD] text-white px-20 p-1 rounded-lg">
+        <div className=" w-full flex items-center gap-4 justify-end">
+          {closeModal && (
+            <button
+              onClick={closeModal}
+              className=" border border-gray-300 text-gray-700 hover:bg-gray-50 px-8 py-2 rounded-lg text-sm transition-all"
+            >
+              بستن و بازگشت
+            </button>
+          )}
+          <button
+            onClick={() => window.print()}
+            className=" border bg-[#005DAD] hover:bg-[#004885] text-white px-8 py-2 rounded-lg text-sm transition-all"
+          >
             چاپ اطلاعات رسید
-          </button>{" "}
+          </button>
         </div>
       </div>
     </div>

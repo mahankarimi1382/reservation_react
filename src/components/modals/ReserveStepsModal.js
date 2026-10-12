@@ -59,7 +59,7 @@ function ReserveStepsModal({ closeModal }) {
     }
 
     if (steps === 3) {
-      return <Receipt />;
+      return <Receipt closeModal={closeModal} />;
     }
   };
 
