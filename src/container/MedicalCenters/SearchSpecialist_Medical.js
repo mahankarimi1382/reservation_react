@@ -47,13 +47,11 @@ function SearchSpecialist_Medical() {
   }, []);
 
   const handleRemoveOption = (name, idToRemove) => {
-    console.log(storedIdsMultipleSearch);
     if (typeof storedIdsMultipleSearch == "string") {
       let newIds = storedIdsMultipleSearch
         .split(",")
         .filter((id) => id !== idToRemove.toString())
         .join(",");
-      console.log(newIds);
       setStoredIdsMultipleSearch(newIds);
       setSpecialistSearch(newIds);
     } else {
@@ -63,7 +61,6 @@ function SearchSpecialist_Medical() {
     let removedBox = multiSpecialtiesBoxes
       .filter((item) => item.caption != name)
       .filter((item) => item.caption);
-    console.log(removedBox);
     setMultiSpecialtiesBoxes(removedBox);
     setSpecialistNames();
 
@@ -80,15 +77,11 @@ function SearchSpecialist_Medical() {
     ]);
     setSpecialistNames(name);
 
-
-    console.log(id);
     if (storedIdsMultipleSearch) {
       setStoredIdsMultipleSearch(`${storedIdsMultipleSearch},${id}`);
     } else {
       setStoredIdsMultipleSearch(id);
     }
-
-
 
     if (storedIdsMultipleSearch) {
       setSpecialistSearch(`${storedIdsMultipleSearch},${id}`);
@@ -119,7 +112,6 @@ function SearchSpecialist_Medical() {
                     (boxItem) => boxItem.id === item.id
                   )}
                   onChange={(e) => {
-                    console.log(e.target.value);
                     let isCheked = e.target.checked;
                     if (isCheked) {
                       handleSelectOption(item.name, item.id);

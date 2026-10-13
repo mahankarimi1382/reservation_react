@@ -346,17 +346,6 @@ const Appointments = () => {
         doctor?.CodeNezam ??
         doctor?.codeNezamId;
 
-      console.log("Hospital object:", hospital);
-      console.log("Doctor object:", doctor);
-      console.log(
-        "Ministry hospital ID:",
-        ministryHospitalId
-      );
-      console.log(
-        "Ministry doctor ID:",
-        ministryDoctorId
-      );
-
       if (!ministryHospitalId) {
         throw new Error(
           "کد سیام مرکز برای دریافت نوبت مشخص نیست."
@@ -373,8 +362,6 @@ const Appointments = () => {
         `${API_BASE_URL}/MinistryApiReserve/hospital/` +
         `${encodeURIComponent(ministryHospitalId)}/doctor/` +
         `${encodeURIComponent(ministryDoctorId)}/all-seats`;
-
-      console.log("Seats API URL:", url);
 
       const response = await fetch(url, {
         method: "GET",
@@ -394,11 +381,6 @@ const Appointments = () => {
         );
       }
 
-      console.log(
-        "Seats API response:",
-        JSON.stringify(data, null, 2)
-      );
-
       if (!response.ok) {
         throw new Error(
           getApiErrorMessage(data, response.status)
@@ -416,11 +398,6 @@ const Appointments = () => {
 
       const normalizedGroups =
         normalizeSeatResponse(data);
-
-      console.log(
-        "Normalized seat groups:",
-        normalizedGroups
-      );
 
       if (normalizedGroups.length === 0) {
         setSeatGroups([]);
@@ -571,16 +548,6 @@ const Appointments = () => {
       reservedSlotInfo:
         selectedSeat.reservedSlotInfo ?? null,
     };
-
-    console.log(
-      "Selected seat:",
-      selectedSeat
-    );
-
-    console.log(
-      "Reservation selection:",
-      reservationSelection
-    );
 
     /*
      * مسیر صفحه تأیید را در صورت تفاوت با پروژه خود تغییر دهید

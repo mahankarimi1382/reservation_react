@@ -53,7 +53,6 @@ function SubsetedusersSection() {
       )}
       {patients.length !== 0 ? (
         patients.map((item, index) => {
-          console.log(index);
           const isLast = index === patients.length - 1;
           return (
             <div

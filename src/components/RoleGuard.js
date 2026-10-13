@@ -53,7 +53,7 @@ export function RequireAdmin() {
           ADMIN_ROLES.some((r) => roleName.includes(r)) ? "allowed" : "denied"
         );
       } catch (error) {
-        console.log("role guard error", error);
+        console.error("role guard error", error);
         // خطای شبکه/سرویس نقش → دسترسی بسته نمی‌شود تا ادمین قفل نشود
         if (!cancelled) setState("allowed");
       }

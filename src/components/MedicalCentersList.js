@@ -31,11 +31,9 @@ function MedicalCentersList({ type }) {
   const [isSeeReservsModal, setIsSeeReservsModal] = useState(false);
   const [selectedMedical, setSelectedMedical] = useState({});
   const [isEditMedical, setIsEditMedical] = useState(false);
-  console.log(medicalCenters);
   const getMedicalCenters = async () => {
     const data = await get_clinics();
     if (data) {
-      console.log(data);
       setMedicalCenters(data);
       setIsLoading(false);
     }
@@ -43,7 +41,6 @@ function MedicalCentersList({ type }) {
   const getOffices = async () => {
     const data = await get_offices();
     if (data) {
-      console.log(data);
       setMedicalCenters(data);
       setIsLoading(false);
     }
@@ -61,7 +58,6 @@ function MedicalCentersList({ type }) {
   const [selectedItem, setSelectedItem] = useState({});
   const [IsSeeMedicalDetails, setIsSeeMedicalDetails] = useState(false);
   const [isAssignDoctorModal, setIsAssignDoctorModal] = useState(false);
-  console.log(selectedItem);
   const [currentPage, setCurrentPage] = useState(1);
   const handleChange = (event, value) => {
     setCurrentPage(value);

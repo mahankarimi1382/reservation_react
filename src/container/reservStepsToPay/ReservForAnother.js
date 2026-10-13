@@ -51,7 +51,6 @@ function ReservForAnother({
   ];
   const token = Cookies.get("token");
   const { patients, setPatients } = userSubmitedArrStore();
-  console.log(patients);
   const { patientPhone, setPatientPhone } = reservationStore();
   const { phoneNum } = userProfileStore();
   const { smeId } = smeIdStorage();

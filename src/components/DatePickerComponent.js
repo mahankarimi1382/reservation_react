@@ -19,7 +19,6 @@ function DatePickerComponent({ title, setDate }) {
         onChange={(date) => {
           let formattedDate = date.format(); // تاریخ با فرمت شمسی
           formattedDate = convertToEnglishNumbers(formattedDate); // تبدیل اعداد فارسی به انگلیسی
-          console.log(formattedDate);
           setDate(formattedDate);
         }}
         render={(value, openCalendar) => {

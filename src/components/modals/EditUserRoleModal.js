@@ -30,11 +30,9 @@ function EditUserRoleModal({ userName, closeModal }) {
     add_role_to_user(data, setIsLoading,closeModal);
   };
   const [roles, setRoles] = useState([]);
-  console.log(roles);
   const getUsers = async () => {
     const data = await get_roles();
     if (data) {
-      console.log(data);
       setRoles(data);
     }
   };
@@ -42,7 +40,6 @@ function EditUserRoleModal({ userName, closeModal }) {
     getUsers();
   }, []);
   const [userRoles, setUserRoles] = useState([]);
-  console.log(userRoles);
   const fetchData = async () => {
     const data = await get_user_role_by_username(userName);
     if (data) {
@@ -103,7 +100,6 @@ function EditUserRoleModal({ userName, closeModal }) {
                   <h5 className=" text-sm">{RoleNameFn(item.roleName)}</h5>
                   <MdDeleteForever
                     onClick={() => {
-                      console.log(item);
                     }}
                     className=" text-lg text-[#3F444D]  transition-all cursor-pointer hover:text-red-600"
                   />

@@ -39,7 +39,6 @@ function UserAccesPaginate({
       )}
 
       {currentItems.map((item) => {
-        console.log(currentItems);
         return (
           <div
             className=" border flex py-3 rounded-lg bg-white shadow-md"

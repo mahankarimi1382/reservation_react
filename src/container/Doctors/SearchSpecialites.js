@@ -50,13 +50,11 @@ function SearchSpecialites() {
   }, []);
 
   const handleRemoveOption = (name, idToRemove) => {
-    console.log(storedIdsMultipleSearch);
     if (typeof storedIdsMultipleSearch == "string") {
       let newIds = storedIdsMultipleSearch
         .split(",")
         .filter((id) => id !== idToRemove.toString())
         .join(",");
-      console.log(newIds);
       setStoredIdsMultipleSearch(newIds);
       setSpecialistSearch(newIds);
     } else {
@@ -66,28 +64,8 @@ function SearchSpecialites() {
     let removedBox = multiSpecialtiesBoxes
       .filter((item) => item.caption != name)
       .filter((item) => item.caption);
-    console.log(removedBox);
     setMultiSpecialtiesBoxes(removedBox);
     setSpecialistNames();
-    // if (storedIDs) {
-    //   setStoredIDs(`${storedIDs},${id}`);
-    // } else {
-    //   setStoredIDs(id);
-    // }
-
-    // if (storedNames) {
-    //   setStoredNames(`${storedNames},${name}`);
-    // } else {
-    //   setStoredNames(name);
-    // }
-
-    // if (storedIDs) {
-    //   setSpecialistSearch(`${storedNames},${name}`, `${storedIDs},${id}`);
-    // } else {
-    //   setSpecialistSearch(name, id);
-    // }
-
-    // setCurrentPageDoctorSearch(1);
   };
 
   const handleSelectOption = (name, id) => {
@@ -100,21 +78,12 @@ function SearchSpecialites() {
       },
     ]);
     setSpecialistNames(name);
-    // const newCheckedItems = { ...checkedItems, [id]: !checkedItems[id] };
-    // setCheckedItems(newCheckedItems);
 
-    console.log(id);
     if (storedIdsMultipleSearch) {
       setStoredIdsMultipleSearch(`${storedIdsMultipleSearch},${id}`);
     } else {
       setStoredIdsMultipleSearch(id);
     }
-
-    // if (storedNames) {
-    //   setStoredNames(`${storedNames},${name}`);
-    // } else {
-    //   setStoredNames(name);
-    // }
 
     if (storedIdsMultipleSearch) {
       setSpecialistSearch(`${storedIdsMultipleSearch},${id}`);
@@ -145,7 +114,6 @@ function SearchSpecialites() {
                     (boxItem) => boxItem.id === item.id
                   )}
                   onChange={(e) => {
-                    console.log(e.target.value);
                     let isCheked = e.target.checked;
                     if (isCheked) {
                       handleSelectOption(item.name, item.id);

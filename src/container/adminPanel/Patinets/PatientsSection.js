@@ -10,7 +10,6 @@ import { MdDeleteForever } from "react-icons/md";
 function PatientsSection() {
   const [isAddPatient, setIsAddPatient] = useState(false);
   const [patients, setPatients] = useState([]);
-  console.log(patients);
   useEffect(() => {
     const url = "Patient/read-all-patients";
 

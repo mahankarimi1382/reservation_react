@@ -42,7 +42,6 @@ function AddPatinetModal({ setIsAddPatient }) {
   const [monthOfBirth, setMonthOfBirth] = useState("");
   const [yearOfBirth, setYearOfBirth] = useState("");
   const { smeId } = smeIdStorage();
-  console.log(smeId);
   const data = {
     metadata: {
       userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",

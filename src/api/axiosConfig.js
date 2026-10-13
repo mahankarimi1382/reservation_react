@@ -35,7 +35,7 @@ axiosConfig.interceptors.request.use(
 axiosConfig.interceptors.response.use(
   (response) => response,
   (err) => {
-    console.log(err);
+    console.error(err);
     if (err.config && err.config.silent) {
       return Promise.reject(err);
     }

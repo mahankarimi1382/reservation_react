@@ -5,7 +5,6 @@ const Timer = ({ time,setIsFinish }) => {
 
   const Ref = useRef(null);
   const [timer, setTimer] = useState("00:00:00");
-  console.log(timer);
   const getTimeRemaining = (e) => {
     const total = Date.parse(e) - Date.parse(new Date());
     const seconds = Math.floor((total / 1000) % 60);

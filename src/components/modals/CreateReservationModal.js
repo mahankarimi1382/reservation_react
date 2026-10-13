@@ -91,7 +91,6 @@ function CreateReservationModal({ closeModal, treatmentId, doctorId }) {
     "پنج‌شنبه",
     "جمعه",
   ];
-  console.log(selectedDays);
   const handleDayChange = (event) => {
     const index = weekDays.indexOf(event.target.value);
     const updatedDays = [...selectedDays];
@@ -162,7 +161,6 @@ function CreateReservationModal({ closeModal, treatmentId, doctorId }) {
                   const formattedDate = moment(date.toDate()).format(
                     "jYYYY/jMM/jDD"
                   );
-                  console.log(formattedDate);
                   setReservationDate(formattedDate);
                 }}
                 minDate={today}

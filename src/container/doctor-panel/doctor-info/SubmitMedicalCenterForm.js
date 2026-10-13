@@ -270,7 +270,6 @@ function SubmitMedicalCenterForm({ onCreated }) {
       officeTypeId: Number(formData.officeTypeId),
     };
 
-    console.log("Payload ایجاد مطب:", payload);
 
     setLoading(true);
 
@@ -305,7 +304,6 @@ function SubmitMedicalCenterForm({ onCreated }) {
       cityId: Number(cityId.id),
     };
 
-    console.log("Payload تخصیص مطب به دکتر:", treatmentPayload);
 
     // ۳. تخصیص مطب به پزشک
     const assignRes = await create_doctor_treatment(

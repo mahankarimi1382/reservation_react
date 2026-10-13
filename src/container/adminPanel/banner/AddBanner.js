@@ -23,11 +23,9 @@ function AddBanner() {
   //   fetchData();
   // }, []);
   const { selectedBaner } = myStore();
-  console.log(selectedBaner);
   // const [prevPreviw, setPrevPreviw] = useState(null);
   const [banerPosition, setBanerPosition] = useState(4);
   const [bannerFileId, setBannerFileId] = useState("");
-  console.log(bannerFileId);
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");

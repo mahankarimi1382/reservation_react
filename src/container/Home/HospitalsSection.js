@@ -8,11 +8,9 @@ import { Read_DoctorTreatmentCenters4FirstPage } from "../../api/ApiCalling";
 
 function HospitalsSection() {
   const [medicals,setMedicals]=useState([])
-  console.log(medicals)
     const getMedicalCentersList = async () => {
       const result = await Read_DoctorTreatmentCenters4FirstPage();
       if (result) {
-        console.log(result)
         setMedicals(result.list)
       }
     };

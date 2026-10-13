@@ -18,14 +18,12 @@ function OpinionModal({ setIsNazarModal, setIsSuccessModal, doctorDetails }) {
   const [isSuggest, setIsSuggest] = useState(true);
   const [likeNumber, setLikeNumber] = useState(0);
     const imgFN = (img) => {
-      console.log(img);
       if (img == "string") {
         return doctorIcon.src;
       } else {
         return img;
       }
     };
-  console.log(likeNumber);
   const data = {
     metadata: {
       userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -40,12 +38,8 @@ function OpinionModal({ setIsNazarModal, setIsSuccessModal, doctorDetails }) {
     likeNumber,
     smeProfileId: smeId,
   };
-  console.log(smeId);
-  console.log(doctorDetails);
   const handleSuccessModal = () => {
-    console.log(desc);
     if (likeNumber && desc) {
-      console.log(data);
       create_Comment(data, setIsNazarModal, setIsSuccessModal, setIsLoading);
       setIsLoading(true);
     } else {

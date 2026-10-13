@@ -2,14 +2,15 @@ import { Eror, success } from "../components/ToastAlerts";
 import { axiosConfig } from "./axiosConfig";
 import axios from "axios";
 import Cookies from "js-cookie";
+import logger from "../utils/logger";
 
 export const signup = (setIsLoading, data, setIsValidateModal) => {
   setIsLoading(true);
-  console.log(data);
+  logger.log(data);
   axiosConfig
     .post("Authentication/sign-up", data)
     .then((res) => {
-      console.log(res);
+      logger.log(res);
       if (data.phoneNumber == "string") {
         success(`کد تایید به شماره ی ${data.userName} پیامک شد`);
       } else {
@@ -20,7 +21,7 @@ export const signup = (setIsLoading, data, setIsValidateModal) => {
     })
     .catch((err) => {
       setIsLoading(false);
-      console.log(err);
+      logger.error(err);
     });
 };
 export const signin = (
@@ -33,14 +34,14 @@ export const signin = (
   setDoctors,
   setDoctorId
 ) => {
-  console.log(data2);
+  logger.log(data2);
   setIsLoading(true);
   axiosConfig
     .put("Authentication/sign-in", data2)
     .then((res) => {
       setIsLoading(false);
-      console.log(res);
-      console.log(res.data);
+      logger.log(res);
+      logger.log(res.data);
       const result = res?.data?.result ?? {};
       let token = result.token;
       let name = result.userFullname;
@@ -59,12 +60,12 @@ export const signin = (
         setDoctorId(doctorsList[0].id);
       }
 
-      console.log(doctorsList);
+      logger.log(doctorsList);
       success(`${name} خوش آمدید`);
       closeModal();
     })
     .catch((err) => {
-      console.log(err);
+      logger.error(err);
       setIsLoading(false);
     });
 };
@@ -82,7 +83,7 @@ export const activating_registarion = (
   setPatients,
   onLoginSuccess
 ) => {
-  console.log("first")
+  logger.log("first")
   setIsLoading(true);
   axiosConfig
     .post(`Authentication/activating-registration`, {
@@ -94,7 +95,7 @@ export const activating_registarion = (
       activationCode: code,
     })
     .then((res) => {
-      console.log(res);
+      logger.log(res);
       setIsLoading(false);
       const result = res.data.result ?? {};
       if (result.smeprofileId) {
@@ -134,17 +135,17 @@ export const activating_registarion = (
 
 export const add_specialties = (data, setIsLoading, setIsAddSpecialModal) => {
   setIsLoading(true);
-  console.log(data);
+  logger.log(data);
   axiosConfig
     .post("Specialist/create-specialist", data)
     .then((res) => {
       setIsLoading(false);
-      console.log(res);
+      logger.log(res);
       success("تخصص با موفقیت ثبت شد");
       setIsAddSpecialModal(false);
     })
     .catch((err) => {
-      console.log(err);
+      logger.error(err);
       setIsLoading(false);
     });
 };
@@ -153,11 +154,11 @@ export const get_specialties = async (url) => {
   try {
     const response = await axiosConfig.get(url);
     const specialties = response.data.result.list;
-    console.log(specialties);
+    logger.log(specialties);
 
     return specialties;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
@@ -168,7 +169,7 @@ export const delete_specialties = async (
   setIsLoading,
   specialist
 ) => {
-  console.log(id);
+  logger.log(id);
   try {
     const response = await axiosConfig.delete("Specialist/delete-specialist", {
       data: {
@@ -184,9 +185,9 @@ export const delete_specialties = async (
     setIsLoading(false);
     success("تخصص با موفقیت حذف شد");
     closeModal();
-    console.log(response);
+    logger.log(response);
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     setIsLoading(false);
   }
 };
@@ -194,10 +195,10 @@ export const get_province = async () => {
   try {
     const response = await axiosConfig.get("Province/read-province");
     const provinces = response.data.result.list;
-    console.log(provinces);
+    logger.log(provinces);
     return provinces;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
@@ -211,21 +212,21 @@ export const read_city = (id, setCities) => {
       provinceId: id,
     })
     .then((res) => {
-      console.log(res);
+      logger.log(res);
       setCities(res.data.result.list);
     })
     .catch((err) => {
-      console.log(err);
+      logger.error(err);
     });
 };
 export const add_doctor = async (data, setIsLoading, setIsAddDoctorModal) => {
-  console.log(data)
+  logger.log(data)
   try {
     const res = await axiosConfig.post("Doctor/create-doctor", data);
-    console.log(res);
+    logger.log(res);
     if (res?.status === 200) {
-      console.log(res);
-      console.log(data);
+      logger.log(res);
+      logger.log(data);
       await axiosConfig.post("RoleManager/add-user-role", {
         metadata: {
           userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -248,7 +249,7 @@ export const add_doctor = async (data, setIsLoading, setIsAddDoctorModal) => {
     }
     return null;
   } catch (err) {
-    console.log(err);
+    logger.error(err);
     return null;
   } finally {
     setIsLoading(false);
@@ -256,17 +257,17 @@ export const add_doctor = async (data, setIsLoading, setIsAddDoctorModal) => {
 };
 
 export const add_article = (data, setLoading) => {
-  console.log(data);
+  logger.log(data);
   axiosConfig
     .post("Article/create-articles", data)
     .then((res) => {
       setLoading(false);
-      console.log(res);
+      logger.log(res);
       success(`مقاله با عنوان ${data.title} ثبت شد`);
     })
     .catch((err) => {
       setLoading(false);
-      console.log(err);
+      logger.error(err);
     });
 };
 
@@ -287,28 +288,28 @@ export const upload_file = (file, token, setFileId, setIsLoading) => {
     )
     .then((res) => {
       setIsLoading(false);
-      console.log(res);
+      logger.log(res);
       setFileId(res.data.result.id);
     })
     .catch((err) => {
       setIsLoading(false);
-      console.log(err);
+      logger.error(err);
     });
 };
 export const edit_specialties = (data, setIsLoading, setIsAddSpecialModal) => {
   setIsLoading(true);
-  console.log(data);
+  logger.log(data);
   axiosConfig
     .put("Specialist/update-specialist", data)
     .then((res) => {
       setIsLoading(false);
       success("تخصص با موفقیت ویرایش شد");
-      console.log(res);
+      logger.log(res);
 
       // setIsAddSpecialModal(false);
     })
     .catch((err) => {
-      console.log(err);
+      logger.error(err);
       setIsLoading(false);
     });
 };
@@ -316,10 +317,10 @@ export const get_doctors = async (url) => {
   try {
     const response = await axiosConfig.get(url);
     const doctors = response.data.result.list;
-    console.log(doctors);
+    logger.log(doctors);
     return doctors;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
@@ -330,7 +331,7 @@ export const delete_doctor = async (
   setIsLoading,
   doctors
 ) => {
-  console.log(id);
+  logger.log(id);
   setIsLoading(true);
   try {
     const response = await axiosConfig.delete("Doctor/delete-Doctor", {
@@ -348,9 +349,9 @@ export const delete_doctor = async (
     closeModal();
     setIsLoading(false);
     success("پزشک با موفقیت حذف شد");
-    console.log(response);
+    logger.log(response);
   } catch (error) {
-    console.log(error);
+    logger.error(error);
   }
 };
 
@@ -360,10 +361,10 @@ export const get_specialties_by_id = async (id) => {
       `Specialist/read-specialist?SpecialistId=${id}`
     );
     const categories = response.data.result.data.categories;
-    // console.log(specialist);
+    // logger.log(specialist);
     return categories;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
@@ -375,37 +376,37 @@ export const get_doctors_by_special_id = async () => {
     const doctors = response.data.result.list;
     return doctors;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
 export const edit_doctors = (data, setIsLoading, setIsAddDoctorModal) => {
-  console.log(data);
+  logger.log(data);
   axiosConfig
     .put("Doctor/update-doctor", data)
     .then((res) => {
       setIsLoading(false);
-      console.log(res);
+      logger.log(res);
       success("دکتر با موفقیت ویرایش شد");
       setIsAddDoctorModal(false);
     })
     .catch((err) => {
-      console.log(err);
+      logger.error(err);
       setIsLoading(false);
     });
 };
 export const add_patient = (data, setIsLoading, setIsAddPatient) => {
-  console.log(data);
+  logger.log(data);
   axiosConfig
     .post("Patient/create-patient", data)
     .then((res) => {
-      console.log(res);
+      logger.log(res);
       setIsLoading(false);
       setIsAddPatient(false);
       success("بیمار با موفقیت ثبت شد");
     })
     .catch((err) => {
-      console.log(err);
+      logger.error(err);
       setIsLoading(false);
     });
 };
@@ -414,15 +415,15 @@ export const get_patients = async (url) => {
   try {
     const response = await axiosConfig.get(url);
     const patients = response.data.result.list;
-    console.log(patients);
+    logger.log(patients);
     return patients;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
 export const delete_patient = async (id, setPatients) => {
-  console.log(id);
+  logger.log(id);
   try {
     const response = await axiosConfig.delete("Patient/delete-patient", {
       data: {
@@ -439,38 +440,38 @@ export const delete_patient = async (id, setPatients) => {
     if (data) {
       setPatients(data);
     }
-    console.log(response);
+    logger.log(response);
   } catch (error) {
-    console.log(error);
+    logger.error(error);
   }
 };
 export const create_ads = (data, setLoading) => {
-  console.log(data);
+  logger.log(data);
   axiosConfig
     .post("Ads/create-ads", data)
     .then((res) => {
       setLoading(false);
-      console.log(res);
+      logger.log(res);
       success("بنر با موفقیت ثبت شد");
     })
     .catch((err) => {
       setLoading(false);
-      console.log(err);
+      logger.error(err);
     });
 };
 export const add_medical_center = (data, setLoading, closeModal) => {
-  console.log(data);
+  logger.log(data);
   axiosConfig
     .post("Clinic/create-Clinic", data)
     .then((res) => {
       setLoading(false);
-      console.log(res);
+      logger.log(res);
       success("مرکز درمانی با موفقیت ثبت شد");
       closeModal();
     })
     .catch((err) => {
       setLoading(false);
-      console.log(err);
+      logger.error(err);
     });
 };
 // استخراج آیدی مطب از پاسخ سرور (ساختار پاسخ در اندپوینت‌ها یکسان نیست)
@@ -490,19 +491,19 @@ export const extract_doctor_id = (res) =>
   null;
 
 export const add_Office = (data, setLoading, closeModal) => {
-  console.log(data);
+  logger.log(data);
   return axiosConfig
     .post("Office/create-Office", data)
     .then((res) => {
       setLoading && setLoading(false);
-      console.log(res);
+      logger.log(res);
       success("مطب با موفقیت ثبت شد");
       closeModal && closeModal(res); // ← res را پاس می‌دهیم
       return res;
     })
     .catch((err) => {
       setLoading && setLoading(false);
-      console.log(err);
+      logger.error(err);
       return null;
     });
 };
@@ -517,25 +518,25 @@ export const sendCodeAgain = (phoneNumber) => {
       mobile: phoneNumber,
     })
     .then((res) => {
-      console.log(res);
+      logger.log(res);
     })
     .catch((err) => {
-      console.log(err);
+      logger.error(err);
     });
 };
 export const get_ads = async (url) => {
   try {
     const response = await axiosConfig.get(url);
     const banners = response.data.result.list;
-    console.log(banners);
+    logger.log(banners);
     return banners;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
 export const delete_ads = async (id, setBanners, closeModal, setIsLoading, list) => {
-  console.log(id);
+  logger.log(id);
   try {
     const response = await axiosConfig.delete("Ads/delete-ads", {
       data: {
@@ -552,10 +553,10 @@ export const delete_ads = async (id, setBanners, closeModal, setIsLoading, list)
     }
     closeModal && closeModal();
     setIsLoading && setIsLoading(false);
-    console.log(response);
+    logger.log(response);
     success("بنر با موفقیت حذف شد");
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     setIsLoading && setIsLoading(false);
   }
 };
@@ -564,15 +565,15 @@ export const read_files = async (url) => {
   try {
     const response = await axiosConfig.get(url);
     const file = response.data;
-    console.log(file);
+    logger.log(file);
     return file;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
 export const search_doctors = async (data) => {
-  console.log(data);
+  logger.log(data);
 
   // پارامترهای خالی ارسال نمی‌شوند؛ بایندر ASP.NET مقدار رشته‌ی خالی
   // برای فیلدهای bool/int/date را 400 می‌کند
@@ -619,10 +620,10 @@ export const search_doctors = async (data) => {
         { silent: true }
       );
       const doctors = response.data.result;
-      console.log(doctors);
+      logger.log(doctors);
       return doctors;
     } catch (fallbackError) {
-      console.error(fallbackError);
+      logger.error(fallbackError);
       return null;
     }
   }
@@ -636,7 +637,7 @@ export const search_doctors = async (data) => {
       { silent: true }
     );
     const result = response.data.result;
-    console.log(result);
+    logger.log(result);
 
     // اگر بک‌اند پاسخ معتبر ولی خالی داد (totalRecords عددی)، همان خالی را برمی‌گردانیم
     // اما اگر Endpoint خطا/مقدار null داد (باگ فعلی بک‌اند)، از search-list-doctors استفاده می‌کنیم
@@ -646,7 +647,7 @@ export const search_doctors = async (data) => {
     }
     throw new Error("search-doctors returned empty/malformed result");
   } catch (error) {
-    console.error("search-doctors failed, falling back to search-list-doctors:", error);
+    logger.error("search-doctors failed, falling back to search-list-doctors:", error);
     try {
       const response = await axiosConfig.get(
         buildUrl("Doctor/search-list-doctors", "DoctorName", {
@@ -655,10 +656,10 @@ export const search_doctors = async (data) => {
         { silent: true }
       );
       const doctors = response.data.result;
-      console.log(doctors);
+      logger.log(doctors);
       return doctors;
     } catch (fallbackError) {
-      console.error(fallbackError);
+      logger.error(fallbackError);
       return null;
     }
   }
@@ -667,10 +668,10 @@ export const get_clinics = async () => {
   try {
     const response = await axiosConfig.get("Clinic/read-Clinics");
     const data = response;
-    console.log(data);
+    logger.log(data);
     return data.data.result.list;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
@@ -678,10 +679,10 @@ export const get_offices = async () => {
   try {
     const response = await axiosConfig.get("Office/read-Offices");
     const data = response;
-    console.log(data);
+    logger.log(data);
     return data.data.result.list;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
@@ -690,16 +691,16 @@ export const search_doctors_list = async (
   currentPage,
   specialistId
 ) => {
-  console.log("name" + name);
+  logger.log("name" + name);
   try {
     const response = await axiosConfig.get(
       `Doctor/search-list-doctors?DoctorName=${name}&pagesize=10&pageNumber=${currentPage}&specialist=${specialistId}`
     );
     const doctors = response.data.result;
-    console.log(doctors);
+    logger.log(doctors);
     return doctors;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
@@ -709,10 +710,10 @@ export const get_doctor_treatmentCenter = async (id) => {
       `DoctorTreatmentCenter/read-DoctorTreatmentCenterByDoctorId?Id=${id}`
     );
     const treatmentCenter = response.data.result.list;
-    console.log(treatmentCenter);
+    logger.log(treatmentCenter);
     return treatmentCenter;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
@@ -747,7 +748,7 @@ export const read_DoctorTreatmentCenterByCenter = async (centerId, type) => {
       const list = pickList(response?.data?.result);
       if (Array.isArray(list)) return list;
     } catch (error) {
-      console.log(
+      logger.log(
         `[read_DoctorTreatmentCenterByCenter] مسیر یافت نشد: ${url}`,
         error?.message
       );
@@ -769,7 +770,7 @@ export const read_DoctorTreatmentCenterByCenter = async (centerId, type) => {
       );
     }
   } catch (error) {
-    console.log(
+    logger.log(
       "[read_DoctorTreatmentCenterByCenter] خواندن همه‌ی تخصیص‌ها ناموفق بود",
       error?.message
     );
@@ -797,14 +798,14 @@ export const create_doctor_treatment = (
     .post("/DoctorTreatmentCenter/create-DoctorTreatmentCenter", payload)
     .then((res) => {
       setIsLoading && setIsLoading(false);
-      console.log(res);
+      logger.log(res);
       success(message);
       closeModal && closeModal(res);
       return res;
     })
     .catch((err) => {
       setIsLoading && setIsLoading(false);
-      console.log(err);
+      logger.error(err);
       return null;
     });
 };
@@ -827,10 +828,10 @@ export const delete_office = async (id, setMedicalCenters, closeModal) => {
       setMedicalCenters(data);
     }
     closeModal();
-    console.log(response);
+    logger.log(response);
     success("مطب با موفقیت حذف شد");
   } catch (error) {
-    console.log(error);
+    logger.error(error);
   }
 };
 export const delete_clinic = async (
@@ -857,11 +858,11 @@ export const delete_clinic = async (
       setMedicalCenters(data);
     }
     closeModal();
-    console.log(response);
+    logger.log(response);
     setIsLoading(false);
     success("مرکز درمانی با موفقیت حذف شد");
   } catch (error) {
-    console.log(error);
+    logger.error(error);
   }
 };
 
@@ -871,52 +872,52 @@ export const read_office_type = async () => {
   try {
     const response = await axiosConfig.get("OfficeType/read-OfficeTypes");
     const data = response.data.result.list;
-    console.log("OfficeType", data);
+    logger.log("OfficeType", data);
     return data;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
 
 export const create_Reservation = (data, setIsLoading, closeModal) => {
-  console.log(data);
+  logger.log(data);
   axiosConfig
     .post("/Reservation/create-reservation", data)
     .then((res) => {
-      console.log(res);
+      logger.log(res);
       success("نوبت با موفقیت ثبت شد");
       setIsLoading(false);
       closeModal();
     })
     .catch((err) => {
-      console.log(err);
+      logger.error(err);
       setIsLoading(false);
     });
 };
 export const get_doctor_profile_by_id = async (id) => {
-  console.log(id);
+  logger.log(id);
   try {
     const response = await axiosConfig.get(`Doctor/read-doctor-byid?Id=${id}`);
     const doctorProfile = response.data.result.data;
-    console.log(doctorProfile);
+    logger.log(doctorProfile);
     return doctorProfile;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
 export const get_doctor_reservation = async (id) => {
-  console.log(id);
+  logger.log(id);
   try {
     const response = await axiosConfig.get(
       `Reservation/read-doctor-reservation?DoctorId=${id}`
     );
     const reservation = response.data.result.data;
-    console.log(reservation);
+    logger.log(reservation);
     return reservation;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
@@ -930,15 +931,15 @@ export const add_patient_by_user = (
   setPatients,
   patients
 ) => {
-  console.log(data);
+  logger.log(data);
   axiosConfig
     .post("Patient/create-patient", data)
     .then((res) => {
       success("اطلاعات ثبت شد");
       closeModal();
-      console.log(res);
+      logger.log(res);
       setPatients && setPatients([...patients, res.data.result.patient]);
-      console.log(res.data.result.patient.id);
+      logger.log(res.data.result.patient.id);
       setPatientId(res.data.result.patient.id);
       setIsLoading(false);
       {
@@ -946,22 +947,22 @@ export const add_patient_by_user = (
       }
     })
     .catch((err) => {
-      console.log(err);
+      logger.error(err);
       setIsLoading(false);
     });
 };
 export const patinet_reservation = (data, setIsLoading, onSuccess) => {
-  console.log(data);
+  logger.log(data);
   axiosConfig
     .post("PatientReservation/create-patientreservation", data)
     .then((res) => {
-      console.log(res);
+      logger.log(res);
       setIsLoading(false);
       success("نوبت شما با موفقیت رزرو شد");
       onSuccess && onSuccess(res);
     })
     .catch((err) => {
-      console.log(err);
+      logger.error(err);
       setIsLoading(false);
     });
 };
@@ -969,16 +970,16 @@ export const get_doctor_treatment_reservation = async (
   doctorId,
   treatmentId
 ) => {
-  console.log(doctorId, treatmentId);
+  logger.log(doctorId, treatmentId);
   try {
     const response = await axiosConfig.get(
       `Reservation/read-doctor-treatmentcenter-reservation?DoctorId=${doctorId}&TreatmentCenterId=${treatmentId}`
     );
     const reservation = response.data.result.data;
-    console.log(reservation);
+    logger.log(reservation);
     return reservation;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
@@ -988,10 +989,10 @@ export const get_doctor_treatmentCenter_hozoori = async (id) => {
       `DoctorTreatmentCenter/read-DoctorTreatmentCenterByDoctorIdHozoori?Id=${id}`
     );
     const treatmentCenter = response.data.result.list;
-    console.log(treatmentCenter);
+    logger.log(treatmentCenter);
     return treatmentCenter;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
@@ -1001,10 +1002,10 @@ export const get_doctor_treatmentCenter_online = async (id) => {
       `DoctorTreatmentCenter/read-DoctorTreatmentCenterByDoctorIdOnline?Id=${id}`
     );
     const treatmentCenter = response.data.result.list;
-    console.log(treatmentCenter);
+    logger.log(treatmentCenter);
     return treatmentCenter;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
@@ -1013,10 +1014,10 @@ export const get_all_users = async () => {
   try {
     const response = await axiosConfig.get(`UserProfile/read-all-userprofiles`);
     const users = response.data.result.list;
-    console.log(users);
+    logger.log(users);
     return users;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
@@ -1027,10 +1028,10 @@ export const get_user_role_by_username = async (userName = "") => {
       `UserManager/read-user-role?UserName=${userName}`
     );
     const userRoles = response.data.result.list;
-    console.log(userRoles);
+    logger.log(userRoles);
     return userRoles;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
@@ -1039,10 +1040,10 @@ export const get_roles = async () => {
   try {
     const response = await axiosConfig.get(`RoleManager/read-roles`);
     const Roles = response.data.result.list;
-    console.log(Roles);
+    logger.log(Roles);
     return Roles;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
@@ -1055,7 +1056,7 @@ export const add_role_to_user = (data, setIsLoading, closeModal) => {
       closeModal();
     })
     .catch((err) => {
-      console.log(err);
+      logger.error(err);
       setIsLoading(false);
     });
 };
@@ -1066,10 +1067,10 @@ export const get_4first_doctor_turns = async (doctorId) => {
       `Doctor/readfirstfreeturns?DoctorId=${doctorId}`
     );
     const turns = response.data.result.list;
-    console.log(turns);
+    logger.log(turns);
     return turns;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
@@ -1079,7 +1080,7 @@ export const read_all_insirances = async () => {
     const response = await axiosConfig.get(`Insurance/read-all-insurances`);
     return response?.data?.result?.list ?? [];
   } catch (error) {
-    console.error("Error fetching insurances:", error);
+    logger.error("Error fetching insurances:", error);
     return [];
   }
 };
@@ -1102,21 +1103,21 @@ export const create_insurance = async ({ name, insuranceTypeId, metadata }) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Error creating insurance:", error);
+    logger.error("Error creating insurance:", error);
     return null;
   }
 };
 export const read_firsPage_doctors = async () => {
-  console.log("first");
+  logger.log("first");
   try {
     const response = await axiosConfig.get(
       `Reservation/read-doctor-resevationtop4firstpage`
     );
     const doctors = response.data.result.data;
-    console.log(doctors);
+    logger.log(doctors);
     return doctors;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
@@ -1128,21 +1129,21 @@ export const follow_doctor_profile = (data, setIsLoading) => {
       setIsLoading(false);
     })
     .catch((err) => {
-      console.log(err);
+      logger.error(err);
       setIsLoading(false);
     });
 };
 export const read_followed_profile = async (smeId) => {
-  console.log("first");
+  logger.log("first");
   try {
     const response = await axiosConfig.get(
       `FollowProfile/read-FollowProfile?Id=${smeId}`
     );
     const followedList = response.data.result.list;
-    console.log(followedList);
+    logger.log(followedList);
     return followedList;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
@@ -1154,7 +1155,7 @@ export const get_first_page_specialties = async () => {
     const specialties = response.data.result.list;
     return specialties;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
@@ -1167,38 +1168,38 @@ export const get_all_turns = async () => {
     const turns = response.data.result.list;
     return turns;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
 export const edit_clinic = (data, setLoading, closeModal) => {
   setLoading(true);
-  console.log(data);
+  logger.log(data);
   axiosConfig
     .put("Clinic/update-Clinic", data)
     .then((res) => {
       setLoading(false);
-      console.log(res);
+      logger.log(res);
       success("مرکز درمانی با موفقیت ویرایش شد");
       closeModal();
     })
     .catch((err) => {
-      console.log(err);
+      logger.error(err);
       setLoading(false);
     });
 };
 export const edit_office = (data, setLoading, closeModal) => {
-  console.log(data);
+  logger.log(data);
   axiosConfig
     .put("Office/update-Office", data)
     .then((res) => {
       success("مطب با موفقیت ویرایش شد");
       setLoading(false);
-      console.log(res);
+      logger.log(res);
       closeModal();
     })
     .catch((err) => {
-      console.log(err);
+      logger.error(err);
       setLoading(false);
     });
 };
@@ -1211,7 +1212,7 @@ export const create_role = (data, setIsLoading, closeModal) => {
       closeModal();
     })
     .catch((err) => {
-      console.log(err);
+      logger.error(err);
       setIsLoading(false);
     });
 };
@@ -1221,17 +1222,17 @@ export const create_reservation_date_to_date = (
   setIsLoading,
   closeModal
 ) => {
-  console.log(data);
+  logger.log(data);
   axiosConfig
     .post("/Reservation/create-reservationfromdatetodate", data)
     .then((res) => {
-      console.log(res);
+      logger.log(res);
       success("نوبت با موفقیت ثبت شد");
       setIsLoading(false);
       closeModal();
     })
     .catch((err) => {
-      console.log(err);
+      logger.error(err);
       setIsLoading(false);
     });
 };
@@ -1242,7 +1243,7 @@ export const delete_reservation_day = async (
   setIsLoading,
   list
 ) => {
-  console.log(id);
+  logger.log(id);
   try {
     const response = await axiosConfig.delete(
       "Reservation/delete-reservation",
@@ -1260,24 +1261,24 @@ export const delete_reservation_day = async (
 
     closeModal();
     setIsLoading(false);
-    console.log(response);
+    logger.log(response);
     success("نوبت دکتر با موفقیت حذف شد");
   } catch (error) {
-    console.log(error);
+    logger.error(error);
   }
 };
 export const create_Specialties_category = (data, setIsLoading, closeModal) => {
-  console.log(data);
+  logger.log(data);
   axiosConfig
     .post("/Specialist/create-category", data)
     .then((res) => {
-      console.log(res);
+      logger.log(res);
       success("دسته بندی با موفقیت ثبت شد");
       setIsLoading(false);
       closeModal();
     })
     .catch((err) => {
-      console.log(err);
+      logger.error(err);
       setIsLoading(false);
     });
 };
@@ -1288,25 +1289,25 @@ export const get_specialties_category = async () => {
     const categorys = response.data.result.list;
     return categorys;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
 export const get_Category_by_specialties = async (id = "") => {
-  console.log(id);
+  logger.log(id);
   try {
     const response = await axiosConfig.get(`Specialist/read-category?Id=${id}`);
 
     const categorys = response.data.result.list;
-    console.log(categorys);
+    logger.log(categorys);
     return categorys;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
 export const add_specialist_to_category = (data, setIsLoading, closeModal) => {
-  console.log(data);
+  logger.log(data);
   axiosConfig
     .post("Specialist/add-specialist-to-category", data)
     .then(() => {
@@ -1315,23 +1316,23 @@ export const add_specialist_to_category = (data, setIsLoading, closeModal) => {
       closeModal();
     })
     .catch((err) => {
-      console.log(err);
+      logger.error(err);
       setIsLoading(false);
     });
 };
 
 export const edit_category = (data, setLoading, closeModal) => {
-  console.log(data);
+  logger.log(data);
   axiosConfig
     .put("Specialist/update-category", data)
     .then((res) => {
       success("دسته بندی با موفقیت ویرایش شد");
       setLoading(false);
-      console.log(res);
+      logger.log(res);
       closeModal();
     })
     .catch((err) => {
-      console.log(err);
+      logger.error(err);
       setLoading(false);
     });
 };
@@ -1369,7 +1370,7 @@ export const delete_category = async (
     success("دسته‌بندی با موفقیت حذف شد");
     closeModal();
   } catch (error) {
-    console.error("Delete Category Error:", error);
+    logger.error("Delete Category Error:", error);
     Eror(error?.response?.data?.message || "خطا در حذف دسته‌بندی");
   } finally {
     setIsLoading(false);
@@ -1382,7 +1383,7 @@ export const remove_specialist_from_category = (
   setIsLoading,
   list
 ) => {
-  console.log(data);
+  logger.log(data);
   axiosConfig
     .post("Specialist/remove-specialist-from-category", data)
     .then(() => {
@@ -1394,12 +1395,12 @@ export const remove_specialist_from_category = (
       setIsLoading(false);
     })
     .catch((err) => {
-      console.log(err);
+      logger.error(err);
       setIsLoading(false);
     });
 };
 export const search_DoctorTreatmentCenters = async (data) => {
-  console.log(data);
+  logger.log(data);
 
   // پارامترهای خالی ارسال نمی‌شوند (بایندر بک‌اند مقدار خالی را 400 می‌کند)
   const search = new URLSearchParams();
@@ -1431,10 +1432,10 @@ export const search_DoctorTreatmentCenters = async (data) => {
       { silent: true }
     );
     const doctors = response.data.result;
-    console.log(doctors);
+    logger.log(doctors);
     return doctors;
   } catch (error) {
-    console.error("Error fetching treatment centers:", error);
+    logger.error("Error fetching treatment centers:", error);
     return null;
   }
 };
@@ -1447,7 +1448,7 @@ export const searchall = async (
   setSpecialist,
   signal = null
 ) => {
-  console.log("Searching for:", data);
+  logger.log("Searching for:", data);
 
   const applyResult = (result) => {
     const suggestions = String(result?.suggest ?? "")
@@ -1546,7 +1547,7 @@ export const searchall = async (
     }
 
     const result = response.data.result;
-    console.log("Search result:", result);
+    logger.log("Search result:", result);
 
     // بک‌اند ممکن است آرایه‌ها را null برگرداند
     const normalized = {
@@ -1579,11 +1580,11 @@ export const searchall = async (
   } catch (error) {
     // اگر خطا به دلیل cancel کردن درخواست است، آن را نادیده بگیر
     if (error.name === "AbortError" || error.code === "ERR_CANCELED") {
-      console.log("Request cancelled");
+      logger.log("Request cancelled");
       return null;
     }
 
-    console.error("MainSearch failed, using fallback search:", error);
+    logger.error("MainSearch failed, using fallback search:", error);
 
     if (!signal || !signal.aborted) {
       try {
@@ -1594,7 +1595,7 @@ export const searchall = async (
         }
         return fallbackResult;
       } catch (fallbackError) {
-        console.error("Fallback search failed:", fallbackError);
+        logger.error("Fallback search failed:", fallbackError);
         if (!signal || !signal.aborted) {
           setIsSearchLoading(false);
           setSuggestions([]);
@@ -1610,16 +1611,16 @@ export const searchall = async (
   }
 };
 export const read_DoctorTreatmentCenterByNameSSR = async (name) => {
-  console.log(name);
+  logger.log(name);
   try {
     const response = await axiosConfig.get(
       `https://myapi.dadehavaran.com:8040/api/v1/DoctorTreatmentCenter/read-DoctorTreatmentCenterByNameSSR?SSRName=${name}`
     );
     const medical = response.data.result;
-    console.log(medical);
+    logger.log(medical);
     return medical;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
@@ -1629,10 +1630,10 @@ export const Read_DoctorTreatmentCenters4FirstPage = async () => {
       `https://myapi.dadehavaran.com:8040/api/v1/DoctorTreatmentCenter/Read-DoctorTreatmentCenters4FirstPage`
     );
     const list = response.data.result;
-    console.log(list);
+    logger.log(list);
     return list;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
@@ -1642,10 +1643,10 @@ export const Read_DoctorOffice4FirstPage = async () => {
       `https://myapi.dadehavaran.com:8040/api/v1/DoctorTreatmentCenter/Read-DoctorOffice4FirstPage`
     );
     const list = response.data.result;
-    console.log(list);
+    logger.log(list);
     return list;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
@@ -1655,17 +1656,17 @@ export const create_Comment = (
   setIsSuccessModal,
   setIsLoading
 ) => {
-  console.log(data, setIsNazarModal);
+  logger.log(data, setIsNazarModal);
   axiosConfig
     .post("Comment/create-Comment", data)
     .then((res) => {
-      console.log(res);
+      logger.log(res);
       setIsLoading(false);
       setIsNazarModal(false);
       setIsSuccessModal(true);
     })
     .catch((err) => {
-      console.log(err);
+      logger.error(err);
     });
 };
 export const Read_ClinicTypes = async () => {
@@ -1674,10 +1675,10 @@ export const Read_ClinicTypes = async () => {
       `https://myapi.dadehavaran.com:8040/api/v1/ClinicType/read-ClinicTypes`
     );
     const list = response.data.result.list;
-    console.log(list);
+    logger.log(list);
     return list;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
@@ -1687,52 +1688,52 @@ export const Read_OfficeType = async () => {
       `https://myapi.dadehavaran.com:8040/api/v1/OfficeType/read-OfficeTypes`
     );
     const list = response.data.result.list;
-    console.log(list);
+    logger.log(list);
     return list;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
 export const read_doctor_Comment = async (id) => {
-  console.log(id);
+  logger.log(id);
   try {
     const response = await axiosConfig.get(
       `https://myapi.dadehavaran.com:8040/api/v1/Comment/read-doctor-Comment?DoctorId=${id}`
     );
     const list = response.data.result.list;
-    console.log(list);
+    logger.log(list);
     return list;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
 export const read_DoctorByNameSSR = async (name) => {
-  console.log(name);
+  logger.log(name);
   try {
     const response = await axiosConfig.get(
       `https://myapi.dadehavaran.com:8040/api/v1/Doctor/read-DoctorByNameSSR?SSRName=${name}`
     );
     const doctor = response.data.result;
-    console.log(doctor.data);
+    logger.log(doctor.data);
     return doctor;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
 export const read_DoctorComents = async (id) => {
-  console.log(id);
+  logger.log(id);
   try {
     const response = await axiosConfig.get(
       `https://myapi.dadehavaran.com:8040/api/v1/Comment/read-doctor-Comment?DoctorId=${id}`
     );
     const res = response.data.result;
-    console.log(res);
+    logger.log(res);
     return res;
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    logger.error("Error fetching specialties:", error);
     return null;
   }
 };
@@ -1748,7 +1749,7 @@ export const create_doctor_insurance = async (data) => {
       },
     };
 
-    console.log("DoctorInsurance payload:", payload);
+    logger.log("DoctorInsurance payload:", payload);
 
     const response = await axiosConfig.post(
       "DoctorInsurance/create-DoctorInsurance",
@@ -1757,11 +1758,11 @@ export const create_doctor_insurance = async (data) => {
 
     return response.data;
   } catch (error) {
-    console.error("Error creating doctor insurance:", error);
+    logger.error("Error creating doctor insurance:", error);
 
     if (error.response) {
-      console.error("Status:", error.response.status);
-      console.error("Backend error data:", error.response.data);
+      logger.error("Status:", error.response.status);
+      logger.error("Backend error data:", error.response.data);
     }
 
     return null;
@@ -1773,10 +1774,10 @@ export const read_doctor_insurances_by_doctor_id = async (doctorId) => {
     const response = await axiosConfig.get(
       `DoctorInsurance/read-insurances-bydoctorid?DoctorId=${doctorId}`
     );
-    console.log(response);
+    logger.log(response);
     return response.data?.result?.list || [];
   } catch (error) {
-    console.error("Error fetching doctor insurances:", error);
+    logger.error("Error fetching doctor insurances:", error);
     return [];
   }
 };
@@ -1786,7 +1787,7 @@ export const delete_doctor_treatment = async (
   setTreatmenCenters,
   closeModal
 ) => {
-  console.log("delete id:", id);
+  logger.log("delete id:", id);
   try {
     const response = await axiosConfig.delete(
       "DoctorTreatmentCenter/delete-DoctorTreatmentCenter",
@@ -1811,11 +1812,11 @@ export const delete_doctor_treatment = async (
     }
 
     closeModal && closeModal();
-    console.log(response);
+    logger.log(response);
     success("مرکز درمانی دکتر با موفقیت حذف شد");
     return response;
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     closeModal && closeModal();
     return null;
   }
@@ -1849,10 +1850,10 @@ export const update_doctor_treatment = async (
 
     closeModal && closeModal();
     success(message);
-    console.log(response);
+    logger.log(response);
     return response;
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     closeModal && closeModal();
     return null;
   }
@@ -1882,7 +1883,7 @@ export const get_current_user_id = () => {
       ] ?? payload.name;
     return nameClaim ?? null;
   } catch (error) {
-    console.log("token decode error", error);
+    logger.log("token decode error", error);
     return null;
   }
 };
@@ -1916,7 +1917,7 @@ export const delete_patient_reservation = async (
     success("نوبت با موفقیت کنسل شد");
     return response;
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     setIsLoading && setIsLoading(false);
     return null;
   }
@@ -1928,7 +1929,7 @@ export const read_all_visitcosts = async () => {
     const response = await axiosConfig.get("Reservation/read-all-visitcosts");
     return response?.data?.result?.list ?? [];
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     return [];
   }
 };
@@ -1938,7 +1939,7 @@ export const read_all_visittypes = async () => {
     const response = await axiosConfig.get("Reservation/read-all-visittypes");
     return response?.data?.result?.list ?? [];
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     return [];
   }
 };
@@ -1967,7 +1968,7 @@ export const create_visitcost = async (doctorId, price, visitTypeName) => {
     success("هزینه ویزیت با موفقیت ثبت شد");
     return response?.data?.result ?? response?.data;
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     return null;
   }
 };
@@ -1987,7 +1988,7 @@ export const update_patient = async (data, setIsLoading, closeModal) => {
     success("اطلاعات بیمار با موفقیت ویرایش شد");
     return response;
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     setIsLoading && setIsLoading(false);
     return null;
   }
@@ -2007,7 +2008,7 @@ export const delete_patient_simple = async (id) => {
     });
     return response;
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     return null;
   }
 };
@@ -2020,7 +2021,7 @@ export const read_smeprofile_patients = async (smeProfileId) => {
     );
     return response?.data?.result?.list ?? [];
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     return [];
   }
 };
@@ -2035,7 +2036,7 @@ export const request_doctor_membership = async (data, setIsLoading) => {
     success("درخواست شما ثبت شد؛ همکاران ما با شما تماس خواهند گرفت");
     return response;
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     setIsLoading && setIsLoading(false);
     return null;
   }
@@ -2049,7 +2050,7 @@ export const read_doctor_patients = async (doctorId) => {
     );
     return response?.data?.result?.list ?? [];
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     return [];
   }
 };
@@ -2064,7 +2065,7 @@ export const read_recived_messages = async (userId) => {
     );
     return response?.data?.result?.list ?? [];
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     return [];
   }
 };

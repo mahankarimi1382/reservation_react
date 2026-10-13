@@ -40,20 +40,16 @@ function TreatmentCenterModal({ setIsTreatmentCenter, id, name }) {
     );
     setIsEditLoading(false);
   };
-  console.log(selectedItem);
   const [treatmentCenters, setTreatmenCenters] = useState([]);
   const [treatmentId, setTrearmentId] = useState("");
   const [clinicId, setClinicId] = useState("");
   const [doctorId, setDoctorId] = useState("");
-  console.log(treatmentCenters);
   const getTreatMent = async () => {
     const data = await get_doctor_treatmentCenter(id);
     if (data) {
-      console.log(data);
       setTreatmenCenters(data);
     }
   };
-  console.log(treatmentCenters);
 
   useEffect(() => {
     getTreatMent();

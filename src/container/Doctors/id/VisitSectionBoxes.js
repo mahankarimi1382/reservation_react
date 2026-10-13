@@ -6,7 +6,6 @@ import { RxCross2 } from "react-icons/rx";
 import VisitHozoriCard from "./VisitHozoriCard";
 
 function VisitSectionBoxes({ icon, topic, list }) {
-  console.log(list);
   const [isBoxOpen, setIsBoxOpen] = useState(false);
   const handleOpenModal = () => {
     setIsBoxOpen(!isBoxOpen);

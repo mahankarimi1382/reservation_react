@@ -40,7 +40,6 @@ function MedicalCenterProfile() {
           text: "متن توضیحات صفحه",
           url: window.location.href, // لینک فعلی صفحه
         });
-        console.log("اشتراک‌گذاری موفقیت‌آمیز بود!");
       } catch (error) {
         console.error("خطایی در اشتراک‌گذاری رخ داد:", error);
       }
@@ -54,22 +53,17 @@ function MedicalCenterProfile() {
 
   const [filtredDocs, setFiltredDocs] = useState([]);
   const [isDropDown, setIsDropDown] = useState(false);
-  console.log(doctors);
   const [medical, setMedical] = useState("");
   const [specialties, setSpecialties] = useState([]);
-  console.log(specialties);
-  console.log(medical);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
   const pathName = location.pathname;
   const pathParts = pathName.split("/").filter(Boolean);
-  console.log(pathParts[1]);
   const medicalSsrName = decodeURIComponent(pathParts[1]);
   const getMedicalCenter = async () => {
     let name = medicalSsrName;
     const result = await read_DoctorTreatmentCenterByNameSSR(name);
     if (result) {
-      console.log(result);
       setMedical(result.data);
       setPosition([result.data.centerLat, result.data.centerLon]);
       setDoctors(result.data.doctors);
@@ -82,7 +76,6 @@ function MedicalCenterProfile() {
     getMedicalCenter();
   }, []);
 
-  console.log(position);
   const toPersianDigits = (str) =>
     str.toString().replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[digit]);
   return (
@@ -238,7 +231,6 @@ function MedicalCenterProfile() {
                           let filterdDoctors = doctors.filter(
                             (item2) => item2.specialist.id == item.id
                           );
-                          console.log(filterdDoctors);
                           setFiltredDocs(filterdDoctors);
                         } else {
                           setSelectedId(null);

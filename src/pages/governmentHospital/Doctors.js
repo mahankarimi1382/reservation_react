@@ -61,14 +61,11 @@ function Doctors() {
         setLoading(true);
         setError("");
 
-        console.log("Clinic ID:", clinicId);
-        console.log("Specialty ID:", specialtyId);
 
         const response = await api.get(
           `MinistryApiReserve/read-doctors-by-clinic-and-specialist/${clinicId}/${specialtyId}`
         );
 
-        console.log("Doctors API response:", response.data);
 
         const apiData = response.data;
 

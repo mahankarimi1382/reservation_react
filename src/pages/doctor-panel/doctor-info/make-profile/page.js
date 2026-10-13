@@ -18,11 +18,9 @@ function Page() {
   const { doctors, doctorid } = userDoctorStorage();
 
   const [doctorProfile, setDoctorProfile] = useState(null);
-  console.log(doctorProfile)
   const [isLoading, setIsLoading] = useState(true);
 
   const currentDoctorId = doctorid || doctors?.id;
-console.log(currentDoctorId)
   useEffect(() => {
     const fetchDoctorProfile = async () => {
       if (!currentDoctorId) return;

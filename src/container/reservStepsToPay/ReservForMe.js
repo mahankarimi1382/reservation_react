@@ -21,8 +21,6 @@ function ReservForMe({ setSteps, closeModal }) {
   const { patients } = userSubmitedArrStore();
     const { selectedPtientName } = reservationStore();
   
-  console.log(patients);
-  console.log(phoneNum);
   const { fullName } = fullNameStorage();
   const { doctorName } = doctorProfileStore();
   const { dateAndTime, adress, doctorSpecialties } = reservationStore();

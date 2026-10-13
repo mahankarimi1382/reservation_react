@@ -19,15 +19,12 @@ function DoctorCostModal({ id, name, setIsDoctorCostModal }) {
   const [prices, setPrices] = useState({});
   const [submittingId, setSubmittingId] = useState(null);
 
-  console.log(treatmentCenters);
   const getTreatMent = async () => {
     const data = await get_doctor_treatmentCenter(id);
     if (data) {
-      console.log(data);
       setTreatmenCenters(data);
     }
   };
-  console.log(treatmentCenters);
 
   useEffect(() => {
     getTreatMent();

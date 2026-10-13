@@ -18,7 +18,6 @@ function TurnsSection() {
   const [isSeeTurnDetails, setIsSeeTurnDetails] = useState(false);
   const [turns, setTurns] = useState([]);
   const [selecteditem, setSelectedItem] = useState({});
-  console.log(turns);
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     const fetchData = async () => {
@@ -116,7 +115,6 @@ function TurnsSection() {
               <div className=" w-[15%] flex justify-center items-center ">
                 <button
                   onClick={() => {
-                    console.log(item);
                     setSelectedItem({
                       name:
                         item.doctor.doctorName + " " + item.doctor.doctorFamily,

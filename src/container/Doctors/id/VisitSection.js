@@ -7,16 +7,13 @@ import { get_doctor_treatmentCenter_hozoori, get_doctor_treatmentCenter_online }
 function VisitSection({ id }) {
   const [hozooriList, setHozooriList] = useState([]);
   const [onlineList, setOnlineList] = useState([]);
-console.log(onlineList)
   const getTreatment = async () => {
     const hozoori = await get_doctor_treatmentCenter_hozoori(id);
     if (hozoori) {
-      console.log(hozoori);
       setHozooriList(hozoori);
     }
     const online = await get_doctor_treatmentCenter_online(id);
     if (online) {
-      console.log(online);
       setOnlineList(online);
     }
   };

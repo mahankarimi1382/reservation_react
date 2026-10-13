@@ -26,7 +26,6 @@ const MedicalFormModal = ({ closeModal, selectedMedical }) => {
   const get_Oficces_type = async () => {
     const result = await Read_OfficeType();
     if (result) {
-      console.log(result);
       setOfficeTypes(result);
 
       // هنگام ویرایش، اگر نوع مطب غیرحضوری بود باید فیلدهای آدرس/نقشه مخفی شوند
@@ -48,7 +47,6 @@ const MedicalFormModal = ({ closeModal, selectedMedical }) => {
   const get_clinics_type = async () => {
     const result = await Read_ClinicTypes();
     if (result) {
-      console.log(result);
       setClinicTypes(result);
     }
   };
@@ -59,7 +57,6 @@ const MedicalFormModal = ({ closeModal, selectedMedical }) => {
   const location = useLocation();
   const pathName = location.pathname;
 
-  console.log(selectedMedical);
   const isoffice = pathName === "/adminPanel/medicalcenters/offices";
   const [isVirtual, setIsVirtual] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -145,9 +142,7 @@ const MedicalFormModal = ({ closeModal, selectedMedical }) => {
       phone &&
       siamCode
     ) {
-      console.log(isoffice);
       setLoading(true);
-      console.log("first");
       edit_office(data2, setLoading, closeModal);
     } else if (
       isoffice &&
@@ -159,9 +154,7 @@ const MedicalFormModal = ({ closeModal, selectedMedical }) => {
       phone &&
       siamCode
     ) {
-      console.log(isoffice);
       setLoading(true);
-      console.log("first");
       add_Office(data2, setLoading, closeModal);
     } else if (
       selectedMedical &&
@@ -172,11 +165,9 @@ const MedicalFormModal = ({ closeModal, selectedMedical }) => {
       phone
     ) {
       setLoading(true);
-      console.log("dahd");
       edit_office(data2, setLoading, closeModal);
     } else if (isoffice && isVirtual && officeTypeId && name && phone) {
       setLoading(true);
-      console.log("dahd");
       add_Office(data2, setLoading, closeModal);
     } else if (
       selectedMedical &&
@@ -187,11 +178,9 @@ const MedicalFormModal = ({ closeModal, selectedMedical }) => {
       phone &&
       siamCode
     ) {
-      console.log("medical");
       edit_clinic(data, setLoading, closeModal);
       setLoading(true);
     } else if (cityId && clinicTypeId && name && address && phone && siamCode) {
-      console.log("medical");
       add_medical_center(data, setLoading, closeModal);
       setLoading(true);
     } else {
@@ -246,9 +235,6 @@ const MedicalFormModal = ({ closeModal, selectedMedical }) => {
                   <select
                     value={officeTypeId}
                     onChange={(e) => {
-                      console.log(
-                        e.target.options[e.target.selectedIndex].text
-                      );
                       if (
                         e.target.options[e.target.selectedIndex].text != "حضوری"
                       ) {

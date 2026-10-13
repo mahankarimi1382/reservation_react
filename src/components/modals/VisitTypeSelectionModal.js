@@ -21,12 +21,9 @@ function VisitTypeSelectionModal({
   const [id, setId] = useState("");
   const { setOnlineTypeId, setCurrentPageDoctorSearch } = myStore();
   const [officeType, setOfficeType] = useState([]);
-  console.log(officeType);
   const getOfficeType = async () => {
     const result = await read_office_type();
-    console.log(result);
     if (result) {
-      console.log(result);
       let filtred = result.filter((item) => item.type != "حضوری");
 
       setOfficeType(filtred);

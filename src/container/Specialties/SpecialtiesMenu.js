@@ -5,11 +5,9 @@ import { IoIosArrowBack } from "react-icons/io";
 
 function SpecialtiesMenu({ setSpecialties }) {
   const [categorys, setCategorys] = useState([]);
-  console.log(categorys);
   const getcategorys = async () => {
     const data = await get_specialties_category();
     if (data) {
-      console.log(data);
       setCategorys(data);
     }
   };

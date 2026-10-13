@@ -107,7 +107,6 @@ export const PanelLink = (props) => {
 export const AdminPanelLink = (props) => {
   const location = useLocation();
   const pathname = location.pathname;
-  console.log(pathname);
   return (
     <Link
       to={props.href}
@@ -147,7 +146,6 @@ export const AdminPanelLink = (props) => {
 export const AdminPanelreport_action = (props) => {
   const location = useLocation();
   const pathname = location.pathname;
-  console.log(pathname);
   const handlePagePath = () => {
     if (
       pathname === "/adminPanel/reports/hozorireports" ||
@@ -260,7 +258,6 @@ export const AdminPanelreport_action = (props) => {
 export const AdminPanelsupport_action = (props) => {
   const location = useLocation();
   const pathname = location.pathname;
-  console.log(pathname);
   const handlePagePath = () => {
     if (
       pathname === "/adminPanel/support/doctor" ||
@@ -333,7 +330,6 @@ export const AdminPanelsupport_action = (props) => {
 export const AdminPanelimageSetting_action = (props) => {
   const location = useLocation();
   const pathname = location.pathname;
-  console.log(pathname);
   const handlePagePath = () => {
     if (
       pathname === "/adminPanel/imagesetting/doctorimage" ||

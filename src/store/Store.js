@@ -78,7 +78,6 @@ export const myStore = create((set) => ({
 
   token: Cookies.get("token"),
   setToken: (token) => {
-    console.log(token);
     set(() => ({ token: token }));
   },
   selectedBaner: {},

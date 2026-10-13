@@ -22,17 +22,14 @@ function SeeReservsModal({
     selectedMedical?.officeId ??
     treatmentId;
   const [selectedDay, setSelectedDay] = useState("");
-  console.log(selectedDay);
   const [turns, setTurns] = useState([]);
   const [reservationList, setReservationList] = useState([]);
   const [isDeleteModal, setIsDeleteModal] = useState(false);
-  console.log(reservationList);
   const [isLoading, setIsLoading] = useState(false);
   const uniqueStimeSet = new Set();
   const [isCreateReservModal, setIsCreateReservModal] = useState(false);
 
   const getReservation = async () => {
-    console.log("first");
     const data = await get_doctor_treatment_reservation(
       doctorId,
       effectiveClinicId
@@ -113,7 +110,6 @@ function SeeReservsModal({
     return finalResult.map((item) => {
       // const hasFreeTurn = turns.some((t) => t.stime === item.stime && t.isFree);
       // const isDisable = hasFreeTurn ? false : true;
-      console.log(item);
       return (
         <button
           disabled={item.buttonDisabled}

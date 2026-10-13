@@ -81,12 +81,10 @@ function InsurancePage() {
 
 const handleSubmit = async () => {
   if (!currentDoctorId) {
-    console.log("doctor id وجود ندارد");
     return;
   }
 
   if (!formData.insuranceId) {
-    console.log("insurance id انتخاب نشده");
     return;
   }
 
@@ -99,10 +97,8 @@ const handleSubmit = async () => {
     isActive: true,
   };
 
-  console.log("final create doctor insurance payload:", payload);
 
   const res = await create_doctor_insurance(payload);
-console.log(res)
   if (res) {
     setFormData({
       insuranceId: "",

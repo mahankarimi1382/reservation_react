@@ -7,7 +7,6 @@ import axios from "axios";
 
 export default function MapTest({ setPosition, position }) {
   const mapRef = useRef(null);
-  console.log(position);
   const mapContainerRef = useRef(null);
   const [center, setCenter] = useState(position);
   const [markerPosition, setMarkerPosition] = useState(center);
@@ -85,7 +84,6 @@ export default function MapTest({ setPosition, position }) {
   };
 
   const handleSaveLocation = () => {
-    console.log(`Marker Position: ${markerPosition[1]}, ${markerPosition[0]}`);
   };
 
   return (

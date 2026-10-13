@@ -7,11 +7,9 @@ import { Read_DoctorOffice4FirstPage } from "../../api/ApiCalling";
 
 function MatabSection() {
     const [oficces,setOficces]=useState([])
-  console.log(oficces)
       const getOficcesList = async () => {
         const result = await Read_DoctorOffice4FirstPage();
         if (result) {
-          console.log(result)
           setOficces(result.list)
         }
       };

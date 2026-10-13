@@ -20,17 +20,12 @@ function ReservDateAndTimeModal({ setIsReservModal, name, treatmentId }) {
   const { reservationId, setReservationId, turnId, setTurnId } =
     reservationStore();
   const { setVisitPrice } = reservationStore();
-  console.log(reservationId, turnId);
   const [isLoading, setIsLoading] = useState(true);
   const [reservationList, setReservationList] = useState([]);
-  console.log(reservationList);
   const { setDateAndTime } = reservationStore();
 
   const [selectedDay, setSelectedDay] = useState("");
-  console.log(selectedDay);
   const [turns, setTurns] = useState([]);
-  console.log(turns);
-  console.log(reservationList);
   const getReservation = async () => {
     const data = await get_doctor_treatment_reservation(doctorId, treatmentId);
     if (data) {
@@ -118,7 +113,6 @@ function ReservDateAndTimeModal({ setIsReservModal, name, treatmentId }) {
     return finalResult.map((item) => {
       // const hasFreeTurn = turns.some((t) => t.stime === item.stime && t.isFree);
       // const isDisable = hasFreeTurn ? false : true;
-      console.log(item);
       return (
         <button
           onClick={() => {

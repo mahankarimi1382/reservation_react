@@ -36,17 +36,11 @@ const Specialities = () => {
         setLoading(true);
         setError("");
 
-        console.log("Clinic ID:", clinicId);
-        console.log("Hospital in Specialities.js:", hospital);
 
         const response = await api.get(
           `MinistryApiReserve/read-specialists-by-clinic/${clinicId}`
         );
 
-        console.log(
-          "Specialities API response:",
-          response.data
-        );
 
         const apiData = response.data;
 

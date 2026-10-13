@@ -5,5 +5,5 @@ export const ErrorHandler = (err) => {
     Eror("لطفا اطلاعات را کامل وارد کنید");
   }
 
-  console.log(err);
+  console.error(err);
 };

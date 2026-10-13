@@ -71,7 +71,6 @@ function page() {
       cityId: editItem.cityId || 0,
     };
 
-    console.log("Payload ویرایش تخصیص:", payload);
 
     setActionLoading(true);
     update_doctor_treatment(

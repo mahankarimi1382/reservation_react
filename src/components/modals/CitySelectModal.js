@@ -9,9 +9,7 @@ function CitySelectModal({ closeModal }) {
   const { setProvinceId, setCityId } = myStore();
   const [cities, setCities] = useState([]);
   const [province, setProvince] = useState("");
-  console.log(province);
   const [city, setCity] = useState("");
-  console.log(city);
   return (
     <div className=" w-screen z-50 h-screen left-0 bottom-0 top-0 justify-center items-center flex right-0 fixed bg-[rgba(0,0,0,0.6)]">
       <div className=" relative w-1/3 h-1/3 min-w-[300px] min-h-[250px] bg-white flex flex-col justify-center gap-5 py-2 px-2 pb-5  items-center rounded-2xl">
@@ -39,9 +37,7 @@ function CitySelectModal({ closeModal }) {
           onClick={() => {
             if (city) {
               setCityId(city);
-              console.log("first");
             } else {
-              console.log(province);
               setProvinceId(province);
             }
             closeModal();

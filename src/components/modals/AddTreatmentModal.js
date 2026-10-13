@@ -39,7 +39,6 @@ function AddTreatmentModal({ closeModal, id, assignedIds = [] }) {
     cityId: Number(selectedCenter?.cityId) || 0,
   };
 
-  console.log(medicalCenters);
   const getClinics = async () => {
     setIsListLoading(true);
     const data = await get_clinics();
@@ -124,7 +123,6 @@ function AddTreatmentModal({ closeModal, id, assignedIds = [] }) {
           <div className=" overflow-auto overflow-x-hidden   w-full border rounded-xl border-[#005DAD]">
             <RadioGroup
               onChange={(e) => {
-                console.log(type);
                 {
                   type == "بیمارستان"
                     ? setClinicId(e.target.value)
@@ -179,7 +177,6 @@ function AddTreatmentModal({ closeModal, id, assignedIds = [] }) {
                   ? "مرکز درمانی با موفقیت تخصیص داده شد"
                   : "مطب با موفقیت تخصیص داده شد";
 
-              console.log(data);
               setIsLoading(true);
               create_doctor_treatment(data, setIsLoading, closeModal, message);
             }}

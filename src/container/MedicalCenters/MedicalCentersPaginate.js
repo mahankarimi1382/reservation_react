@@ -69,7 +69,6 @@ function MedicalCentersPaginate() {
     };
     const result = await search_DoctorTreatmentCenters(data);
     if (result) {
-      console.log(result);
       setMedicals(result.list);
       setIsSerchMedicalLoading(false);
 

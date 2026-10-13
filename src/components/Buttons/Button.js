@@ -78,7 +78,6 @@ export const LoginButton = () => {
 
       const roleNameRaw = roles?.[0]?.roleName || "";
       const roleName = roleNameRaw.trim().toLowerCase();
-      console.log(roleName);
 
       const hasDoctorData =
         Boolean(doctorid) ||
@@ -797,7 +796,6 @@ export const DoctorsSignUpButt = () => {
       )}
       <button
         onClick={() => {
-          console.log(token);
           if (token) {
             setIsModal(true);
           } else {

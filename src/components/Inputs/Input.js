@@ -1,11 +1,12 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
 import { Filtering_MedicalCenters_Store, myStore } from "../../store/Store";
 import { get_province, get_specialties, read_city } from "../../api/ApiCalling";
 
 export const SerchDropDowns = () => {
+  const dropdownRef = useRef(null);
   const {
     setCurrentPageDoctorSearch,
     setMultiSpecialtiesBoxes,
@@ -22,6 +23,7 @@ export const SerchDropDowns = () => {
   const handleInputChange = (event) => {
     filterArray(event.target.value);
     setInputVal(event.target.value);
+    setIsSearching(true);
   };
   const filterArray = (value) => {
     const filtered = specialties.filter((item) =>
@@ -43,6 +45,18 @@ export const SerchDropDowns = () => {
   }, []);
 
   const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsSearching(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, []);
   // const [selectedOption, setSelectedOption] = useState("");
   const handleSelectOption = (name, id) => {
     if (storedIdsMultipleSearch) {
@@ -74,17 +88,19 @@ export const SerchDropDowns = () => {
     }
   };
   return (
-    <div className=" flex flex-col gap-3">
+    <div ref={dropdownRef} className=" flex flex-col gap-3">
       <div
         onClick={() => setIsSearching(!isSearching)}
-        className=" px-2 border shadow-[0_1px_15px_-5px_rgba(0,0,0,0.3)] flex justify-center items-center  rounded-xl w-full"
+        className=" px-2 border shadow-[0_1px_15px_-5px_rgba(0,0,0,0.3)] flex justify-center items-center  rounded-xl w-full cursor-pointer"
       >
         <CiSearch className=" text-4xl text-[#005DAD]" />
         <input
           value={inputVal}
           onChange={handleInputChange}
+          onClick={(e) => e.stopPropagation()}
+          onFocus={() => setIsSearching(true)}
           placeholder={"نام بیماری را جستجو کنید"}
-          className=" outline-none h-[54px] w-full rounded-xl"
+          className=" outline-none h-[54px] w-full rounded-xl cursor-text"
         />
         <IoIosArrowDown
           className={` ${
@@ -228,7 +244,6 @@ export const CitySelectInput = ({
       <select
         value={(cityId && cityId.id) || cityId}
         onChange={(e) => {
-          console.log(e.target.value);
           if (e.target.value) {
             setCityId({
               id: e.target.value,
@@ -271,7 +286,7 @@ export const ProvinceSelectInput = ({
   hiddentitle,
   initProvince,
   setInitProvince,
-  setProvince = () => console.log("first"),
+  setProvince = () => {},
 }) => {
   const [provinces, setProvinces] = useState([]);
   useEffect(() => {
@@ -292,7 +307,6 @@ export const ProvinceSelectInput = ({
       <select
         value={initProvince}
         onChange={(e) => {
-          console.log(e.target.value);
           if (e.target.value) {
             read_city(e.target.value, setCities);
             setInitProvince && setInitProvince(e.target.value);
@@ -530,7 +544,6 @@ export const Search_Provience_MedicalCenters = () => {
   const { setProvinceID, setProvinceName, provinceName } =
     Filtering_MedicalCenters_Store();
   const [provinces, setProvinces] = useState([]);
-  console.log(provinces);
   useEffect(() => {
     const fetchData = async () => {
       const data = await get_province();
@@ -654,8 +667,6 @@ export const Search_City_MedicalCenters = () => {
   const { setCityID, setCityName, provinceID } =
     Filtering_MedicalCenters_Store();
   const [cities, setCities] = useState([]);
-  console.log(provinceID);
-  console.log(cities);
   useEffect(() => {
     const fetchData = () => {
       if (provinceID) {

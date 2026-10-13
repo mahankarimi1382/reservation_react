@@ -67,14 +67,11 @@ function FilterMedicalCenters({ hidden, setIsFilterClickMobile }) {
     handleBoxItems();
   }, [provinceName, cityName, treatmentName]);
   const handleRemoveSpecial = (idToRemove, caption) => {
-    console.log(caption);
-    console.log(storedIdsMultipleSearch);
     if (typeof storedIdsMultipleSearch == "string") {
       let newIds = storedIdsMultipleSearch
         .split(",")
         .filter((id) => id !== idToRemove.toString())
         .join(",");
-      console.log(newIds);
       setStoredIdsMultipleSearch(newIds);
       setSpecialistSearch(newIds);
     } else {
@@ -84,7 +81,6 @@ function FilterMedicalCenters({ hidden, setIsFilterClickMobile }) {
     let removedBox = multiSpecialtiesBoxes
       .filter((item) => item.caption != caption)
       .filter((item) => item.caption);
-    console.log(removedBox);
     setMultiSpecialtiesBoxes(removedBox);
   };
   const handleRemoveItem = (type) => {
@@ -108,7 +104,6 @@ function FilterMedicalCenters({ hidden, setIsFilterClickMobile }) {
       );
       setFiltredBoxes(filtred);
     } else {
-      console.log(type);
     }
   };
   return (

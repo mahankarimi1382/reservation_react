@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { RxCross2 } from "react-icons/rx";
 
 function MedicalDetails({ closeModal, selectedItem }) {
-  console.log(selectedItem);
   //     name:
   //     item.doctor.doctorName + " " + item.doctor.doctorFamily,
   //   pName:

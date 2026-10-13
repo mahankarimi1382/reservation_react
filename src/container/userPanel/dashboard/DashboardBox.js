@@ -1,7 +1,6 @@
 import React from "react";
 
 function DashboardBox(props) {
-  console.log(props);
   return (
     <div
       className={`${props.Wfull && "w-full lg:w-auto"} ${

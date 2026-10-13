@@ -33,7 +33,6 @@ function AddNewDoctorModal({ setIsAddDoctorModal, doctorItems }) {
   });
 
   const [specialistId, setSpecialistId] = useState("");
-  console.log(specialistId);
   // ==================== Fetch Doctor Data when Editing ====================
   useEffect(() => {
     const fetchDoctor = async () => {
@@ -41,7 +40,6 @@ function AddNewDoctorModal({ setIsAddDoctorModal, doctorItems }) {
 
       setIsFetching(true);
       const data = await get_doctor_profile_by_id(doctorItems.id);
-      console.log(data);
       if (data) {
         const doctor = data; // یا data.result اگر ساختار متفاوت بود
 
@@ -133,7 +131,6 @@ function AddNewDoctorModal({ setIsAddDoctorModal, doctorItems }) {
       // در حالت افزودن، معمولاً فیلد id نباید فرستاده شود یا باید 0 باشد
       // اگر بک‌اند در حالت افزودن به فیلد id ایراد گرفت، آن را از آبجکت ارسالی در اینجا حذف کنید
       add_doctor(data, setIsLoading, setIsAddDoctorModal);
-      console.log(data);
     }
   };
 

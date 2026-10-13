@@ -28,6 +28,8 @@ function MainSearchBar() {
   const debounceTimeoutRef = useRef(null);
   const abortControllerRef = useRef(null);
   const MainSearchinputRef = useRef(null);
+  const searchContainerRef = useRef(null);
+  const lastSearchedTermRef = useRef("");
   const {
     setSpecialistSearch,
     setMultiSpecialtiesBoxes,
@@ -42,13 +44,16 @@ function MainSearchBar() {
       abortControllerRef.current.abort();
     }
 
+    const trimmed = (searchTerm || "").trim();
+
     // اگر جستجو خالی است، نتایج را پاک کن
-    if (!searchTerm.trim()) {
+    if (!trimmed) {
       setSuggestions([]);
       setDoctors([]);
       setMedicals([]);
       setSpecialist([]);
       setIsSearchLoading(false);
+      lastSearchedTermRef.current = "";
       return;
     }
 
@@ -59,7 +64,7 @@ function MainSearchBar() {
       setIsSearchLoading(true);
 
       const result = await searchall(
-        searchTerm,
+        trimmed,
         setSuggestions,
         setIsSearchLoading,
         setDoctors,
@@ -67,6 +72,7 @@ function MainSearchBar() {
         setSpecialist,
         abortControllerRef.current.signal // ارسال signal برای cancel کردن
       );
+      lastSearchedTermRef.current = trimmed;
     } catch (error) {
       if (error.name !== "AbortError") {
         console.error("Search error:", error);
@@ -91,9 +97,20 @@ function MainSearchBar() {
     [performSearch]
   );
 
-  // پاک کردن timeout‌ها هنگام unmount
+  // پاک کردن timeout‌ها هنگام unmount و مدیریت کلیک خارج از دراپ‌داون
   useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target)
+      ) {
+        setIsSearching(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+
     return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
       if (debounceTimeoutRef.current) {
         clearTimeout(debounceTimeoutRef.current);
       }
@@ -112,23 +129,32 @@ function MainSearchBar() {
 
   const handleInputFocus = () => {
     setIsSearching(true);
-    if (inputVal.trim()) {
-      performSearch(inputVal);
+    const trimmed = inputVal.trim();
+    // فقط در صورتی که متن تغییر کرده و سرچ نشده باشد درخواست جدید می‌زنیم تا کلیک‌ها روی نتایج قبلی drop نشوند
+    if (trimmed && trimmed !== lastSearchedTermRef.current) {
+      debouncedSearch(trimmed);
     }
   };
 
   const handleSuggestionClick = (suggestion) => {
     setInputVal(suggestion);
+    lastSearchedTermRef.current = suggestion.trim();
     performSearch(suggestion);
   };
 
-  const handleClearSearch = () => {
+  const handleClearSearch = (e) => {
+    if (e && e.stopPropagation) {
+      e.stopPropagation();
+    }
     setDoctors([]);
     setMedicals([]);
     setSpecialist([]);
     setInputVal("");
     setSuggestions([]);
-    performSearch("");
+    lastSearchedTermRef.current = "";
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
   };
 
   const handleSearchButtClick = () => {
@@ -197,7 +223,10 @@ function MainSearchBar() {
         </h2>
       </div>
 
-      <div className="gap-6 relative w-[100%] lg:w-4/5 xl:w-3/5 flex lg:mt-20 justify-center items-center rounded-xl h-[119px]">
+      <div
+        ref={searchContainerRef}
+        className="gap-6 relative w-[100%] lg:w-4/5 xl:w-3/5 flex lg:mt-20 justify-center items-center rounded-xl h-[119px]"
+      >
         <div
           onClick={(e) => e.stopPropagation()}
           className="rounded-lg px-3 items-center justify-center gap-1 flex h-[43px] lg:h-[56px] mt-8 lg:mt-0 w-[85%] border bg-white border-[#C7C6C6]"
@@ -220,6 +249,7 @@ function MainSearchBar() {
         {isSearching && (
           <div
             onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
             className="gap-2 flex flex-col z-50 overflow-auto p-1 lg:p-3 top-[100px] lg:top-[90px] border rounded-lg absolute bg-[#F5F5F5] w-[85%] h-72"
           >
             <RxCross2
@@ -264,6 +294,7 @@ function MainSearchBar() {
                   return (
                     <Link
                       to={`doctors/${item.link}`}
+                      onClick={() => setIsSearching(false)}
                       className="border-b p-2 relative text-xs text-right lg:text-base text-gray-700 items-end lg:gap-2 flex"
                       key={index}
                     >
@@ -294,6 +325,7 @@ function MainSearchBar() {
                   return (
                     <Link
                       to={`medical-centers/${item.link}`}
+                      onClick={() => setIsSearching(false)}
                       className="border-b p-2 relative text-xs text-right lg:text-base text-gray-700 items-end lg:gap-2 flex"
                       key={index}
                     >
@@ -336,6 +368,7 @@ function MainSearchBar() {
                             },
                           ]);
                         }
+                        setIsSearching(false);
                         navigate("/doctors");
                         setSpecialistSearch(item.id);
                       }}

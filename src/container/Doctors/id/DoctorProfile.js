@@ -87,16 +87,10 @@ function DoctorProfile() {
     }
   };
 
-  console.log(coments);
-  console.log(doctorDetails);
-  console.log(doctorTreatmentCenters);
-  console.log(doctorDetails);
-
   const getDoctor = async () => {
     let name = doctorSsrName;
     const result = await read_DoctorByNameSSR(name);
     if (result) {
-      console.log(result);
       setDoctorDetails(result.data);
       setIsLoading(false);
       setDoctorId(result.data.id);
@@ -112,7 +106,6 @@ function DoctorProfile() {
       if (coments) {
         setComents(coments.list ?? []);
       }
-      console.log(coments);
     }
   };
 
@@ -128,7 +121,6 @@ function DoctorProfile() {
           text: "متن توضیحات صفحه",
           url: window.location.href,
         });
-        console.log("اشتراک‌گذاری موفقیت‌آمیز بود!");
       } catch (error) {
         console.error("خطایی در اشتراک‌گذاری رخ داد:", error);
       }
@@ -158,10 +150,7 @@ function DoctorProfile() {
     follow_doctor_profile(data, setIsLoading);
   };
 
-  console.log(doctorId);
-
   const imgFN = (img) => {
-    console.log(img);
     if (img == "string") {
       return doctorIcon.src;
     } else {
@@ -170,10 +159,8 @@ function DoctorProfile() {
   };
 
   const get_doctor_comments = async () => {
-    console.log(doctorId);
     const result = await read_doctor_Comment(doctorId);
     if (result) {
-      console.log(result);
     }
   };
 

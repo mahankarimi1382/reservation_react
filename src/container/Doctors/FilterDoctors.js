@@ -57,19 +57,14 @@ function FilterDoctors({ hidden, setIsFilterClickMobile }) {
       setGender("");
     } else if (type == "acceptInsurance") {
       setAcceptInsurance("");
-    } else {
-      console.log(type);
     }
   };
   const handleRemoveSpecial = (idToRemove, caption) => {
-    console.log(caption);
-    console.log(storedIdsMultipleSearch);
     if (typeof storedIdsMultipleSearch == "string") {
       let newIds = storedIdsMultipleSearch
         .split(",")
         .filter((id) => id !== idToRemove.toString())
         .join(",");
-      console.log(newIds);
       setStoredIdsMultipleSearch(newIds);
       setSpecialistSearch(newIds);
     } else {
@@ -79,7 +74,6 @@ function FilterDoctors({ hidden, setIsFilterClickMobile }) {
     let removedBox = multiSpecialtiesBoxes
       .filter((item) => item.caption != caption)
       .filter((item) => item.caption);
-    console.log(removedBox);
     setMultiSpecialtiesBoxes(removedBox);
   };
   const { hasTurn, setCurrentPageDoctorSearch, acceptInsurance, justOnline } =

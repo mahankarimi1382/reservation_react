@@ -6,7 +6,6 @@ import mapboxgl from "@neshan-maps-platform/mapbox-gl";
 import nmp_mapboxgl from "@neshan-maps-platform/mapbox-gl";
 
 export default function MapComponent({ position }) {
-  console.log(position)
   const mapRef = useRef(null);
   const mapContainerRef = useRef(null);
   const [showOptions, setShowOptions] = useState(false);

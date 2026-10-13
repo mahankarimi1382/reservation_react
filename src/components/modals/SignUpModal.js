@@ -14,7 +14,6 @@ function SignupModal({ closeModal, setIsValidateModal, isValidateModal }) {
   const [password, setPassword] = useState("");
   const [fullname, setFullname] = useState("");
   const handleKeyDown = (e) => {
-    console.log(e);
     if (e.key == "Enter") {
       handleClickSignUp();
     }

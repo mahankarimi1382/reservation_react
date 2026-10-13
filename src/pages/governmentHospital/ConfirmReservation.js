@@ -344,10 +344,6 @@ const ConfirmReservation = () => {
       IsReserved: true,
     };
 
-    console.log(
-      "Ministry seat request body:",
-      requestBody
-    );
 
     setIsSubmitting(true);
 
@@ -357,9 +353,6 @@ const ConfirmReservation = () => {
         requestBody
       );
 
-console.log(
-  "Ministry seat response:",
-  JSON.stringify(response.data, null, 2)
 );
 
       const responseData = response.data;

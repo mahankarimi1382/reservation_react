@@ -6,7 +6,6 @@ import { fullNameStorage } from "../../store/Store";
 
 function SuccessModal({ setIsSuccessModal }) {
   const {fullName}=fullNameStorage()
-  console.log(fullName)
   const handleClose = () => {
     setIsSuccessModal(false);
   };

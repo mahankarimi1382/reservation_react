@@ -16,11 +16,9 @@ function UserAccesSection() {
   const [filtredArr, setFiltredArr] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddRoleModal, setIsAddRoleModal] = useState(false);
-  console.log(users);
   const getUsers = async () => {
     const data = await get_all_users();
     if (data) {
-      console.log(data);
       setUsers(data);
       setFiltredArr(data);
       setIsLoading(false);
